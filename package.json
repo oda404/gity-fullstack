@@ -1,0 +1,28 @@
+{
+   "name": "template-webapp",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "scripts": {
+      "start-dev": "nodemon --ext ts --exec npm run tcstart ./src/",
+      "tcstart": "tsc && node dist/index.js || exit 1",
+      "start": "ts-node src/index.ts"
+   },
+   "author": "",
+   "license": "ISC",
+   "dependencies": {
+      "apollo-server-express": "^2.19.0",
+      "express": "^4.17.1",
+      "graphql": "^15.4.0",
+      "mongodb": "^3.6.2",
+      "reflect-metadata": "^0.1.13",
+      "type-graphql": "^1.1.0",
+      "typeorm": "^0.2.28"
+   },
+   "devDependencies": {
+      "@types/express": "^4.17.8",
+      "@types/mongodb": "^3.5.32",
+      "@types/node": "^14.14.6",
+      "nodemon": "^2.0.6"
+   }
+}
