@@ -1,7 +1,6 @@
 import { Resolver, Query, Ctx, Arg, ID, Mutation } from "type-graphql";
 import { Post } from "../entities/Post";
 import { ApolloContext } from "../types";
-import { ObjectId } from "mongodb";
 
 @Resolver()
 export class PostResolver
@@ -20,7 +19,7 @@ export class PostResolver
         @Ctx() { con }: ApolloContext
     ): Promise<Post | undefined>
     {
-        return con.manager.findOne(Post, { _id: new ObjectId(id) } );
+        return con.manager.findOne(Post, { id: id } );
     }
 
     @Mutation(() => Boolean)
@@ -29,10 +28,10 @@ export class PostResolver
         @Ctx() { con }: ApolloContext
     ): Promise<boolean>
     {
-        const post = await con.manager.findOne(Post, { _id: new ObjectId(id) });
+        const post = await con.manager.findOne(Post, { id: id });
         if(post !== undefined)
         {
-            con.manager.delete(Post, { _id: new ObjectId(id) });
+            con.manager.delete(Post, { id: id });
             return true;
         }
 
@@ -58,7 +57,7 @@ export class PostResolver
         @Ctx() { con }: ApolloContext
     ): Promise<Post | undefined>
     {
-        const post = await con.manager.findOne(Post, { _id: new ObjectId(id)  });
+        const post = await con.manager.findOne(Post, { id: id  });
         
         if(post === undefined)
         {

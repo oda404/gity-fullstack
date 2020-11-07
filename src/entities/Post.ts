@@ -1,4 +1,4 @@
-import { ObjectIdColumn, Column, Entity, ObjectID, BeforeInsert } from "typeorm";
+import { Column, Entity, ObjectID, PrimaryGeneratedColumn } from "typeorm";
 import { ObjectType, Field, Int, ID } from "type-graphql";
 
 @ObjectType()
@@ -6,15 +6,15 @@ import { ObjectType, Field, Int, ID } from "type-graphql";
 export class Post
 {
     @Field(() => ID)
-    @ObjectIdColumn()
-    _id: ObjectID;
+    @PrimaryGeneratedColumn()
+    id: ObjectID;
 
     @Field(() => String)
     @Column()
     op: string;
 
     @Field(() => String)
-    @Column({ nullable: false })
+    @Column("timestamp", { default: new Date() })
     createdAt: Date;
 
     @Field(() => String)
@@ -38,13 +38,5 @@ export class Post
         this.op = _op;
         this.title = _title;
         this.content = _content;
-        this.likes = 0;
-        this.dislikes = 0;
-    }
-
-    @BeforeInsert()
-    public beforeInsertHook()
-    {
-        this.createdAt = new Date();
     }
 };

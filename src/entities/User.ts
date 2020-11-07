@@ -1,42 +1,58 @@
-import { ObjectType } from "type-graphql";
-import { BeforeInsert, Entity, ObjectIdColumn, ObjectID, Column } from "typeorm";
+import { Field, ID, ObjectType } from "type-graphql";
+import { Entity, ObjectID, Column, PrimaryGeneratedColumn } from "typeorm";
+import crypto from "crypto";
+import { __pass_hash_it__, __pass_hash_alg__, __pass_hash_len__, __pass_salt_len__ } from "../consts";
+
+export function getHashedPassword(password: string, salt: string): string
+{
+    return crypto.pbkdf2Sync(
+        String(password), /* because just _password doesn't work ??? */
+        salt, 
+        __pass_hash_it__, 
+        __pass_hash_len__, 
+        __pass_hash_alg__
+    ).toString("hex");
+}
 
 @ObjectType()
 @Entity("users")
 export class User
 {
-    @ObjectIdColumn()
-    _id: ObjectID;
-
-    @Column({ nullable: false })
+    @Field(() => ID)
+    @PrimaryGeneratedColumn()
+    id: ObjectID;
+    
+    @Field(() => String)
+    @Column("timestamp", { default: new Date() })
     createdAt: Date;
 
+    @Field(() => String)
     @Column()
-    userName: string;
+    username: string;
 
+    @Field(() => String)
     @Column()
     email: string;
+
+    @Field(() => Boolean)
+    @Column({ default: false })
+    isEmailVerified: boolean;
 
     @Column()
     hash: string;
 
     @Column()
-    salt: number;
+    salt: string;
 
-    @Column()
+    @Field(() => [ String ])
+    @Column("text", { array: true, default: "{}" })
     joinedReds: string[];
 
-    constructor(_userName: string, _email: string, _password: string)
+    constructor(_username: string, _email: string, _password: string)
     {
-        this.userName = _userName;
+        this.username = _username;
         this.email = _email;
-
-        //hash and salt
-    }
-
-    @BeforeInsert()
-    public beforeInsertHook()
-    {
-        this.createdAt = new Date();
+        this.salt = crypto.randomBytes(__pass_salt_len__).toString("base64");
+        this.hash = getHashedPassword(_password, this.salt);
     }
 };

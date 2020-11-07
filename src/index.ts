@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { __prod__, __port__ } from "./consts";
+import { __prod__, __port__, __db_pass__ } from "./consts";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -8,18 +8,19 @@ import { UserResolver } from "./resolvers/user";
 import { createConnection } from "typeorm";
 import { join } from "path"
 import { exit } from "process";
+import { ApolloContext } from "./types";
 
 async function main(): Promise<void>
 {
     const con = await createConnection({
-        type: "mongodb",
+        type: "postgres",
         host: "localhost",
-        port: 27017,
+        port: 5432,
         database: "test",
-        synchronize: true,
-        logging: false,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+        synchronize: !__prod__,
+        logging: !__prod__,
+        username: "postgres",
+        password: __db_pass__,
         entities: [
             join(__dirname, "entities/**/*.js")
         ]
@@ -42,9 +43,10 @@ async function main(): Promise<void>
             resolvers: [
                 PostResolver,
                 UserResolver
-            ]
+            ],
+            validate: false
         }),
-        context: () => ({ con: con })
+        context: (): ApolloContext => ({ con: con })
     });
 
     apolloServer.applyMiddleware({ app });
