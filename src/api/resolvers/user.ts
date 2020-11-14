@@ -1,7 +1,7 @@
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-import { User, getHashedPassword } from "../entities/User";
-import { ApolloContext } from "../types";
-import { __email_regex__, __username_regex__ } from "../consts";
+import { User } from "../entities/User";
+import { ApolloContext } from "../../types";
+import { verify } from "argon2";
 
 @InputType()
 class UserLoginInput
@@ -46,6 +46,9 @@ class UserResponse
     user?: User = undefined;
 };
 
+const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
+
 @Resolver()
 export class UserResolver
 {
@@ -57,7 +60,7 @@ export class UserResolver
     {
         const response = new UserResponse();
         /* check email validity */
-        if(!userInput.email.match(__email_regex__))
+        if(!userInput.email.match(EMAIL_REGEX))
         {
             response.errors = [{
                 field: "email",
@@ -77,7 +80,7 @@ export class UserResolver
         }
 
         // /* check username for forbidden chars */
-        if(!userInput.username.match(__username_regex__))
+        if(!userInput.username.match(USERNAME_REGEX))
         {
             response.errors = [{
                 field: "username",
@@ -97,8 +100,8 @@ export class UserResolver
         }
 
         /* check if user with same username/email exists */
-        let user = await con.manager.findOne(User, { username: userInput.username });
-        if(user !== undefined)
+        let testUser = await con.manager.findOne(User, { username: userInput.username });
+        if(testUser !== undefined)
         {
             response.errors = [{
                 field: "username",
@@ -106,9 +109,9 @@ export class UserResolver
             }];
             return response;
         }
-
-        user = await con.manager.findOne(User, { email: userInput.email });
-        if(user !== undefined)
+        
+        testUser = await con.manager.findOne(User, { email: userInput.email });
+        if(testUser !== undefined)
         {
             response.errors = [{
                 field: "email",
@@ -117,8 +120,11 @@ export class UserResolver
             return response;
         }
 
-        response.user = await con.manager.save(new User(userInput.username, userInput.email, userInput.password));
-        return response;
+        const user = new User();
+        return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
+            response.user = await con.manager.save(user);
+            return response;
+        });
     }
 
     @Query(() => UserResponse)
@@ -144,17 +150,18 @@ export class UserResolver
             }
         }
 
-        const testHash = getHashedPassword(userInput.password, user.salt);
-        if(testHash !== user.hash)
-        {
-            response.errors = [{
-                field: "password",
-                error: "Invalid password"
-            }];
-            return response;
-        }
+        return verify(user.hash, userInput.password).then(result => {
+            if(!result)
+            {
+                response.errors = [{
+                    field: "password",
+                    error: "Invalid password"
+                }];
+                return response;
+            }
 
-        response.user = user;
-        return response;
+            response.user = user;
+            return response;
+        });
     }
 };
