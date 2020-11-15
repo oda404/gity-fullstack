@@ -52,6 +52,20 @@ const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 @Resolver()
 export class UserResolver
 {
+    // debug query
+    @Query(() => User, { nullable: true })
+    async getMyself(
+        @Ctx() { con, req }: ApolloContext
+    ): Promise<User | undefined>
+    {
+        if(req.session.userId === undefined)
+        {
+            return undefined;
+        }
+
+        return con.manager.findOne(User, { id: req.session.userId });
+    }
+
     @Mutation(() => UserResponse)
     async registerUser(
         @Arg("userInput") userInput: UserRegisterInput,
@@ -130,7 +144,7 @@ export class UserResolver
     @Query(() => UserResponse)
     async loginUser(
         @Arg("userInput") userInput: UserLoginInput,
-        @Ctx() { con }: ApolloContext
+        @Ctx() { con, req }: ApolloContext
     ): Promise<UserResponse>
     {
         const response = new UserResponse();
@@ -159,6 +173,8 @@ export class UserResolver
                 }];
                 return response;
             }
+
+            req.session.userId = String(user!.id);
 
             response.user = user;
             return response;

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { __prod__, __port__, __db_pass__ } from "./consts";
+import { __prod__, __port__, __db_pass__, __session_secret__ } from "./consts";
 import { Request, Response } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -13,6 +13,10 @@ import { ApolloContext } from "./types";
 import { parse } from "url";
 import { isServiceValid } from "./service/gityService";
 import { requestHandler } from "./service/gityServer";
+import { createClient } from "redis";
+import connectRedis from "connect-redis";
+import session from "express-session";
+import { logInfo, logErr } from "./utils";
 
 let dbCon: Connection;
 
@@ -57,13 +61,24 @@ async function main(): Promise<void>
 
     if(dbCon.isConnected)
     {
-        console.log("db connection established");
+        logInfo("PostgreSQL connection established");
     }
     else
     {
-        console.error("db connection failed. aborting");
+        logErr("PostgreSQL connection failed. aborting...");
         exit();
     }
+
+    const RedisStore = connectRedis(session);
+    const redisClient = createClient();
+    
+    redisClient.on("ready", () => {
+        logInfo("Redis connection established");
+    });
+
+    redisClient.on("error", (message) => {
+        logErr(message);
+    });
 
     const app = express();
 
@@ -76,14 +91,32 @@ async function main(): Promise<void>
             validate: false
         }),
         playground: !__prod__,
-        context: (): ApolloContext => ({ con: dbCon })
+        context: ({ req, res }): ApolloContext => ({ con: dbCon, req: req, res: res })
     });
 
+    app.use(
+        session({
+            name: "ass",
+            store: new RedisStore({
+                client: redisClient,
+                disableTouch: true // doesn't renew cookie expiry date when user interacts with the session
+            }),
+            cookie: {
+                maxAge: 1000 * 60 * 60 * 24 * 7, // one week
+                httpOnly: true,
+                sameSite: "strict", // only send cookies if on the same site
+                secure: __prod__
+            },
+            secret: __session_secret__ || "secret",
+            resave: false,
+            saveUninitialized: false
+        })
+    );
     app.use(baseMiddleware);
     apolloServer.applyMiddleware({ app });
 
     app.listen(__port__, () => {
-        console.log(`server started on port ${__port__}`);
+        logInfo(`Server started on port ${__port__}`);
     });
 }
 
