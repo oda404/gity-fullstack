@@ -18,7 +18,7 @@ const Register: FC<RegisterProps> = () =>
       <Header />
       <Box
         paddingX="20px"
-        bgColor="#161616"
+        bgColor="#1a1a1a"
         paddingY="17px"
         border="2px solid inherit"
         borderRadius="10px"
@@ -36,36 +36,33 @@ const Register: FC<RegisterProps> = () =>
         >
           {({ isSubmitting }) => (
             <Form>
-              <InputField name="username" label="Username:" />
+              <InputField name="username" label="Username" />
               <Box mt={1}>
-                <InputField name="email" label="Email:" />
+                <InputField name="email" label="Email" />
               </Box>
               <Box mt={1}>
-                <InputField
-                  name="password"
-                  label="Password:"
-                  type="password"
-                />
+                <InputField name="password" label="Password" type="password" />
               </Box>
               <Box mt={1}>
-                <InputField name="invitation" label="Invitation:" />
+                <InputField name="invitation" label="Invitation" />
               </Box>
               <Button
                 mt={3}
                 bg="#5c0098"
+                color="#e9e9e9"
                 variant="solid"
                 type="submit"
-                _hover={{ bg: "#6e00b4" }}
-                _active={{ bg: "#530089" }}
+                _hover={{ bg: "#530089" }}
+                _active={{ bg: "#6e00b4" }}
                 border="none"
                 isLoading={isSubmitting}
-                maxW="340px"
-                w="340px"
-                maxH="50px"
-                h="50px"
+                maxW="380px"
+                w="380px"
+                maxH="65px"
+                h="65px"
                 fontSize="18px"
               >
-                Register
+                Sign up
               </Button>
             </Form>
           )}

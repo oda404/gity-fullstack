@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Box } from "@chakra-ui/core";
+import { Box, Flex } from "@chakra-ui/core";
 
 interface FooterProps
 {
@@ -8,13 +8,24 @@ interface FooterProps
 
 const Footer: FC<FooterProps> = () => {
   return (
-    <Box
+    <Flex
       w="100%"
       h="50px"
-      bg="#161616"
+      bg="#1a1a1a"
       pos="fixed"
       bottom="0"
-    />            
+      justifyItems="center"
+      alignItems="center"
+      padding="18px"
+      fontSize="18px"
+      fontFamily="Kanit"
+    >
+      <Box
+        marginLeft="auto"
+      >
+        Contact: ass@gmail.com
+      </Box>
+    </Flex>
   );
 };
 
