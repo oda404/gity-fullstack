@@ -1,6 +1,15 @@
+import { FC } from "react";
 
-const Index = () => (
-  <div>eat ass</div>
-)
+interface IndexProps
+{
+
+};
+
+const Index: FC<IndexProps> = () =>
+{
+  return (
+    <div>index</div>
+  );
+};
 
 export default Index
