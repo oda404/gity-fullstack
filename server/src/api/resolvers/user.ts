@@ -164,7 +164,7 @@ export class UserResolver
         });
     }
 
-    @Query(() => UserResponse)
+    @Mutation(() => UserResponse)
     async loginUser(
         @Arg("userInput") userInput: UserLoginInput,
         @Ctx() { con, req }: ApolloContext
@@ -180,7 +180,7 @@ export class UserResolver
             if(user === undefined)
             {
                 response.errors = [{
-                    field: "username or email",
+                    field: "usernameOrEmail",
                     error: "Username or email not found"
                 }];
                 return response;
