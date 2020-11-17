@@ -15,12 +15,6 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   getMyself?: Maybe<User>;
-  loginUser: UserResponse;
-};
-
-
-export type QueryLoginUserArgs = {
-  userInput: UserLoginInput;
 };
 
 export type User = {
@@ -32,6 +26,24 @@ export type User = {
   email: Scalars['String'];
   isEmailVerified: Scalars['Boolean'];
   repos: Array<Scalars['String']>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  registerUser: UserResponse;
+  loginUser: UserResponse;
+  addRepo: RepoResponse;
+  deleteRepo: Scalars['Boolean'];
+};
+
+
+export type MutationRegisterUserArgs = {
+  userInput: UserRegisterInput;
+};
+
+
+export type MutationLoginUserArgs = {
+  userInput: UserLoginInput;
 };
 
 export type UserResponse = {
@@ -46,28 +58,16 @@ export type UserFieldError = {
   error: Scalars['String'];
 };
 
-export type UserLoginInput = {
-  usernameOrEmail: Scalars['String'];
-  password: Scalars['String'];
-};
-
-export type Mutation = {
-  __typename?: 'Mutation';
-  registerUser: UserResponse;
-  addRepo: RepoResponse;
-  deleteRepo: Scalars['Boolean'];
-};
-
-
-export type MutationRegisterUserArgs = {
-  userInput: UserRegisterInput;
-};
-
 export type UserRegisterInput = {
   username: Scalars['String'];
   email: Scalars['String'];
   password: Scalars['String'];
   invitation: Scalars['String'];
+};
+
+export type UserLoginInput = {
+  usernameOrEmail: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type RepoResponse = {
@@ -88,6 +88,26 @@ export type Repo = {
   commits: Scalars['Int'];
   likes: Scalars['Int'];
 };
+
+export type LoginUserMutationVariables = Exact<{
+  usernameOrEmail: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type LoginUserMutation = (
+  { __typename?: 'Mutation' }
+  & { loginUser: (
+    { __typename?: 'UserResponse' }
+    & { errors?: Maybe<Array<(
+      { __typename?: 'UserFieldError' }
+      & Pick<UserFieldError, 'field' | 'error'>
+    )>>, user?: Maybe<(
+      { __typename?: 'User' }
+      & Pick<User, 'id'>
+    )> }
+  ) }
+);
 
 export type RegisterUserMutationVariables = Exact<{
   username: Scalars['String'];
@@ -112,6 +132,23 @@ export type RegisterUserMutation = (
 );
 
 
+export const LoginUserDocument = gql`
+    mutation LoginUser($usernameOrEmail: String!, $password: String!) {
+  loginUser(userInput: {usernameOrEmail: $usernameOrEmail, password: $password}) {
+    errors {
+      field
+      error
+    }
+    user {
+      id
+    }
+  }
+}
+    `;
+
+export function useLoginUserMutation() {
+  return Urql.useMutation<LoginUserMutation, LoginUserMutationVariables>(LoginUserDocument);
+};
 export const RegisterUserDocument = gql`
     mutation RegisterUser($username: String!, $email: String!, $password: String!, $invitation: String!) {
   registerUser(
