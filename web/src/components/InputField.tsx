@@ -21,14 +21,13 @@ const InputField: FC<InputFieldProps> = ({ label, size: _, ...props}) => {
         {...props}
         id={field.name}
         name={field.name}
-        pos="relative"
         maxW="380px"
         w="380px"
         maxH="50px"
         h="50px"
         fontSize="15px"
       />
-      { error ? <FormErrorMessage>{error}</FormErrorMessage> : null }
+      <FormErrorMessage>{error}</FormErrorMessage>
     </FormControl>
   );
 }

@@ -64,11 +64,9 @@ const Register: FC<RegisterProps> = () =>
                 mt={3}
                 bg="#5c0098"
                 color="#e9e9e9"
-                variant="solid"
                 type="submit"
                 _hover={{ bg: "#530089" }}
                 _active={{ bg: "#6e00b4" }}
-                border="none"
                 isLoading={isSubmitting}
                 maxW="380px"
                 w="380px"

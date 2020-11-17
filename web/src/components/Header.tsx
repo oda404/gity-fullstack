@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Flex, Button, Box } from "@chakra-ui/core";
-import { useRouter } from "next/router";
+import { Flex, Box, Link } from "@chakra-ui/core";
+import NextLink from "next/link";
 
 interface HeaderProps
 {
@@ -8,13 +8,6 @@ interface HeaderProps
 };
 
 const Header: FC<HeaderProps> = (props) => {
-  const router = useRouter();
-
-  function handleClick()
-  {
-    router.push(`/${props.button}`);
-  }
-
   return (
     <Flex
       w="100%"
@@ -24,25 +17,29 @@ const Header: FC<HeaderProps> = (props) => {
       top="0"
       left="0"
       padding="18px"
-      justifyItems="center"
       alignItems="center"
       fontSize="32px"
       fontFamily="Kanit"
     >
       <Box>Gity</Box>
-      <Button
-        color="#e9e9e9"
-        bg="#212121"
-        border="1px solid #4c4c4c"
-        h="34px"
-        fontSize="17px"
-        _hover={{ bg: "#191919", color: "#d2d2d2" }}
-        _active={{ bg: "#530089" }}
-        marginLeft="auto"
-        onClick={ handleClick }
-      >
-        {props.button === "login" ? "Login" : "Sign up"}
-      </Button>
+      <NextLink href={`/${props.button}`}>
+        <Link
+          color="#e9e9e9"
+          bg="#212121"
+          border="1px solid #4c4c4c"
+          borderRadius="5px"
+          h="34px"
+          display="flex"
+          alignItems="center"
+          padding="10px"
+          fontSize="17px"
+          _hover={{ bg: "#191919", color: "#d2d2d2" }}
+          _active={{ bg: "#530089" }}
+          marginLeft="auto"
+        >
+          {props.button === "login" ? "Login" : "Sign up"}
+        </Link>
+      </NextLink>
     </Flex>
   );
 };
