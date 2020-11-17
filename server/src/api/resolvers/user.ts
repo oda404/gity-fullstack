@@ -24,6 +24,9 @@ class UserRegisterInput
 
     @Field()
     password: string;
+
+    @Field()
+    invitation: string;
 };
 
 @ObjectType()

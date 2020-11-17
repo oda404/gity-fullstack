@@ -17,6 +17,7 @@ import { createClient } from "redis";
 import connectRedis from "connect-redis";
 import session from "express-session";
 import { logInfo, logErr } from "./utils";
+import cors from "cors";
 
 let dbCon: Connection;
 
@@ -95,6 +96,12 @@ async function main(): Promise<void>
     });
 
     app.use(
+        cors({
+            origin: "http://localhost:3000",
+            credentials: true
+        }
+    ));
+    app.use(
         session({
             name: "ass",
             store: new RedisStore({
@@ -113,7 +120,7 @@ async function main(): Promise<void>
         })
     );
     app.use(baseMiddleware);
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(__port__, () => {
         logInfo(`Server started on port ${__port__}`);
