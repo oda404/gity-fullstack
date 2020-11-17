@@ -49,6 +49,16 @@ class UserResponse
     user?: User = undefined;
 };
 
+function isInvitationValid(invitation: string): boolean
+{
+    if(invitation === "")
+    {
+        return false;
+    }
+
+    return true;
+};
+
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 
@@ -76,15 +86,6 @@ export class UserResolver
     ): Promise<UserResponse>
     {
         const response = new UserResponse();
-        /* check email validity */
-        if(!userInput.email.match(EMAIL_REGEX))
-        {
-            response.errors = [{
-                field: "email",
-                error: "Invalid email"
-            }];
-            return response;
-        }
 
         /* check username length */
         if(userInput.username.length < 3)
@@ -106,12 +107,31 @@ export class UserResolver
             return response;
         }
 
+        /* check email validity */
+        if(!userInput.email.match(EMAIL_REGEX))
+        {
+            response.errors = [{
+                field: "email",
+                error: "Invalid email"
+            }];
+            return response;
+        }
+
         /* check password length */
         if(userInput.password.length < 8)
         {
             response.errors = [{
                 field: "password",
                 error: "Password can't be shorter than 8 characters"
+            }];
+            return response;
+        }
+
+        if(!isInvitationValid(userInput.invitation))
+        {
+            response.errors = [{
+                field: "invitation",
+                error: "Bad invitation"
             }];
             return response;
         }
