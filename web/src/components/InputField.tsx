@@ -16,10 +16,11 @@ const InputField: FC<InputFieldProps> = ({ label, size: _, ...props}) => {
         color="#e9e9e9"
         borderColor="#4c4c4c"
         borderRadius="8px"
-        borderWidth="1px"                
+        borderWidth="1px"
         {...field}
         {...props}
         id={field.name}
+        name={field.name}
         pos="relative"
         maxW="380px"
         w="380px"

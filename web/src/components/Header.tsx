@@ -1,12 +1,20 @@
 import { FC } from "react";
 import { Flex, Button, Box } from "@chakra-ui/core";
+import { useRouter } from "next/router";
 
 interface HeaderProps
 {
-
+  button: "login"|"register"
 };
 
-const Header: FC<HeaderProps> = () => {
+const Header: FC<HeaderProps> = (props) => {
+  const router = useRouter();
+
+  function handleClick()
+  {
+    router.push(`/${props.button}`);
+  }
+
   return (
     <Flex
       w="100%"
@@ -31,8 +39,9 @@ const Header: FC<HeaderProps> = () => {
         _hover={{ bg: "#191919", color: "#d2d2d2" }}
         _active={{ bg: "#530089" }}
         marginLeft="auto"
+        onClick={ handleClick }
       >
-        Login
+        {props.button === "login" ? "Login" : "Sign up"}
       </Button>
     </Flex>
   );

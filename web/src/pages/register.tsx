@@ -5,6 +5,9 @@ import { Box, Button } from "@chakra-ui/core";
 import Container from "../components/Container";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { useRegisterUserMutation } from "../generated/graphql";
+import { toErrorMap } from "../utils/toErrorMap";
+import { useRouter } from "next/router"
 
 interface RegisterProps
 {
@@ -13,9 +16,12 @@ interface RegisterProps
 
 const Register: FC<RegisterProps> = () =>
 {
+  const [, registerUser] = useRegisterUserMutation();
+  const router = useRouter();
+
   return (
     <Container>
-      <Header />
+      <Header button="login"/>
       <Box
         paddingX="20px"
         bgColor="#1a1a1a"
@@ -28,17 +34,25 @@ const Register: FC<RegisterProps> = () =>
             username: "",
             email: "",
             password: "",
-            invitation: "",
+            invitation: ""
           }}
-          onSubmit={(values) => {
-            console.log(values);
+          onSubmit={async (values, { setErrors }) => {
+            const response = await registerUser(values);
+            if(response.data?.registerUser.errors)
+            {
+              setErrors(toErrorMap(response.data.registerUser.errors));
+            }
+            else if(response.data?.registerUser.user)
+            {
+              router.push("/login");
+            }
           }}
         >
           {({ isSubmitting }) => (
             <Form>
               <InputField name="username" label="Username" />
               <Box mt={1}>
-                <InputField name="email" label="Email" />
+                <InputField name="email" label="Email" type="email" />
               </Box>
               <Box mt={1}>
                 <InputField name="password" label="Password" type="password" />
