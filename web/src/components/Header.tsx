@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Flex, Box } from "@chakra-ui/core";
-import { useSelfQuery } from "../generated/graphql";
+import { Flex, Box, Button } from "@chakra-ui/core";
+import { useLogoutUserMutation, useSelfQuery } from "../generated/graphql";
 import LinkButton from "./LinkButton";
 
 interface HeaderProps
@@ -10,6 +10,7 @@ interface HeaderProps
 
 const Header: FC<HeaderProps> = (props) => {
   const [{ data, fetching }] = useSelfQuery();
+  const [, logoutUser] = useLogoutUserMutation()
   let body = null;
 
   if(!fetching)
@@ -21,9 +22,25 @@ const Header: FC<HeaderProps> = (props) => {
           <LinkButton hasBox={false} link="/">
             {data.self.username}
             </LinkButton>
-          <LinkButton hasBox link="/">
-            Logout
-          </LinkButton>
+          <Button
+            color="#e9e9e9"
+            bg="#212121"
+            border="1px solid #4c4c4c"
+            borderRadius="5px"
+            h="34px"
+            display="flex"
+            alignItems="center"
+            padding="10px"
+            fontSize="17px"
+            _hover={{ bg: "#191919", color: "#d2d2d2" }}
+            _active={{ bg: "#530089" }}
+            onClick={ async () => {
+              await logoutUser();
+              window.location.reload();
+            }}
+          >
+            Log out
+          </Button>
         </>
       );
     }

@@ -1,5 +1,5 @@
 import { cacheExchange, QueryInput, Cache } from '@urql/exchange-graphcache';
-import { SelfDocument, SelfQuery, LoginUserMutation } from '../generated/graphql';
+import { SelfDocument, SelfQuery, LoginUserMutation, LogoutUserMutation } from '../generated/graphql';
 
 function typesafeUpdateQuery<Result, Query>(
     cache: Cache,
@@ -20,7 +20,6 @@ const ccache = cacheExchange({
                     { query: SelfDocument }, 
                     result, 
                     (res, query) => {
-                        console.log("ass");
                         if(res.loginUser.errors)
                         {
                             return query;
@@ -30,6 +29,19 @@ const ccache = cacheExchange({
                             return {
                                 self: res.loginUser.user
                             }
+                        }
+                    }
+                );
+            },
+
+            logoutUser: (result, _, cache, __) => {
+                typesafeUpdateQuery<LogoutUserMutation, SelfQuery>(
+                    cache, 
+                    { query: SelfDocument }, 
+                    result, 
+                    (_, __) => {
+                        return {
+                            self: null
                         }
                     }
                 );
