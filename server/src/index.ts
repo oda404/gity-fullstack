@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { __prod__, __port__, __db_pass__, __session_secret__ } from "./consts";
+import { __prod__, __port__, __db_pass__, __session_secret__, AUTH_COOKIE_NAME } from "./consts";
 import { Request, Response } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -104,7 +104,7 @@ async function main(): Promise<void>
     ));
     app.use(
         session({
-            name: "ass",
+            name: AUTH_COOKIE_NAME,
             store: new RedisStore({
                 client: redisClient,
                 disableTouch: true // doesn't renew cookie expiry date when user interacts with the session
