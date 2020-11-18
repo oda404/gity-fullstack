@@ -2,6 +2,7 @@ import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } fro
 import { User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { verify } from "argon2";
+import { AUTH_COOKIE_NAME } from "../../consts";
 
 @InputType()
 class UserLoginInput
@@ -201,6 +202,27 @@ export class UserResolver
 
             response.user = user;
             return response;
+        });
+    }
+
+    @Mutation(() => Boolean)
+    async logoutUser(
+        @Ctx() { req, res }: ApolloContext
+    )
+    {
+        if(req.session.userId === undefined)
+        {
+            return false;
+        }
+
+        res.clearCookie(AUTH_COOKIE_NAME);
+        return req.session.destroy((err) => {
+            if(err)
+            {
+                return false;
+            }
+
+            return true;
         });
     }
 };
