@@ -43,6 +43,11 @@ function handleResponse(req: Request, res: Response, repoPath: string, service: 
             }
         });
     }
+    else
+    {
+        res.status(401);
+        res.end();
+    }
 }
 
 export function requestHandler(req: Request, res: Response, service: string, dbCon: Connection): void
