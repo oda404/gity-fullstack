@@ -1,13 +1,42 @@
 import { FC } from "react";
-import { Flex, Box, Link } from "@chakra-ui/core";
-import NextLink from "next/link";
+import { Flex, Box } from "@chakra-ui/core";
+import { useSelfQuery } from "../generated/graphql";
+import LinkButton from "./LinkButton";
 
 interface HeaderProps
 {
-  button: "login"|"register"
+  content: "login"|"register"
 };
 
 const Header: FC<HeaderProps> = (props) => {
+  const [{ data, fetching }] = useSelfQuery();
+  let body = null;
+
+  if(!fetching)
+  {
+    if(data?.self)
+    {
+      body = (
+        <>
+          <LinkButton hasBox={false} link="/">
+            {data.self.username}
+            </LinkButton>
+          <LinkButton hasBox link="/">
+            Logout
+          </LinkButton>
+        </>
+      );
+    }
+    else
+    {
+      body = (
+        <LinkButton hasBox link={`/${props.content}`}>
+          {props.content === "login" ? "Login" : "Sign up"}
+        </LinkButton>
+      );
+    }
+  }
+
   return (
     <Flex
       w="100%"
@@ -21,25 +50,8 @@ const Header: FC<HeaderProps> = (props) => {
       fontSize="32px"
       fontFamily="Kanit"
     >
-      <Box>Gity</Box>
-      <NextLink href={`/${props.button}`}>
-        <Link
-          color="#e9e9e9"
-          bg="#212121"
-          border="1px solid #4c4c4c"
-          borderRadius="5px"
-          h="34px"
-          display="flex"
-          alignItems="center"
-          padding="10px"
-          fontSize="17px"
-          _hover={{ bg: "#191919", color: "#d2d2d2" }}
-          _active={{ bg: "#530089" }}
-          marginLeft="auto"
-        >
-          {props.button === "login" ? "Login" : "Sign up"}
-        </Link>
-      </NextLink>
+      <Box mr="auto">Gity</Box>
+      {body}
     </Flex>
   );
 };

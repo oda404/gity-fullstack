@@ -18,7 +18,7 @@ mutation RegisterUser(
     }
     
     user{
-      id
+      ...GenericUser
     }
   }
 }

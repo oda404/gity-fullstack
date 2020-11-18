@@ -17,7 +17,7 @@ const UserForm: FC<UserFormProps> = (props) =>
   const [, loginUser] = useLoginUserMutation();
   const router = useRouter();
 
-  const registerForm = (
+  const form = (props.type === "register") ? (
     <Formik
       initialValues={{
         username: "",
@@ -68,9 +68,9 @@ const UserForm: FC<UserFormProps> = (props) =>
         </Form>
       )}
     </Formik>
-  );
-
-  const loginForm = (
+  )
+  :
+  (
     <Formik
       initialValues={{
         usernameOrEmail: "",
@@ -113,7 +113,7 @@ const UserForm: FC<UserFormProps> = (props) =>
         </Form>
       )}
     </Formik>
-  );
+  )
 
   return (
     <Box
@@ -123,7 +123,7 @@ const UserForm: FC<UserFormProps> = (props) =>
       border="2px solid inherit"
       borderRadius="10px"
     >
-      { props.type === "register" ? registerForm : loginForm }
+      {form}
     </Box>
   );
 }

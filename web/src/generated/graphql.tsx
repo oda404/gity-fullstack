@@ -14,7 +14,7 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  getMyself?: Maybe<User>;
+  self?: Maybe<User>;
 };
 
 export type User = {
@@ -89,6 +89,11 @@ export type Repo = {
   likes: Scalars['Int'];
 };
 
+export type GenericUserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, 'id' | 'username'>
+);
+
 export type LoginUserMutationVariables = Exact<{
   usernameOrEmail: Scalars['String'];
   password: Scalars['String'];
@@ -104,7 +109,7 @@ export type LoginUserMutation = (
       & Pick<UserFieldError, 'field' | 'error'>
     )>>, user?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, 'id'>
+      & GenericUserFragment
     )> }
   ) }
 );
@@ -126,12 +131,28 @@ export type RegisterUserMutation = (
       & Pick<UserFieldError, 'field' | 'error'>
     )>>, user?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, 'id'>
+      & GenericUserFragment
     )> }
   ) }
 );
 
+export type SelfQueryVariables = Exact<{ [key: string]: never; }>;
 
+
+export type SelfQuery = (
+  { __typename?: 'Query' }
+  & { self?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  )> }
+);
+
+export const GenericUserFragmentDoc = gql`
+    fragment GenericUser on User {
+  id
+  username
+}
+    `;
 export const LoginUserDocument = gql`
     mutation LoginUser($usernameOrEmail: String!, $password: String!) {
   loginUser(userInput: {usernameOrEmail: $usernameOrEmail, password: $password}) {
@@ -140,11 +161,11 @@ export const LoginUserDocument = gql`
       error
     }
     user {
-      id
+      ...GenericUser
     }
   }
 }
-    `;
+    ${GenericUserFragmentDoc}`;
 
 export function useLoginUserMutation() {
   return Urql.useMutation<LoginUserMutation, LoginUserMutationVariables>(LoginUserDocument);
@@ -159,12 +180,24 @@ export const RegisterUserDocument = gql`
       error
     }
     user {
-      id
+      ...GenericUser
     }
+  }
+}
+    ${GenericUserFragmentDoc}`;
+
+export function useRegisterUserMutation() {
+  return Urql.useMutation<RegisterUserMutation, RegisterUserMutationVariables>(RegisterUserDocument);
+};
+export const SelfDocument = gql`
+    query Self {
+  self {
+    id
+    username
   }
 }
     `;
 
-export function useRegisterUserMutation() {
-  return Urql.useMutation<RegisterUserMutation, RegisterUserMutationVariables>(RegisterUserDocument);
+export function useSelfQuery(options: Omit<Urql.UseQueryArgs<SelfQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<SelfQuery>({ query: SelfDocument, ...options });
 };
