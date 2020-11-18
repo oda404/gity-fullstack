@@ -143,7 +143,7 @@ export type SelfQuery = (
   { __typename?: 'Query' }
   & { self?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, 'id' | 'username'>
+    & GenericUserFragment
   )> }
 );
 
@@ -192,11 +192,10 @@ export function useRegisterUserMutation() {
 export const SelfDocument = gql`
     query Self {
   self {
-    id
-    username
+    ...GenericUser
   }
 }
-    `;
+    ${GenericUserFragmentDoc}`;
 
 export function useSelfQuery(options: Omit<Urql.UseQueryArgs<SelfQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<SelfQuery>({ query: SelfDocument, ...options });

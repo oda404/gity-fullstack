@@ -1,6 +1,5 @@
 query Self{
   self{
-    id
-    username
+    ...GenericUser
   }
 }
