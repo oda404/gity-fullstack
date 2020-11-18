@@ -67,7 +67,7 @@ export class UserResolver
 {
     // debug query
     @Query(() => User, { nullable: true })
-    async getMyself(
+    async self(
         @Ctx() { con, req }: ApolloContext
     ): Promise<User | undefined>
     {
