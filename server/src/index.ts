@@ -95,6 +95,7 @@ async function main(): Promise<void>
         context: ({ req, res }): ApolloContext => ({ con: dbCon, req: req, res: res })
     });
 
+    app.use(baseMiddleware);
     app.use(
         cors({
             origin: "http://localhost:3000",
@@ -119,7 +120,6 @@ async function main(): Promise<void>
             saveUninitialized: false
         })
     );
-    app.use(baseMiddleware);
     apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(__port__, () => {
