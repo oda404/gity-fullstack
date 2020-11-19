@@ -16,7 +16,7 @@ const LinkButton: FunctionComponent<LinkButtonProps> = (props) =>
       display="flex"
       alignItems="center"
       padding="10px"
-      fontSize="17px"
+      fontSize="15px"
       bg="#212121"
       border="1px solid #4c4c4c"
       borderRadius="5px"

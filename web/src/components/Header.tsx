@@ -1,7 +1,8 @@
 import { FC, useState } from "react";
-import { Flex, Box, Button } from "@chakra-ui/core";
-import { useSelfQuery } from "../generated/graphql";
+import { Flex, Box } from "@chakra-ui/core";
+import { useLogoutUserMutation, useSelfQuery } from "../generated/graphql";
 import LinkButton from "./LinkButton";
+import TextButton from "./TextButton";
 
 interface HeaderProps
 {
@@ -10,7 +11,7 @@ interface HeaderProps
 
 const Header: FC<HeaderProps> = (props) => {
   const [{ data, fetching }] = useSelfQuery();
-  //const [, logoutUser] = useLogoutUserMutation();
+  const [, logoutUser] = useLogoutUserMutation();
   const [dropDownUserShown, setDropDownState] = useState(false);
 
   let navbarContent = null;
@@ -21,31 +22,45 @@ const Header: FC<HeaderProps> = (props) => {
     {
       navbarContent = (
         <>
-          <Button
-            color="#e9e9e9"
-            bg="none"
-            h="34px"
-            display="flex"
-            alignItems="center"
-            padding="10px"
-            fontSize="17px"
-            _hover={{ bg: "none", color: "#d2d2d2" }}
-            _active={{ color: "#e2e2e2"  }}
-            _focus={{ border: "none", color: "#e2e2e2"}}
+          <Box
+            h="100%"
+            w="1px"
+            bg="#3b3737"
+            mr="4px"
+          />
+          <TextButton
+            mr="unset"
+            ml="unset"
             onClick={ () => {
               setDropDownState(!dropDownUserShown);
-              //await logoutUser();
-              //window.location.reload();
             }}
           >
             {data.self.username}
-          </Button>
-          <Box id="transparent-overlay" display={dropDownUserShown ? "block" : "none"}
-            onClick={() => {
-              setDropDownState(false);
-            }}
-          />
-          <Box id="user-dropdown" display={dropDownUserShown ? "block" : "none"}/>
+          </TextButton>
+          { dropDownUserShown ? (
+            <>
+              <Box id="transparent-overlay" display="block"
+                onClick={() => {
+                  setDropDownState(false);
+                }}
+              />
+              <Box id="user-dropdown">
+                <TextButton mr="auto" ml="auto" onClick={
+                  () => {
+
+                  }
+                }>View profile</TextButton>
+                <Box id="user-dropdown-divider"/>
+                <Box mt="auto" id="user-dropdown-divider"/>
+                <TextButton mr="auto" ml="auto" onClick={
+                  async () => {
+                    await logoutUser();
+                    window.location.reload();
+                  }
+                }>Log out</TextButton>
+              </Box>
+            </>
+          ): null }
         </>
       );
     }
