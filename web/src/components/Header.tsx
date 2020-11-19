@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Flex, Box, Button } from "@chakra-ui/core";
 import { useLogoutUserMutation, useSelfQuery } from "../generated/graphql";
 import LinkButton from "./LinkButton";
@@ -10,7 +10,8 @@ interface HeaderProps
 
 const Header: FC<HeaderProps> = (props) => {
   const [{ data, fetching }] = useSelfQuery();
-  const [, logoutUser] = useLogoutUserMutation()
+  const [, logoutUser] = useLogoutUserMutation();
+  const [dropDownUserShown, setDropDownState] = useState(false);
   let body = null;
 
   if(!fetching)
@@ -19,28 +20,50 @@ const Header: FC<HeaderProps> = (props) => {
     {
       body = (
         <>
-          <LinkButton hasBox={false} link="/">
-            {data.self.username}
-          </LinkButton>
           <Button
             color="#e9e9e9"
-            bg="#212121"
-            border="1px solid #4c4c4c"
-            borderRadius="5px"
+            bg="none"
             h="34px"
             display="flex"
             alignItems="center"
             padding="10px"
             fontSize="17px"
-            _hover={{ bg: "#191919", color: "#d2d2d2" }}
-            _active={{ bg: "#1a1a1a" }}
-            onClick={ async () => {
-              await logoutUser();
-              window.location.reload();
+            _hover={{ bg: "none", color: "#d2d2d2" }}
+            _active={{ color: "#e2e2e2"  }}
+            _focus={{ border: "none", color: "#e2e2e2"}}
+            onClick={ () => {
+              setDropDownState(!dropDownUserShown);
+              //await logoutUser();
+              //window.location.reload();
             }}
           >
-            Log out
+            {data.self.username}
           </Button>
+          <Box
+            display={dropDownUserShown ? "block" : "none"}
+            pos="fixed"
+            h="100%"
+            w="100%"
+            top="0"
+            left="0"
+            zIndex="1"
+            onClick={() => {
+              setDropDownState(false);
+            }}
+          />
+          <Box
+            display={dropDownUserShown ? "block" : "none"}
+            pos="absolute"
+            w="160px"
+            h="350px"
+            top="85%"
+            right="30px"
+            bg="#212121"
+            border="1px solid #000000"
+            borderRadius="8px"
+            zIndex="998"
+            boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
+            />
         </>
       );
     }
