@@ -4,7 +4,7 @@
    "description": "",
    "main": "index.js",
    "scripts": {
-      "start-dev": "yarn start-psql-cont && yarn start-redis-cont && nodemon --ext ts --exec npm run tcstart ./src/",
+      "dev": "yarn start-psql-cont && yarn start-redis-cont && nodemon --ext ts --exec npm run tcstart ./src/",
       "tcstart": "tsc && node dist/index.js || exit 1",
       "start": "node dist/index.js",
       "start-psql-cont": "sudo docker container start postgres-devel",
