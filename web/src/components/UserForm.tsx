@@ -1,6 +1,6 @@
 import { Formik, Form } from "formik";
 import InputField from "../components/InputField";
-import { Box, Button } from "@chakra-ui/core";
+import { Box, Button, Link } from "@chakra-ui/core";
 import { FC } from "react";
 import { useRouter } from "next/router";
 import { useLoginUserMutation, useRegisterUserMutation } from "../generated/graphql";
@@ -57,10 +57,10 @@ const UserForm: FC<UserFormProps> = (props) =>
             _hover={{ bg: "#530089" }}
             _active={{ bg: "#6e00b4" }}
             isLoading={isSubmitting}
-            maxW="380px"
-            w="380px"
-            maxH="65px"
-            h="65px"
+            maxW="400px"
+            w="400px"
+            maxH="70px"
+            h="70px"
             fontSize="18px"
           >
             Sign up
@@ -102,10 +102,10 @@ const UserForm: FC<UserFormProps> = (props) =>
             _hover={{ bg: "#530089" }}
             _active={{ bg: "#6e00b4" }}
             isLoading={isSubmitting}
-            maxW="380px"
-            w="380px"
-            maxH="65px"
-            h="65px"
+            maxW="400px"
+            w="400px"
+            maxH="70px"
+            h="70px"
             fontSize="18px"
           >
             Log in
@@ -122,8 +122,15 @@ const UserForm: FC<UserFormProps> = (props) =>
       paddingY="17px"
       border="2px solid inherit"
       borderRadius="10px"
+      alignSelf="center"
+      ml="auto"
+      mr="auto"
     >
       {form}
+      {props.type === "register" ? <Box mt="13px" fontSize="12px">
+        By signing up for Gity, you agree to our <Link href="/tos" color="#12a0d3" variant="link">Terms of service</Link>
+        .
+      </Box> : null}
     </Box>
   );
 }

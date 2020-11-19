@@ -31,7 +31,7 @@ const LinkButton: FunctionComponent<LinkButtonProps> = (props) =>
             padding="10px"
             fontSize="17px"
             _hover={{ bg: "#191919", color: "#d2d2d2" }}
-            _active={{ bg: "#530089" }}
+            _active={{ bg: "#1a1a1a" }}
             {...props}
         />
     );

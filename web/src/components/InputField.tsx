@@ -11,7 +11,7 @@ const InputField: FC<InputFieldProps> = ({ label, size: _, ...props}) => {
   const [field, { error }] = useField(props);
   return (
     <FormControl isInvalid={!!error}>
-      <FormLabel color="#e9e9e9" fontFamily="Kanit" fontSize="17px" htmlFor={field.name}>{label}</FormLabel>
+      <FormLabel color="#dfdfdf" fontFamily="Kanit" fontSize="17.3px" htmlFor={field.name}>{label}</FormLabel>
       <Input
         color="#e9e9e9"
         borderColor="#4c4c4c"
@@ -21,11 +21,11 @@ const InputField: FC<InputFieldProps> = ({ label, size: _, ...props}) => {
         {...props}
         id={field.name}
         name={field.name}
-        maxW="380px"
-        w="380px"
-        maxH="50px"
-        h="50px"
-        fontSize="15px"
+        maxW="400px"
+        w="400px"
+        maxH="58px"
+        h="58px"
+        fontSize="17px"
       />
       <FormErrorMessage>{error}</FormErrorMessage>
     </FormControl>

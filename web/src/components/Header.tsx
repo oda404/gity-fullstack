@@ -5,7 +5,7 @@ import LinkButton from "./LinkButton";
 
 interface HeaderProps
 {
-  content: "login"|"register"
+  content: "login"|"register"|"full"
 };
 
 const Header: FC<HeaderProps> = (props) => {
@@ -21,7 +21,7 @@ const Header: FC<HeaderProps> = (props) => {
         <>
           <LinkButton hasBox={false} link="/">
             {data.self.username}
-            </LinkButton>
+          </LinkButton>
           <Button
             color="#e9e9e9"
             bg="#212121"
@@ -33,7 +33,7 @@ const Header: FC<HeaderProps> = (props) => {
             padding="10px"
             fontSize="17px"
             _hover={{ bg: "#191919", color: "#d2d2d2" }}
-            _active={{ bg: "#530089" }}
+            _active={{ bg: "#1a1a1a" }}
             onClick={ async () => {
               await logoutUser();
               window.location.reload();
@@ -46,30 +46,58 @@ const Header: FC<HeaderProps> = (props) => {
     }
     else
     {
-      body = (
-        <LinkButton hasBox link={`/${props.content}`}>
-          {props.content === "login" ? "Login" : "Sign up"}
-        </LinkButton>
-      );
+      if(props.content == "full")
+      {
+        body = (
+          <>
+            <LinkButton hasBox link="/login">
+              Login
+            </LinkButton>
+            <Box mr="10px"/>
+            <LinkButton hasBox link="/register">
+              Sign up
+            </LinkButton>
+          </>
+        );
+      }
+      else
+      {
+        body = (
+          <LinkButton hasBox link={`/${props.content}`}>
+            {props.content === "login" ? "Login" : "Sign up"}
+          </LinkButton>
+        );
+      }
     }
   }
 
   return (
-    <Flex
-      w="100%"
-      h="55px"
-      bg="#1a1a1a"
-      pos="fixed"
-      top="0"
-      left="0"
-      padding="18px"
-      alignItems="center"
-      fontSize="32px"
-      fontFamily="Kanit"
-    >
-      <Box mr="auto">Gity</Box>
-      {body}
-    </Flex>
+    <>
+      <Flex
+        w="100%"
+        h="55px"
+        bg="#1a1a1a"
+        pos="fixed"
+        top="0"
+        left="0"
+        padding="18px"
+        alignItems="center"
+        fontSize="32px"
+        fontFamily="Kanit"
+        zIndex="999"
+      >
+        <Box mr="auto">Gity</Box>
+        {body}
+      </Flex>
+      <Box
+        pos="fixed"
+        top="55px"
+        left="0"
+        w="100%"
+        h="1px"
+        bg="#312e2e"
+      />
+    </>
   );
 };
 

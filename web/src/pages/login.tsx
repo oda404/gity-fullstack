@@ -33,7 +33,7 @@ const Login: FC<LoginProps> = () =>
   return (
     <Container>
       <Header content="register"/>
-        {body}
+      {body}
       <Footer/>
     </Container>
   );

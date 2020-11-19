@@ -9,8 +9,6 @@ interface ContainerProps
 const Container: FC<ContainerProps> = (props) => {
   return (
     <Flex
-      alignItems="center"
-      justifyContent="center"
       bgColor="#212121"
       color="white"
       pos="fixed"
