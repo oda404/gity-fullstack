@@ -13,7 +13,7 @@ const Index: FC<IndexProps> = () =>
 {
   return (
     <Container>
-      <Header content="full"/>
+      <Header type="full"/>
       <Box mr="auto" ml="auto" alignSelf="center">
         Welcome to Gity
       </Box>

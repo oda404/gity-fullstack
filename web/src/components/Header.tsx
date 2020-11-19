@@ -1,24 +1,25 @@
 import { FC, useState } from "react";
 import { Flex, Box, Button } from "@chakra-ui/core";
-import { useLogoutUserMutation, useSelfQuery } from "../generated/graphql";
+import { useSelfQuery } from "../generated/graphql";
 import LinkButton from "./LinkButton";
 
 interface HeaderProps
 {
-  content: "login"|"register"|"full"
+  type: "login"|"register"|"full"
 };
 
 const Header: FC<HeaderProps> = (props) => {
   const [{ data, fetching }] = useSelfQuery();
-  const [, logoutUser] = useLogoutUserMutation();
+  //const [, logoutUser] = useLogoutUserMutation();
   const [dropDownUserShown, setDropDownState] = useState(false);
-  let body = null;
+
+  let navbarContent = null;
 
   if(!fetching)
   {
     if(data?.self)
     {
-      body = (
+      navbarContent = (
         <>
           <Button
             color="#e9e9e9"
@@ -39,45 +40,26 @@ const Header: FC<HeaderProps> = (props) => {
           >
             {data.self.username}
           </Button>
-          <Box
-            display={dropDownUserShown ? "block" : "none"}
-            pos="fixed"
-            h="100%"
-            w="100%"
-            top="0"
-            left="0"
-            zIndex="1"
+          <Box id="transparent-overlay" display={dropDownUserShown ? "block" : "none"}
             onClick={() => {
               setDropDownState(false);
             }}
           />
-          <Box
-            display={dropDownUserShown ? "block" : "none"}
-            pos="absolute"
-            w="160px"
-            h="350px"
-            top="85%"
-            right="30px"
-            bg="#212121"
-            border="1px solid #000000"
-            borderRadius="8px"
-            zIndex="998"
-            boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
-            />
+          <Box id="user-dropdown" display={dropDownUserShown ? "block" : "none"}/>
         </>
       );
     }
     else
     {
-      if(props.content == "full")
+      if(props.type == "full")
       {
-        body = (
+        navbarContent = (
           <>
-            <LinkButton hasBox link="/login">
+            <LinkButton link="/login">
               Login
             </LinkButton>
             <Box mr="10px"/>
-            <LinkButton hasBox link="/register">
+            <LinkButton link="/register">
               Sign up
             </LinkButton>
           </>
@@ -85,9 +67,9 @@ const Header: FC<HeaderProps> = (props) => {
       }
       else
       {
-        body = (
-          <LinkButton hasBox link={`/${props.content}`}>
-            {props.content === "login" ? "Login" : "Sign up"}
+        navbarContent = (
+          <LinkButton link={`/${props.type === "register" ? "login" : "register"}`}>
+            {props.type === "register" ? "Login" : "Sign up"}
           </LinkButton>
         );
       }
@@ -96,30 +78,11 @@ const Header: FC<HeaderProps> = (props) => {
 
   return (
     <>
-      <Flex
-        w="100%"
-        h="55px"
-        bg="#1a1a1a"
-        pos="fixed"
-        top="0"
-        left="0"
-        padding="18px"
-        alignItems="center"
-        fontSize="32px"
-        fontFamily="Kanit"
-        zIndex="999"
-      >
-        <Box mr="auto">Gity</Box>
-        {body}
+      <Flex id="banner" top="0" left="0" fontSize="32px">
+        <Box id="logo" mr="auto">Gity</Box>
+        {navbarContent}
       </Flex>
-      <Box
-        pos="fixed"
-        top="55px"
-        left="0"
-        w="100%"
-        h="1px"
-        bg="#312e2e"
-      />
+      <Box id="divider" top="55px" left="0"/>
     </>
   );
 };

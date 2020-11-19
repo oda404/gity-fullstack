@@ -96,8 +96,7 @@ export type GenericUserFragment = (
 );
 
 export type LoginUserMutationVariables = Exact<{
-  usernameOrEmail: Scalars['String'];
-  password: Scalars['String'];
+  userInput: UserLoginInput;
 }>;
 
 
@@ -124,10 +123,7 @@ export type LogoutUserMutation = (
 );
 
 export type RegisterUserMutationVariables = Exact<{
-  username: Scalars['String'];
-  email: Scalars['String'];
-  password: Scalars['String'];
-  invitation: Scalars['String'];
+  userInput: UserRegisterInput;
 }>;
 
 
@@ -163,8 +159,8 @@ export const GenericUserFragmentDoc = gql`
 }
     `;
 export const LoginUserDocument = gql`
-    mutation LoginUser($usernameOrEmail: String!, $password: String!) {
-  loginUser(userInput: {usernameOrEmail: $usernameOrEmail, password: $password}) {
+    mutation LoginUser($userInput: UserLoginInput!) {
+  loginUser(userInput: $userInput) {
     errors {
       field
       error
@@ -189,10 +185,8 @@ export function useLogoutUserMutation() {
   return Urql.useMutation<LogoutUserMutation, LogoutUserMutationVariables>(LogoutUserDocument);
 };
 export const RegisterUserDocument = gql`
-    mutation RegisterUser($username: String!, $email: String!, $password: String!, $invitation: String!) {
-  registerUser(
-    userInput: {username: $username, email: $email, password: $password, invitation: $invitation}
-  ) {
+    mutation RegisterUser($userInput: UserRegisterInput!) {
+  registerUser(userInput: $userInput) {
     errors {
       field
       error

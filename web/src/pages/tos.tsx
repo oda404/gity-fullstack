@@ -10,12 +10,12 @@ interface tosProps
 
 const tos: FC<tosProps> = () =>
 {
-    return (
-        <Container>
-            <Header content="full"/>
-            <Footer/>
-        </Container>
-    );
+  return (
+    <Container>
+      <Header type="full"/>
+      <Footer/>
+    </Container>
+  );
 }
 
 export default tos;

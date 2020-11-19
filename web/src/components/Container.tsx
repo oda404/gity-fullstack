@@ -10,10 +10,10 @@ const Container: FC<ContainerProps> = (props) => {
   return (
     <Flex
       bgColor="#212121"
-      color="white"
+      color="#e9e9e9"
       pos="fixed"
-      minH="100%"
-      minW="100%"
+      h="100%"
+      w="100%"
       top="0"
       left="0"
       {...props}

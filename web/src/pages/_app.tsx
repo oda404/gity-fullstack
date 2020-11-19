@@ -1,12 +1,13 @@
 import { ThemeProvider, CSSReset, ColorModeProvider } from '@chakra-ui/core';
 import { Provider, createClient, dedupExchange, fetchExchange } from "urql";
-import ccache from "../urql/cache";
+import customCacheExchange from "../urql/cache";
 import theme from '../theme';
+import "../styles.css";
 
 const client = createClient({
   url: "http://localhost:4200/graphql",
   fetchOptions: { credentials: "include" },
-  exchanges: [dedupExchange, ccache, fetchExchange]
+  exchanges: [dedupExchange, customCacheExchange, fetchExchange]
 });
 
 function MyApp({ Component, pageProps }: any) {

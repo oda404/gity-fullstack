@@ -1,13 +1,8 @@
 mutation LoginUser(
-  $usernameOrEmail: String!,
-  $password: String!
+  $userInput: UserLoginInput!
 )
 {
-  loginUser(userInput: {
-    usernameOrEmail: $usernameOrEmail,
-    password: $password
-  })
-  {
+  loginUser(userInput: $userInput){
     errors{
       field,
       error

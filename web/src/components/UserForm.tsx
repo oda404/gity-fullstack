@@ -26,7 +26,7 @@ const UserForm: FC<UserFormProps> = (props) =>
         invitation: ""
       }}
       onSubmit={ async (values, { setErrors }) => {
-        const response = await registerUser(values);
+        const response = await registerUser({ userInput: values });
         if(response.data?.registerUser.errors)
         {
           setErrors(toErrorMap(response.data.registerUser.errors));
@@ -49,19 +49,11 @@ const UserForm: FC<UserFormProps> = (props) =>
           <Box mt={1}>
             <InputField name="invitation" label="Invitation" />
           </Box>
-          <Button
-            mt={3}
-            bg="#5c0098"
-            color="#e9e9e9"
+          <Button id="form-submit-button"
             type="submit"
-            _hover={{ bg: "#530089" }}
-            _active={{ bg: "#6e00b4" }}
             isLoading={isSubmitting}
-            maxW="400px"
             w="400px"
-            maxH="70px"
             h="70px"
-            fontSize="18px"
           >
             Sign up
           </Button>
@@ -77,7 +69,7 @@ const UserForm: FC<UserFormProps> = (props) =>
         password: ""
       }}
       onSubmit={ async (values, { setErrors }) => {
-        const response = await loginUser(values);
+        const response = await loginUser({ userInput: values });
         if(response.data?.loginUser.errors)
         {
           setErrors(toErrorMap(response.data?.loginUser.errors));
@@ -94,19 +86,11 @@ const UserForm: FC<UserFormProps> = (props) =>
           <Box mt={1}>
             <InputField name="password" label="Password" type="password" />
           </Box>
-          <Button
-            mt={3}
-            bg="#5c0098"
-            color="#e9e9e9"
+          <Button id="form-submit-button"
             type="submit"
-            _hover={{ bg: "#530089" }}
-            _active={{ bg: "#6e00b4" }}
             isLoading={isSubmitting}
-            maxW="400px"
             w="400px"
-            maxH="70px"
             h="70px"
-            fontSize="18px"
           >
             Log in
           </Button>

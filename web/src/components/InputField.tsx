@@ -17,15 +17,15 @@ const InputField: FC<InputFieldProps> = ({ label, size: _, ...props}) => {
         borderColor="#4c4c4c"
         borderRadius="8px"
         borderWidth="1px"
-        {...field}
-        {...props}
-        id={field.name}
-        name={field.name}
         maxW="400px"
         w="400px"
         maxH="58px"
         h="58px"
         fontSize="17px"
+        {...field}
+        {...props}
+        id={field.name}
+        name={field.name}
       />
       <FormErrorMessage>{error}</FormErrorMessage>
     </FormControl>

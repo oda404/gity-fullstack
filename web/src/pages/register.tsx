@@ -34,7 +34,7 @@ const Register: FC<RegisterProps> = () =>
 
   return (
     <Container>
-      <Header content="login"/>
+      <Header type="register"/>
       {body}
       <Footer/>
     </Container>
