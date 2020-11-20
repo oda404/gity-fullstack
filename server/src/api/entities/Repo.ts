@@ -25,17 +25,9 @@ export class Repo
     @Column("timestamp", { default: new Date() })
     modifiedAt: Date;
 
-    @Field(() => [ String ])
-    @Column("text", { default: "{}" })
-    privileged: string[];
-
     @Field(() => String)
     @Column( { default: "No description provided." } )
     description: string;
-
-    @Field(() => Int)
-    @Column( { default: 0 } )
-    commits: number;
 
     @Field(() => Int)
     @Column( { default: 0 } )
