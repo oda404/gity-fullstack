@@ -1,8 +1,11 @@
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { User } from "../entities/User";
+import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
 import { verify } from "argon2";
 import { SESSION_COOKIE_NAME } from "../../consts";
+import { mkdirSync } from "fs";
+import { join } from "path";
 
 @InputType()
 class UserLoginInput
@@ -160,6 +163,7 @@ export class UserResolver
 
         const user = new User();
         return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
+            mkdirSync(join(rootGitDir, userInput.username));
             response.user = await con.manager.save(user);
             return response;
         });
