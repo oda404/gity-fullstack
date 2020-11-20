@@ -49,11 +49,10 @@ const UserForm: FC<UserFormProps> = (props) =>
           <Box mt={1}>
             <InputField name="invitation" label="Invitation" />
           </Box>
-          <Button id="form-submit-button"
+          <Button
+            id="form-submit-button"
             type="submit"
             isLoading={isSubmitting}
-            w="400px"
-            h="70px"
           >
             Sign up
           </Button>
@@ -86,11 +85,10 @@ const UserForm: FC<UserFormProps> = (props) =>
           <Box mt={1}>
             <InputField name="password" label="Password" type="password" />
           </Box>
-          <Button id="form-submit-button"
+          <Button
+            id="form-submit-button"
             type="submit"
             isLoading={isSubmitting}
-            w="400px"
-            h="70px"
           >
             Log in
           </Button>
