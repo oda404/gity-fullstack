@@ -2,7 +2,7 @@ import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } fro
 import { User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { verify } from "argon2";
-import { AUTH_COOKIE_NAME } from "../../consts";
+import { SESSION_COOKIE_NAME } from "../../consts";
 
 @InputType()
 class UserLoginInput
@@ -215,7 +215,7 @@ export class UserResolver
             return false;
         }
 
-        res.clearCookie(AUTH_COOKIE_NAME);
+        res.clearCookie(SESSION_COOKIE_NAME);
         return req.session.destroy((err) => {
             if(err)
             {

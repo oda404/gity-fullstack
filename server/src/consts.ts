@@ -1,5 +1,5 @@
 export const __prod__ = false;
-export const __port__ = 4200;
-export const __db_pass__ = process.env.DB_PASS;
-export const __session_secret__ = process.env.SESSION_SECRET;
-export const AUTH_COOKIE_NAME = "user-session";
+export const SERVER_PORT = 4200;
+export const DB_PASS = process.env.DB_PASS;
+export const SESSION_SECRET = process.env.SESSION_SECRET;
+export const SESSION_COOKIE_NAME = "user-session";

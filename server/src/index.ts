@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { __prod__, __port__, __db_pass__, __session_secret__, AUTH_COOKIE_NAME } from "./consts";
+import { __prod__, SERVER_PORT, DB_PASS, SESSION_SECRET, SESSION_COOKIE_NAME } from "./consts";
 import { Request, Response } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -54,7 +54,7 @@ async function main(): Promise<void>
         synchronize: !__prod__,
         logging: !__prod__, 
         username: "gity",
-        password: __db_pass__ || "pass",
+        password: DB_PASS || "pass",
         entities: [
             join(__dirname, "api/entities/**/*.js")
         ]
@@ -104,7 +104,7 @@ async function main(): Promise<void>
     ));
     app.use(
         session({
-            name: AUTH_COOKIE_NAME,
+            name: SESSION_COOKIE_NAME,
             store: new RedisStore({
                 client: redisClient,
                 disableTouch: true // doesn't renew cookie expiry date when user interacts with the session
@@ -115,15 +115,15 @@ async function main(): Promise<void>
                 sameSite: "strict", // only send cookies if on the same site
                 secure: __prod__
             },
-            secret: __session_secret__ || "secret",
+            secret: SESSION_SECRET || "secret",
             resave: false,
             saveUninitialized: false
         })
     );
     apolloServer.applyMiddleware({ app, cors: false });
 
-    app.listen(__port__, () => {
-        logInfo(`Server started on port ${__port__}`);
+    app.listen(SERVER_PORT, () => {
+        logInfo(`Server started on port ${SERVER_PORT}`);
     });
 }
 
