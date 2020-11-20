@@ -16,6 +16,7 @@ const Container: FC<ContainerProps> = (props) => {
       w="100%"
       top="0"
       left="0"
+      paddingY="55px"
       {...props}
     />
   );
