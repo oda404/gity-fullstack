@@ -140,32 +140,42 @@ export class UserResolver
             return response;
         }
 
-        /* check if user with same username/email exists */
-        let testUser = await con.manager.findOne(User, { username: userInput.username });
-        if(testUser !== undefined)
-        {
-            response.errors = [{
-                field: "username",
-                error: "Username taken"
-            }];
-            return response;
-        }
-        
-        testUser = await con.manager.findOne(User, { email: userInput.email });
-        if(testUser !== undefined)
-        {
-            response.errors = [{
-                field: "email",
-                error: "Email taken"
-            }];
-            return response;
-        }
-
         const user = new User();
         return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
-            mkdirSync(join(rootGitDir, userInput.username));
-            response.user = await con.manager.save(user);
-            return response;
+            return con.manager.save(user).then((val) => {
+                mkdirSync(join(rootGitDir, userInput.username));
+                response.user = val;
+                return response;
+            }).catch((err) => {
+                if(err.code == 23505)
+                {
+                    let column = err.detail.substring(5, err.detail.indexOf(')', 5));
+
+                    if(column === "username")
+                    {
+                        response.errors = [{
+                            field: "username",
+                            error: "Username already taken"
+                        }];
+                    }
+                    else if(column === "email")
+                    {
+                        response.errors = [{
+                            field: "email",
+                            error: "Email already taken"
+                        }];
+                    }
+                }
+                else
+                {
+                    response.errors = [{
+                        field: "none",
+                        error: "Internal server error"
+                    }];
+                }
+
+                return response;
+            });
         });
     }
 
@@ -203,7 +213,9 @@ export class UserResolver
             }
 
             req.session.userId = String(user!.id);
-
+            user!.sessions.push(req.session.id);
+            con.manager.save(user);
+            
             response.user = user;
             return response;
         });
@@ -211,12 +223,25 @@ export class UserResolver
 
     @Mutation(() => Boolean)
     async logoutUser(
-        @Ctx() { req, res }: ApolloContext
+        @Ctx() { con, req, res }: ApolloContext
     )
     {
         if(req.session.userId === undefined)
         {
             return false;
+        }
+        
+        const user = await con.manager.findOne(User, { id: req.session.userId });
+        if(user === undefined)
+        {
+            return false;
+        }
+
+        const indexOfSession = user.sessions.indexOf(req.session.id);
+        if(indexOfSession > -1)
+        {
+            user.sessions.splice(indexOfSession, 1);
+            con.manager.save(user);
         }
 
         res.clearCookie(SESSION_COOKIE_NAME);

@@ -19,11 +19,11 @@ export class User
     editedAt: Date;
 
     @Field(() => String)
-    @Column()
+    @Column({ unique: true })
     username: string;
 
     @Field(() => String)
-    @Column()
+    @Column({ unique: true })
     email: string;
 
     @Field(() => Boolean)
@@ -32,6 +32,9 @@ export class User
 
     @Column()
     hash: string;
+
+    @Column("text", { array: true, default: "{}" })
+    sessions: string[]
 
     @Field(() => [ String ])
     @Column("text", { array: true, default: "{}" })
