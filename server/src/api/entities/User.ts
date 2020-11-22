@@ -6,7 +6,6 @@ import { hash } from "argon2";
 @Entity("users")
 export class User
 {
-    @Field(() => ID)
     @PrimaryGeneratedColumn()
     id: ObjectID;
     
@@ -32,9 +31,6 @@ export class User
 
     @Column()
     hash: string;
-
-    @Column("text", { array: true, default: "{}" })
-    sessions: string[]
 
     @Field(() => [ String ])
     @Column("text", { array: true, default: "{}" })
