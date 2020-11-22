@@ -1,11 +1,27 @@
 import { BeforeUpdate, Column, Entity, ObjectID, PrimaryGeneratedColumn } from "typeorm";
-import { Field, ID, Int, ObjectType } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
+import { mkdirSync, existsSync } from "fs";
+import { spawn } from "child_process";
+import { join } from "path";
+import { rootGitDir } from "../../service/gityServer";
+
+function createRepoOnDisk(repoPath: string): boolean
+{
+    const joinedPath = join(rootGitDir, repoPath);
+    if(existsSync(joinedPath))
+    {
+        return false;
+    }
+
+    mkdirSync(joinedPath)
+    spawn("git", [ "init", "--bare", joinedPath ]);
+    return true;
+}
 
 @ObjectType()
 @Entity("repos")
 export class Repo
 {
-    @Field(() => ID)
     @PrimaryGeneratedColumn()
     id: ObjectID;
 
@@ -32,6 +48,17 @@ export class Repo
     @Field(() => Int)
     @Column( { default: 0 } )
     likes: number;
+
+    @Column()
+    public: boolean;
+
+    public build(owner: string, name: string, _public: boolean): boolean
+    {
+        this.owner = owner;
+        this.name = name;
+        this.public = _public;
+        return createRepoOnDisk(join(owner, name));
+    }
 
     @BeforeUpdate()
     public beforeUpdateHook()

@@ -1,10 +1,6 @@
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
 import { Repo } from "../entities/Repo";
-import { spawn } from "child_process";
-import { rootGitDir } from "../../service/gityServer";
-import { join } from "path";
 import { ApolloContext } from "../../types";
-import { mkdir } from "fs/promises";
 import { User } from "../entities/User";
 
 @InputType()
@@ -12,27 +8,40 @@ class RepoAddInput
 {
     @Field()
     name: string;
+
+    @Field()
+    public: boolean;
+};
+
+@InputType()
+class RepoDeleteInput
+{
+    @Field()
+    name: string;
+
+    @Field()
+    password: string;
 };
 
 @ObjectType()
 class RepoResponse
 {
     @Field(() => String, { nullable: true })
-    error: string | null;
+    error: string | null = null;
 
     @Field(() => Repo, { nullable: true })
-    repo: Repo | null;
+    repo: Repo | null = null;
 };
 
-function createRepoOnDisk(repoPath: string): Promise<boolean>
+@ObjectType()
+class RepoDeleteResponse
 {
-    return mkdir(join(rootGitDir, repoPath)).then(() => {
-        spawn("git", [ "init", "--bare", join(rootGitDir, repoPath) ]);
-        return true;
-    }).catch(() => {
-        return false;
-    });
-}
+    @Field(() => String, { nullable: true })
+    error: string | null = null;
+
+    @Field(() => Boolean, { nullable: true })
+    deleted: boolean | null = null;
+};
 
 const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 
@@ -60,40 +69,34 @@ export class RepoResolver
         }
 
         const user = await con.manager.findOne(User, { id: req.session.userId });
-        if(!user)
+        if(user === undefined)
         {
-            response.error = "User not found. Please contact Gity admins";
+            response.error = "Internal server error";
             return response;
         }
 
-        return createRepoOnDisk(`${user.username}/${repoInput.name}`).then(async (created) => {
-            if(!created)
-            {
-                response.error = "Repo already exists";
-                return response;
-            }
-
-            const repo = new Repo();
-            repo.owner = user.username;
-            repo.name = repoInput.name;
-
-            user.repos.push(repoInput.name);
-            con.manager.save(User, user);
-
-            response.repo = await con.manager.save(repo);
-
+        const repo = new Repo();
+        if(!repo.build(user!.username, repoInput.name, repoInput.public))
+        {
+            response.error = "Repo already exists";
             return response;
-        });
+        }
+
+        user!.repos.push(repoInput.name);
+        con.manager.save(user);
+
+        response.repo = await con.manager.save(repo);
+        return response;
     }
 
-    @Mutation(() => Boolean)
+    @Mutation(() => RepoDeleteResponse)
     async deleteRepo(
         @Ctx() { con, req }: ApolloContext,
-        @Arg("repoInput") repoInput: RepoAddInput
-    ): Promise<Boolean>
+        @Arg("repoInput") repoInput: RepoDeleteInput
+    ): Promise<RepoDeleteResponse>
     {
-        
+        const response = new RepoDeleteResponse();
 
-        return true;
+        return response;
     }
 };
