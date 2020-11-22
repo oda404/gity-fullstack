@@ -2,13 +2,13 @@ import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } fro
 import { User } from "../entities/User";
 import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
-import { verify } from "argon2";
 import { SESSION_COOKIE_NAME } from "../../consts";
 import { mkdirSync } from "fs";
 import { join } from "path";
+import { parsePGError, validateUserLoginInput, validateUserRegisterInput } from "../../utils/userValidation";
 
 @InputType()
-class UserLoginInput
+export class UserLoginInput
 {
     @Field()
     usernameOrEmail: string;
@@ -18,7 +18,7 @@ class UserLoginInput
 };
 
 @InputType()
-class UserRegisterInput
+export class UserRegisterInput
 {
     @Field()
     username: string;
@@ -34,42 +34,28 @@ class UserRegisterInput
 };
 
 @ObjectType()
-class UserFieldError
+export class UserFieldError
 {
     @Field()
     field: string;
 
     @Field()
-    error: string;
+    message: string;
 };
 
 @ObjectType()
-class UserResponse
+export class UserResponse
 {
-    @Field(() => [ UserFieldError ], { nullable: true })
-    errors?: UserFieldError[] = undefined;
+    @Field(() => UserFieldError, { nullable: true })
+    error?: UserFieldError | null = null;
 
     @Field(() => User, { nullable: true })
-    user?: User = undefined;
+    user?: User | null = null;
 };
-
-function isInvitationValid(invitation: string): boolean
-{
-    if(invitation === "")
-    {
-        return false;
-    }
-
-    return true;
-};
-
-const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 
 @Resolver()
 export class UserResolver
 {
-    // debug query
     @Query(() => User, { nullable: true })
     async self(
         @Ctx() { con, req }: ApolloContext
@@ -91,89 +77,25 @@ export class UserResolver
     {
         const response = new UserResponse();
 
-        /* check username length */
-        if(userInput.username.length < 3)
+        response.error = validateUserRegisterInput(userInput);
+        if(response.error)
         {
-            response.errors = [{
-                field: "username",
-                error: "Username can't be shorter than 3 characters"
-            }];
-            return response;
-        }
-
-        // /* check username for forbidden chars */
-        if(!userInput.username.match(USERNAME_REGEX))
-        {
-            response.errors = [{
-                field: "username",
-                error: "The username can only contain letters, numbers and the -_ symbols"
-            }];
-            return response;
-        }
-
-        /* check email validity */
-        if(!userInput.email.match(EMAIL_REGEX))
-        {
-            response.errors = [{
-                field: "email",
-                error: "Invalid email"
-            }];
-            return response;
-        }
-
-        /* check password length */
-        if(userInput.password.length < 8)
-        {
-            response.errors = [{
-                field: "password",
-                error: "Password can't be shorter than 8 characters"
-            }];
-            return response;
-        }
-
-        if(!isInvitationValid(userInput.invitation))
-        {
-            response.errors = [{
-                field: "invitation",
-                error: "Bad invitation"
-            }];
             return response;
         }
 
         const user = new User();
         return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
-            return con.manager.save(user).then((val) => {
-                mkdirSync(join(rootGitDir, userInput.username));
+            return con.manager.save(user).then( val => {
+                try
+                {
+                    mkdirSync(join(rootGitDir, userInput.username));
+                }
+                catch(err) {}
+
                 response.user = val;
                 return response;
-            }).catch((err) => {
-                if(err.code == 23505)
-                {
-                    let column = err.detail.substring(5, err.detail.indexOf(')', 5));
-
-                    if(column === "username")
-                    {
-                        response.errors = [{
-                            field: "username",
-                            error: "Username already taken"
-                        }];
-                    }
-                    else if(column === "email")
-                    {
-                        response.errors = [{
-                            field: "email",
-                            error: "Email already taken"
-                        }];
-                    }
-                }
-                else
-                {
-                    response.errors = [{
-                        field: "none",
-                        error: "Internal server error"
-                    }];
-                }
-
+            }).catch( err => {
+                response.error = parsePGError(err);
                 return response;
             });
         });
@@ -185,38 +107,17 @@ export class UserResolver
         @Ctx() { con, req }: ApolloContext
     ): Promise<UserResponse>
     {
-        const response = new UserResponse();
+        let response = new UserResponse();
+        response = await validateUserLoginInput(userInput, con);
 
-        let user = await con.manager.findOne(User, { email: userInput.usernameOrEmail });
-        if(user === undefined)
+        if(response.error)
         {
-            user = await con.manager.findOne(User, { username: userInput.usernameOrEmail });
-
-            if(user === undefined)
-            {
-                response.errors = [{
-                    field: "usernameOrEmail",
-                    error: "Username or email not found"
-                }];
-                return response;
-            }
+            return response;
         }
 
-        return verify(user.hash, userInput.password).then(result => {
-            if(!result)
-            {
-                response.errors = [{
-                    field: "password",
-                    error: "Invalid password"
-                }];
-                return response;
-            }
+        req.session.userId = String(response.user!.id);
 
-            req.session.userId = String(user!.id);
-            
-            response.user = user;
-            return response;
-        });
+        return response;
     }
 
     @Mutation(() => Boolean)
@@ -230,13 +131,17 @@ export class UserResolver
         }
 
         res.clearCookie(SESSION_COOKIE_NAME);
-        return req.session.destroy((err) => {
-            if(err)
-            {
-                return false;
-            }
+        req.session.destroy(() => {});
 
-            return true;
-        });
+        return true;
+    }
+
+    @Mutation(() => Boolean)
+    async deleteUser(
+        @Ctx() { req, con } : ApolloContext
+    ): Promise<boolean>
+    {
+        
+        return true;
     }
 };
