@@ -1,4 +1,4 @@
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { User } from "../entities/User";
 import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
@@ -56,16 +56,12 @@ export class UserResponse
 @Resolver()
 export class UserResolver
 {
+    @Authorized("basic")
     @Query(() => User, { nullable: true })
     async self(
         @Ctx() { con, req }: ApolloContext
     ): Promise<User | undefined>
     {
-        if(req.session.userId === undefined)
-        {
-            return undefined;
-        }
-
         return con.manager.findOne(User, { id: req.session.userId });
     }
 
@@ -120,25 +116,23 @@ export class UserResolver
         return response;
     }
 
-    @Mutation(() => Boolean)
+    @Authorized("basic")
+    @Mutation(() => Boolean, { nullable: true })
     async logoutUser(
         @Ctx() { req, res }: ApolloContext
-    )
+    ): Promise<boolean>
     {
-        if(req.session.userId === undefined)
-        {
-            return false;
-        }
-
         res.clearCookie(SESSION_COOKIE_NAME);
         req.session.destroy(() => {});
 
         return true;
     }
 
-    @Mutation(() => Boolean)
+    @Authorized("extended")
+    @Mutation(() => Boolean, { nullable: true })
     async deleteUser(
-        @Ctx() { req, con } : ApolloContext
+        @Ctx() { req, con } : ApolloContext,
+        @Arg("password") password: string
     ): Promise<boolean>
     {
         

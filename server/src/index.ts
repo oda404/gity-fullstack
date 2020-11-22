@@ -24,6 +24,7 @@ import connectRedis from "connect-redis";
 import session from "express-session";
 import { logInfo, logErr } from "./utils";
 import cors from "cors";
+import { customAuthChecker } from "./utils/authChecker";
 
 let dbCon: Connection;
 
@@ -95,7 +96,9 @@ async function main(): Promise<void>
                 UserResolver,
                 RepoResolver
             ],
-            validate: false
+            validate: false,
+            authChecker: customAuthChecker,
+            authMode: "null"
         }),
         playground: !__prod__,
         context: ({ req, res }): ApolloContext => ({ con: dbCon, req: req, res: res })
