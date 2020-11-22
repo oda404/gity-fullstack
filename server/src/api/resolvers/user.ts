@@ -213,8 +213,6 @@ export class UserResolver
             }
 
             req.session.userId = String(user!.id);
-            user!.sessions.push(req.session.id);
-            con.manager.save(user);
             
             response.user = user;
             return response;
@@ -223,25 +221,12 @@ export class UserResolver
 
     @Mutation(() => Boolean)
     async logoutUser(
-        @Ctx() { con, req, res }: ApolloContext
+        @Ctx() { req, res }: ApolloContext
     )
     {
         if(req.session.userId === undefined)
         {
             return false;
-        }
-        
-        const user = await con.manager.findOne(User, { id: req.session.userId });
-        if(user === undefined)
-        {
-            return false;
-        }
-
-        const indexOfSession = user.sessions.indexOf(req.session.id);
-        if(indexOfSession > -1)
-        {
-            user.sessions.splice(indexOfSession, 1);
-            con.manager.save(user);
         }
 
         res.clearCookie(SESSION_COOKIE_NAME);
