@@ -1,5 +1,11 @@
 import "reflect-metadata";
-import { __prod__, SERVER_PORT, DB_PASS, SESSION_SECRET, SESSION_COOKIE_NAME } from "./consts";
+import {
+    __prod__,
+    DB_PASS,
+    SERVER_PORT,
+    SESSION_COOKIE_NAME,
+    SESSION_SECRET
+} from "./consts";
 import { Request, Response } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -13,7 +19,7 @@ import { ApolloContext } from "./types";
 import { parse } from "url";
 import { isServiceValid } from "./service/gityService";
 import { requestHandler } from "./service/gityServer";
-import { createClient } from "redis";
+import Redis from "ioredis";
 import connectRedis from "connect-redis";
 import session from "express-session";
 import { logInfo, logErr } from "./utils";
@@ -71,7 +77,7 @@ async function main(): Promise<void>
     }
 
     const RedisStore = connectRedis(session);
-    const redisClient = createClient();
+    const redisClient = new Redis();
     
     redisClient.on("ready", () => {
         logInfo("Redis connection established");
