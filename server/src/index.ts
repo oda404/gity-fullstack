@@ -26,7 +26,7 @@ import { logInfo, logErr } from "./utils";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
 
-let dbCon: Connection;
+let pgCon: Connection;
 
 function baseMiddleware(req: Request, res: Response, next: any)
 {
@@ -44,7 +44,7 @@ function baseMiddleware(req: Request, res: Response, next: any)
 
     if(isServiceValid(parsedService))
     {
-        requestHandler(req, res, parsedService, dbCon);
+        requestHandler(req, res, parsedService, pgCon);
         return;
     }
 
@@ -53,7 +53,7 @@ function baseMiddleware(req: Request, res: Response, next: any)
 
 async function main(): Promise<void>
 {
-    dbCon = await createConnection({
+    pgCon = await createConnection({
         type: "postgres",
         host: "localhost",
         port: 5432,
@@ -67,7 +67,7 @@ async function main(): Promise<void>
         ]
     });
 
-    if(dbCon.isConnected)
+    if(pgCon.isConnected)
     {
         logInfo("PostgreSQL connection established");
     }
@@ -101,7 +101,7 @@ async function main(): Promise<void>
             authMode: "null"
         }),
         playground: !__prod__,
-        context: ({ req, res }): ApolloContext => ({ con: dbCon, req: req, res: res })
+        context: ({ req, res }): ApolloContext => ({ pgCon, redisClient, req, res })
     });
 
     app.use(baseMiddleware);

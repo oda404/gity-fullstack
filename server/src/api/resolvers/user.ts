@@ -59,16 +59,16 @@ export class UserResolver
     @Authorized("basic")
     @Query(() => User, { nullable: true })
     async self(
-        @Ctx() { con, req }: ApolloContext
+        @Ctx() { pgCon, req }: ApolloContext
     ): Promise<User | undefined>
     {
-        return con.manager.findOne(User, { id: req.session.userId });
+        return pgCon.manager.findOne(User, { id: req.session.userId });
     }
 
     @Mutation(() => UserResponse)
     async registerUser(
         @Arg("userInput") userInput: UserRegisterInput,
-        @Ctx() { con }: ApolloContext
+        @Ctx() { pgCon }: ApolloContext
     ): Promise<UserResponse>
     {
         const response = new UserResponse();
@@ -81,7 +81,7 @@ export class UserResolver
 
         const user = new User();
         return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
-            return con.manager.save(user).then( val => {
+            return pgCon.manager.save(user).then( val => {
                 try
                 {
                     mkdirSync(join(rootGitDir, userInput.username));
@@ -100,11 +100,11 @@ export class UserResolver
     @Mutation(() => UserResponse)
     async loginUser(
         @Arg("userInput") userInput: UserLoginInput,
-        @Ctx() { con, req }: ApolloContext
+        @Ctx() { pgCon, req }: ApolloContext
     ): Promise<UserResponse>
     {
         let response = new UserResponse();
-        response = await validateUserLoginInput(userInput, con);
+        response = await validateUserLoginInput(userInput, pgCon);
 
         if(response.error)
         {
@@ -131,7 +131,7 @@ export class UserResolver
     @Authorized("extended")
     @Mutation(() => Boolean, { nullable: true })
     async deleteUser(
-        @Ctx() { req, con } : ApolloContext,
+        @Ctx() { req, pgCon } : ApolloContext,
         @Arg("password") password: string
     ): Promise<boolean>
     {

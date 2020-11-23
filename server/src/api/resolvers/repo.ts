@@ -50,7 +50,7 @@ export class RepoResolver
 {
     @Mutation(() => RepoResponse)
     async createRepo(
-        @Ctx() { con, req }: ApolloContext,
+        @Ctx() { pgCon, req }: ApolloContext,
         @Arg("repoInput") repoInput: RepoAddInput
     )
     {
@@ -68,7 +68,7 @@ export class RepoResolver
             return response;
         }
 
-        const user = await con.manager.findOne(User, { id: req.session.userId });
+        const user = await pgCon.manager.findOne(User, { id: req.session.userId });
         if(user === undefined)
         {
             response.error = "Internal server error";
@@ -83,15 +83,15 @@ export class RepoResolver
         }
 
         user!.repos.push(repoInput.name);
-        con.manager.save(user);
+        pgCon.manager.save(user);
 
-        response.repo = await con.manager.save(repo);
+        response.repo = await pgCon.manager.save(repo);
         return response;
     }
 
     @Mutation(() => RepoDeleteResponse)
     async deleteRepo(
-        @Ctx() { con, req }: ApolloContext,
+        @Ctx() { pgCon, req }: ApolloContext,
         @Arg("repoInput") repoInput: RepoDeleteInput
     ): Promise<RepoDeleteResponse>
     {

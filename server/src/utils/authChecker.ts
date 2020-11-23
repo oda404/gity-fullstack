@@ -23,7 +23,7 @@ export const customAuthChecker: AuthChecker<ApolloContext> = async (
             return false;
         }
 
-        const user = await context.con.manager.findOne(User, { id: context.req.session.userId });
+        const user = await context.pgCon.manager.findOne(User, { id: context.req.session.userId });
         if(user === undefined)
         {
             return false;
