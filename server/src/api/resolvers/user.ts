@@ -3,9 +3,10 @@ import { User } from "../entities/User";
 import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
-import { mkdirSync } from "fs";
+import { mkdirSync, rm } from "fs";
 import { join } from "path";
 import { parsePGError, validateUserLoginInput, validateUserRegisterInput } from "../../utils/userValidation";
+import { Repo } from "../entities/Repo";
 
 @InputType()
 export class UserLoginInput
@@ -86,7 +87,7 @@ export class UserResolver
                 {
                     mkdirSync(join(rootGitDir, userInput.username));
                 }
-                catch(err) {}
+                catch(err) {  }
 
                 response.user = val;
                 return response;
@@ -112,6 +113,8 @@ export class UserResolver
         }
 
         req.session.userId = String(response.user!.id);
+        response.user!.aliveSessions.push(req.session.id);
+        pgCon.manager.save(response.user);
 
         return response;
     }
@@ -119,9 +122,20 @@ export class UserResolver
     @Authorized("basic")
     @Mutation(() => Boolean, { nullable: true })
     async logoutUser(
-        @Ctx() { req, res }: ApolloContext
+        @Ctx() { req, res, pgCon }: ApolloContext
     ): Promise<boolean>
     {
+        let user = await pgCon.manager.findOne(User, { id: req.session.userId });
+        if(user !== undefined)
+        {
+            let index = user!.aliveSessions.indexOf(req.session.id);
+            if(index > -1)
+            {
+                user?.aliveSessions.splice(index, 1);
+            }
+            pgCon.manager.save(user);
+        }
+        
         res.clearCookie(SESSION_COOKIE_NAME);
         req.session.destroy(() => {});
 
@@ -131,11 +145,28 @@ export class UserResolver
     @Authorized("extended")
     @Mutation(() => Boolean, { nullable: true })
     async deleteUser(
-        @Ctx() { req, pgCon } : ApolloContext,
+        @Ctx() { res, req, pgCon, redisClient } : ApolloContext,
         @Arg("password") password: string
     ): Promise<boolean>
     {
-        
+        let user = await pgCon.manager.findOne(User, { id: req.session.userId });
+        if(user === undefined)
+        {
+            return false;
+        }
+
+        /* clear user's cookies */
+        user.aliveSessions.forEach(sessId => redisClient.del(`sess:${sessId}`));
+        res.clearCookie(SESSION_COOKIE_NAME);
+        /* delete repo entries from db */
+        user.repos.forEach(repo => {
+            pgCon.manager.delete(Repo, { name: repo });
+        });
+        /* remove user's directory */
+        rm(join(rootGitDir, user.username), { recursive: true, force: true }, () => {  });
+        /* remove user's db entry */
+        pgCon.manager.delete(User, user);
+
         return true;
     }
 };

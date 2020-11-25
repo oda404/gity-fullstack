@@ -1,6 +1,6 @@
 import { BeforeUpdate, Column, Entity, ObjectID, PrimaryGeneratedColumn } from "typeorm";
 import { Field, Int, ObjectType } from "type-graphql";
-import { mkdirSync, existsSync } from "fs";
+import { mkdirSync, existsSync, rmdirSync, rmdir, rm } from "fs";
 import { spawn } from "child_process";
 import { join } from "path";
 import { rootGitDir } from "../../service/gityServer";
@@ -16,6 +16,21 @@ function createRepoOnDisk(repoPath: string): boolean
     mkdirSync(joinedPath)
     spawn("git", [ "init", "--bare", joinedPath ]);
     return true;
+}
+
+// bacuse @BeforeRemove() doesn t work
+function deleteRepoFromDisk(repoPath: string): boolean
+{
+    const joinedPath = join(rootGitDir, repoPath);
+    if(existsSync(joinedPath))
+    {
+        rm(joinedPath, { recursive: true, force: true },  () => {});
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 @ObjectType()

@@ -36,6 +36,9 @@ export class User
     @Column("text", { array: true, default: "{}" })
     repos: string[];
 
+    @Column("text", { array: true, default: "{}" })
+    aliveSessions: string[];
+
     public async build(_username: string, _email: string, _password: string)
     {
         this.username = _username;
