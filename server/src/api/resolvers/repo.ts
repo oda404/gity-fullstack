@@ -3,26 +3,6 @@ import { Repo } from "../entities/Repo";
 import { ApolloContext } from "../../types";
 import { User } from "../entities/User";
 
-@InputType()
-class RepoAddInput
-{
-    @Field()
-    name: string;
-
-    @Field()
-    public: boolean;
-};
-
-@InputType()
-class RepoDeleteInput
-{
-    @Field()
-    name: string;
-
-    @Field()
-    password: string;
-};
-
 @ObjectType()
 class RepoResponse
 {
@@ -33,16 +13,6 @@ class RepoResponse
     repo: Repo | null = null;
 };
 
-@ObjectType()
-class RepoDeleteResponse
-{
-    @Field(() => String, { nullable: true })
-    error: string | null = null;
-
-    @Field(() => Boolean, { nullable: true })
-    deleted: boolean | null = null;
-};
-
 const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 
 @Resolver()
@@ -51,7 +21,8 @@ export class RepoResolver
     @Mutation(() => RepoResponse)
     async createRepo(
         @Ctx() { pgCon, req }: ApolloContext,
-        @Arg("repoInput") repoInput: RepoAddInput
+        @Arg("name") name: string,
+        @Arg("public") _public: boolean
     )
     {
         let response = new RepoResponse();
@@ -62,7 +33,7 @@ export class RepoResolver
             return response;
         }
 
-        if(!repoInput.name.match(REPO_NAME_REGEX))
+        if(!name.match(REPO_NAME_REGEX))
         {
             response.error = "Repo name contains invalid characters";
             return response;
@@ -76,27 +47,26 @@ export class RepoResolver
         }
 
         const repo = new Repo();
-        if(!repo.build(user!.username, repoInput.name, repoInput.public))
+        if(!repo.build(user!.username, name, _public))
         {
             response.error = "Repo already exists";
             return response;
         }
 
-        user!.repos.push(repoInput.name);
+        user!.repos.push(name);
         pgCon.manager.save(user);
 
         response.repo = await pgCon.manager.save(repo);
         return response;
     }
 
-    @Mutation(() => RepoDeleteResponse)
+    @Mutation(() => Boolean)
     async deleteRepo(
         @Ctx() { pgCon, req }: ApolloContext,
-        @Arg("repoInput") repoInput: RepoDeleteInput
-    ): Promise<RepoDeleteResponse>
+        @Arg("name") name: string,
+        @Arg("public") _public: boolean
+    ): Promise<Boolean>
     {
-        const response = new RepoDeleteResponse();
-
-        return response;
+        return true;
     }
 };
