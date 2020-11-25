@@ -1,1 +1,1 @@
-- INVALIDATE ALL SESSIONS IN REDIS DB ON USER COMPLETE LOGOUT/DELETE
+- clear aliveSessions from postgres when they expire in redis
