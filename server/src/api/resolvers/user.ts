@@ -128,10 +128,10 @@ export class UserResolver
         let user = await pgCon.manager.findOne(User, { id: req.session.userId });
         if(user !== undefined)
         {
-            let index = user!.aliveSessions.indexOf(req.session.id);
+            let index = user.aliveSessions.indexOf(req.session.id);
             if(index > -1)
             {
-                user?.aliveSessions.splice(index, 1);
+                user.aliveSessions.splice(index, 1);
             }
             pgCon.manager.save(user);
         }
@@ -168,5 +168,27 @@ export class UserResolver
         pgCon.manager.delete(User, user);
 
         return true;
+    }
+
+    @Authorized("extended")
+    @Mutation(() => Boolean, { nullable: true })
+    async changeUserEmail(
+        @Ctx() { mailTransporter }: ApolloContext,
+        @Arg("password") password: string,
+        @Arg("newEmail") newEmail: string
+    )
+    {
+
+    }
+
+    @Authorized("extended")
+    @Mutation(() => Boolean, { nullable: true })
+    async changeUserPassword(
+        @Ctx() { mailTransporter }: ApolloContext,
+        @Arg("password") password: string,
+        @Arg("newPassword") newPassword: string
+    )
+    {
+
     }
 };
