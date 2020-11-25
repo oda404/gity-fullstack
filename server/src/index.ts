@@ -6,7 +6,7 @@ import {
     SESSION_COOKIE_NAME,
     SESSION_SECRET
 } from "./consts";
-import { Request, Response } from "express";
+import { RequestHandler } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -25,35 +25,36 @@ import session from "express-session";
 import { logInfo, logErr } from "./utils";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
+import { createTransport } from "nodemailer";
 
-let pgCon: Connection;
-
-function baseMiddleware(req: Request, res: Response, next: any)
+function baseMiddleware(pgCon: Connection): RequestHandler
 {
-    // check if request is coming from a git client
-    let parsedService = "";
-    if(req.method === "GET")
-    {
-        const queries = parse(String(req.url), true);
-        parsedService = String(queries.query["service"]);
-    }
-    else if(req.method === "POST")
-    {
-        parsedService = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
-    }
+    return (req, res, next) => {
+        // check if request is coming from a git client
+        let parsedService = "";
+        if(req.method === "GET")
+        {
+            const queries = parse(String(req.url), true);
+            parsedService = String(queries.query["service"]);
+        }
+        else if(req.method === "POST")
+        {
+            parsedService = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
+        }
 
-    if(isServiceValid(parsedService))
-    {
-        requestHandler(req, res, parsedService, pgCon);
-        return;
-    }
+        if(isServiceValid(parsedService))
+        {
+            requestHandler(req, res, parsedService, pgCon);
+            return;
+        }
 
-    next();
+        next();
+    }
 }
 
 async function main(): Promise<void>
 {
-    pgCon = await createConnection({
+    let pgCon = await createConnection({
         type: "postgres",
         host: "localhost",
         port: 5432,
@@ -88,6 +89,16 @@ async function main(): Promise<void>
         logErr(message);
     });
 
+    let mailTransporter = createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+            user: "xi4sevkyi3agmrie@ethereal.email",
+            pass: "bbmESj8ZW8RCsPu9Md"
+        }
+    });
+
     const app = express();
 
     const apolloServer = new ApolloServer({
@@ -101,16 +112,16 @@ async function main(): Promise<void>
             authMode: "null"
         }),
         playground: !__prod__,
-        context: ({ req, res }): ApolloContext => ({ pgCon, redisClient, req, res })
+        context: ({ req, res }): ApolloContext => ({ pgCon, redisClient, mailTransporter, req, res })
     });
 
-    app.use(baseMiddleware);
+    app.use(baseMiddleware(pgCon));
     app.use(
         cors({
             origin: "http://localhost:3000",
             credentials: true
-        }
-    ));
+        })
+    );
     app.use(
         session({
             name: SESSION_COOKIE_NAME,
