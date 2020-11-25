@@ -3,9 +3,9 @@ mutation RegisterUser(
 )
 {
   registerUser(userInput: $userInput){
-    errors{
-      field,
-      error
+    error {
+      field
+      message
     }
     
     user{

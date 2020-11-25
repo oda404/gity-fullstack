@@ -20,7 +20,7 @@ const customCacheExchange = cacheExchange({
           { query: SelfDocument }, 
           result, 
           (res, query) => {
-            if(res.loginUser.errors)
+            if(res.loginUser.error)
             {
               return query;
             }

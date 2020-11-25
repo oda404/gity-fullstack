@@ -4,7 +4,6 @@ import { Box, Button, Link } from "@chakra-ui/core";
 import { FC } from "react";
 import { useRouter } from "next/router";
 import { useLoginUserMutation, useRegisterUserMutation } from "../generated/graphql";
-import { toErrorMap } from "../utils/toErrorMap";
 
 interface UserFormProps
 {
@@ -27,9 +26,11 @@ const UserForm: FC<UserFormProps> = (props) =>
       }}
       onSubmit={ async (values, { setErrors }) => {
         const response = await registerUser({ userInput: values });
-        if(response.data?.registerUser.errors)
+        if(response.data?.registerUser.error)
         {
-          setErrors(toErrorMap(response.data.registerUser.errors));
+          let error: Record<string, string> = {};
+          error[response.data.registerUser.error.field] = response.data.registerUser.error.message;
+          setErrors(error);
         }
         else if(response.data?.registerUser.user)
         {
@@ -69,9 +70,11 @@ const UserForm: FC<UserFormProps> = (props) =>
       }}
       onSubmit={ async (values, { setErrors }) => {
         const response = await loginUser({ userInput: values });
-        if(response.data?.loginUser.errors)
+        if(response.data?.loginUser.error)
         {
-          setErrors(toErrorMap(response.data?.loginUser.errors));
+          let error: Record<string, string> = {};
+          error[response.data.loginUser.error.field] = response.data.loginUser.error.message;
+          setErrors(error);
         }
         else if(response.data?.loginUser.user)
         {

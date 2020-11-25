@@ -3,9 +3,9 @@ mutation LoginUser(
 )
 {
   loginUser(userInput: $userInput){
-    errors{
-      field,
-      error
+    error {
+      field
+      message
     }
     
     user{

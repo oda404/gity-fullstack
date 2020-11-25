@@ -19,7 +19,6 @@ export type Query = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
   createdAt: Scalars['String'];
   editedAt: Scalars['String'];
   username: Scalars['String'];
@@ -32,9 +31,10 @@ export type Mutation = {
   __typename?: 'Mutation';
   registerUser: UserResponse;
   loginUser: UserResponse;
-  logoutUser: Scalars['Boolean'];
-  addRepo: RepoResponse;
-  deleteRepo: Scalars['Boolean'];
+  logoutUser?: Maybe<Scalars['Boolean']>;
+  deleteUser?: Maybe<Scalars['Boolean']>;
+  createRepo: RepoResponse;
+  deleteRepo: RepoDeleteResponse;
 };
 
 
@@ -47,16 +47,31 @@ export type MutationLoginUserArgs = {
   userInput: UserLoginInput;
 };
 
+
+export type MutationDeleteUserArgs = {
+  password: Scalars['String'];
+};
+
+
+export type MutationCreateRepoArgs = {
+  repoInput: RepoAddInput;
+};
+
+
+export type MutationDeleteRepoArgs = {
+  repoInput: RepoDeleteInput;
+};
+
 export type UserResponse = {
   __typename?: 'UserResponse';
-  errors?: Maybe<Array<UserFieldError>>;
+  error?: Maybe<UserFieldError>;
   user?: Maybe<User>;
 };
 
 export type UserFieldError = {
   __typename?: 'UserFieldError';
   field: Scalars['String'];
-  error: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type UserRegisterInput = {
@@ -73,26 +88,39 @@ export type UserLoginInput = {
 
 export type RepoResponse = {
   __typename?: 'RepoResponse';
-  errors?: Maybe<Array<Scalars['String']>>;
-  repo: Repo;
+  error?: Maybe<Scalars['String']>;
+  repo?: Maybe<Repo>;
 };
 
 export type Repo = {
   __typename?: 'Repo';
-  id: Scalars['ID'];
   name: Scalars['String'];
   owner: Scalars['String'];
   createdAt: Scalars['String'];
   modifiedAt: Scalars['String'];
-  privileged: Array<Scalars['String']>;
   description: Scalars['String'];
-  commits: Scalars['Int'];
   likes: Scalars['Int'];
+};
+
+export type RepoAddInput = {
+  name: Scalars['String'];
+  public: Scalars['Boolean'];
+};
+
+export type RepoDeleteResponse = {
+  __typename?: 'RepoDeleteResponse';
+  error?: Maybe<Scalars['String']>;
+  deleted?: Maybe<Scalars['Boolean']>;
+};
+
+export type RepoDeleteInput = {
+  name: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type GenericUserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'id' | 'username'>
+  & Pick<User, 'username'>
 );
 
 export type LoginUserMutationVariables = Exact<{
@@ -104,10 +132,10 @@ export type LoginUserMutation = (
   { __typename?: 'Mutation' }
   & { loginUser: (
     { __typename?: 'UserResponse' }
-    & { errors?: Maybe<Array<(
+    & { error?: Maybe<(
       { __typename?: 'UserFieldError' }
-      & Pick<UserFieldError, 'field' | 'error'>
-    )>>, user?: Maybe<(
+      & Pick<UserFieldError, 'field' | 'message'>
+    )>, user?: Maybe<(
       { __typename?: 'User' }
       & GenericUserFragment
     )> }
@@ -131,10 +159,10 @@ export type RegisterUserMutation = (
   { __typename?: 'Mutation' }
   & { registerUser: (
     { __typename?: 'UserResponse' }
-    & { errors?: Maybe<Array<(
+    & { error?: Maybe<(
       { __typename?: 'UserFieldError' }
-      & Pick<UserFieldError, 'field' | 'error'>
-    )>>, user?: Maybe<(
+      & Pick<UserFieldError, 'field' | 'message'>
+    )>, user?: Maybe<(
       { __typename?: 'User' }
       & GenericUserFragment
     )> }
@@ -154,16 +182,15 @@ export type SelfQuery = (
 
 export const GenericUserFragmentDoc = gql`
     fragment GenericUser on User {
-  id
   username
 }
     `;
 export const LoginUserDocument = gql`
     mutation LoginUser($userInput: UserLoginInput!) {
   loginUser(userInput: $userInput) {
-    errors {
+    error {
       field
-      error
+      message
     }
     user {
       ...GenericUser
@@ -187,9 +214,9 @@ export function useLogoutUserMutation() {
 export const RegisterUserDocument = gql`
     mutation RegisterUser($userInput: UserRegisterInput!) {
   registerUser(userInput: $userInput) {
-    errors {
+    error {
       field
-      error
+      message
     }
     user {
       ...GenericUser
