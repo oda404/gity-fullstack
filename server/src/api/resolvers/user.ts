@@ -1,4 +1,4 @@
-import { Arg, ArgsType, Authorized, Ctx, Field, Info, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
+import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { User } from "../entities/User";
 import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
@@ -7,6 +7,11 @@ import { mkdirSync, rm } from "fs";
 import { join } from "path";
 import { parsePGError, validateUserLoginInput, validateUserRegisterInput } from "../../utils/userValidation";
 import { Repo } from "../entities/Repo";
+import Container, { Service } from "typedi";
+import { Connection } from "typeorm";
+import { Redis } from "ioredis";
+import Mail from "nodemailer/lib/mailer";
+import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 
 @InputType()
 export class UserLoginInput
@@ -19,7 +24,7 @@ export class UserLoginInput
 };
 
 @InputType()
-export class UserRegisterInput
+export class UserRegisterInput implements Partial<User>
 {
     @Field()
     username: string;
@@ -54,22 +59,25 @@ export class UserResponse
     user?: User | null = null;
 };
 
-@Resolver()
+@Resolver(of => User)
 export class UserResolver
 {
-    @Authorized("basic")
+    private readonly pgCon = Container.get<Connection>("pgCon");
+    private readonly redisClient = Container.get<Redis>("redisClient");
+    private readonly mailTransporter = Container.get<Mail>("mailTransporter");
+
+    @Authorized(AUTH_COOKIE)
     @Query(() => User, { nullable: true })
     async self(
-        @Ctx() { pgCon, req }: ApolloContext
+        @Ctx() { req }: ApolloContext
     ): Promise<User | undefined>
     {
-        return pgCon.manager.findOne(User, { id: req.session.userId });
+        return this.pgCon.manager.findOne(User, { id: req.session.userId });
     }
 
     @Mutation(() => UserResponse)
     async registerUser(
         @Arg("userInput") userInput: UserRegisterInput,
-        @Ctx() { pgCon }: ApolloContext
     ): Promise<UserResponse>
     {
         const response = new UserResponse();
@@ -82,7 +90,7 @@ export class UserResolver
 
         const user = new User();
         return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
-            return pgCon.manager.save(user).then( val => {
+            return this.pgCon.manager.save(user).then( val => {
                 try
                 {
                     mkdirSync(join(rootGitDir, userInput.username));
@@ -101,11 +109,11 @@ export class UserResolver
     @Mutation(() => UserResponse)
     async loginUser(
         @Arg("userInput") userInput: UserLoginInput,
-        @Ctx() { pgCon, req }: ApolloContext
+        @Ctx() { req }: ApolloContext
     ): Promise<UserResponse>
     {
         let response = new UserResponse();
-        response = await validateUserLoginInput(userInput, pgCon);
+        response = await validateUserLoginInput(userInput, this.pgCon);
 
         if(response.error)
         {
@@ -114,18 +122,18 @@ export class UserResolver
 
         req.session.userId = String(response.user!.id);
         response.user!.aliveSessions.push(req.session.id);
-        pgCon.manager.save(response.user);
+        this.pgCon.manager.save(response.user);
 
         return response;
     }
 
-    @Authorized("basic")
+    @Authorized(AUTH_COOKIE)
     @Mutation(() => Boolean, { nullable: true })
     async logoutUser(
-        @Ctx() { req, res, pgCon }: ApolloContext
+        @Ctx() { req, res }: ApolloContext
     ): Promise<boolean>
     {
-        let user = await pgCon.manager.findOne(User, { id: req.session.userId });
+        let user = await this.pgCon.manager.findOne(User, { id: req.session.userId });
         if(user !== undefined)
         {
             let index = user.aliveSessions.indexOf(req.session.id);
@@ -133,7 +141,7 @@ export class UserResolver
             {
                 user.aliveSessions.splice(index, 1);
             }
-            pgCon.manager.save(user);
+            this.pgCon.manager.save(user);
         }
         
         res.clearCookie(SESSION_COOKIE_NAME);
@@ -142,43 +150,45 @@ export class UserResolver
         return true;
     }
 
-    @Authorized("extended")
+    @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
     async deleteUser(
-        @Ctx() { res, pgCon, redisClient, user } : ApolloContext,
-        @Arg("password") password: string
+        @Ctx() { res, user } : ApolloContext,
+        @Arg("password") password: string // for the Authorized middleware
     ): Promise<boolean>
     {
         /* clear user's cookies */
-        user!.aliveSessions.forEach(sessId => redisClient.del(`sess:${sessId}`));
+        user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* delete repo entries from db */
         user!.repos.forEach(repo => {
-            pgCon.manager.delete(Repo, { name: repo });
+            this.pgCon.manager.delete(Repo, { name: repo });
         });
         /* remove user's directory */
         rm(join(rootGitDir, user!.username), { recursive: true, force: true }, () => {  });
         /* remove user's db entry */
-        pgCon.manager.delete(User, user);
+        this.pgCon.manager.delete(User, user);
 
         return true;
     }
 
-    @Authorized("extended")
+    @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
     async changeUserEmail(
-        @Ctx() { mailTransporter, user }: ApolloContext,
+        @Ctx() { user }: ApolloContext,
+        @Arg("password") password: string, // for the Authorized middleware
+        @Arg("newEmail") newEmail: string
     ): Promise<boolean>
     {
 
         return true;
     }
 
-    @Authorized("extended")
+    @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
     async changeUserPassword(
         @Ctx() { user }: ApolloContext,
-        @Arg("password") password: string,
+        @Arg("password") password: string, // for the Authorized middleware
         @Arg("newPassword") newPassword: string,
     ): Promise<boolean>
     {
@@ -188,8 +198,7 @@ export class UserResolver
 
     @Mutation(() => Boolean, { nullable: true })
     async forgotUserPassword(
-        @Ctx() { mailTransporter }: ApolloContext,
-        @Arg("email") email: string
+        @Arg("usernameOrEmail") usernameOrEmail: string
     ): Promise<boolean>
     {
 

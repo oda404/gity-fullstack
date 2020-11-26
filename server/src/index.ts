@@ -9,7 +9,7 @@ import {
 import { RequestHandler } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
-import { buildSchema } from "type-graphql";
+import { buildSchema, ResolverData } from "type-graphql";
 import { UserResolver } from "./api/resolvers/user";
 import { RepoResolver } from "./api/resolvers/repo";
 import { Connection, createConnection } from "typeorm";
@@ -26,6 +26,7 @@ import { logInfo, logErr } from "./utils";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
 import { createTransport } from "nodemailer";
+import { Container } from "typedi";
 
 function baseMiddleware(pgCon: Connection): RequestHandler
 {
@@ -62,7 +63,7 @@ async function main(): Promise<void>
         synchronize: !__prod__,
         logging: !__prod__, 
         username: "gity",
-        password: DB_PASS || "pass",
+        password: DB_PASS,
         entities: [
             join(__dirname, "api/entities/**/*.js")
         ]
@@ -71,6 +72,7 @@ async function main(): Promise<void>
     if(pgCon.isConnected)
     {
         logInfo("PostgreSQL connection established");
+        Container.set("pgCon", pgCon);
     }
     else
     {
@@ -83,6 +85,7 @@ async function main(): Promise<void>
     
     redisClient.on("ready", () => {
         logInfo("Redis connection established");
+        Container.set("redisClient", redisClient);
     });
 
     redisClient.on("error", (message) => {
@@ -99,6 +102,8 @@ async function main(): Promise<void>
         }
     });
 
+    Container.set("mailTransporter", mailTransporter);
+
     const app = express();
 
     const apolloServer = new ApolloServer({
@@ -109,10 +114,11 @@ async function main(): Promise<void>
             ],
             validate: false,
             authChecker: customAuthChecker,
-            authMode: "null"
+            authMode: "null",
+            container: Container
         }),
         playground: !__prod__,
-        context: ({ req, res }): ApolloContext => ({ pgCon, redisClient, mailTransporter, req, res })
+        context: ({ req, res }): ApolloContext => ({ req, res })
     });
 
     app.use(baseMiddleware(pgCon));
@@ -135,7 +141,7 @@ async function main(): Promise<void>
                 sameSite: "strict", // only send cookies if on the same site
                 secure: __prod__
             },
-            secret: SESSION_SECRET || "secret",
+            secret: SESSION_SECRET,
             resave: false,
             saveUninitialized: false
         })

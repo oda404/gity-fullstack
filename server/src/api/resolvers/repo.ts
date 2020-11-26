@@ -1,7 +1,10 @@
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Field, Mutation, ObjectType, Resolver } from "type-graphql";
 import { Repo } from "../entities/Repo";
 import { ApolloContext } from "../../types";
 import { User } from "../entities/User";
+import { Container } from "typedi";
+import { Connection } from "typeorm";
+import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 
 @ObjectType()
 class RepoResponse
@@ -18,20 +21,17 @@ const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 @Resolver()
 export class RepoResolver
 {
-    @Mutation(() => RepoResponse)
+    private readonly pgCon = Container.get<Connection>("pgCon");
+
+    @Authorized(AUTH_COOKIE)
+    @Mutation(() => RepoResponse, { nullable: true })
     async createRepo(
-        @Ctx() { pgCon, req }: ApolloContext,
+        @Ctx() { req }: ApolloContext,
         @Arg("name") name: string,
         @Arg("public") _public: boolean
-    )
+    ): Promise<RepoResponse | null>
     {
         let response = new RepoResponse();
-
-        if(req.session.userId === undefined)
-        {
-            response.error = "You are not logged in";
-            return response;
-        }
 
         if(!name.match(REPO_NAME_REGEX))
         {
@@ -39,7 +39,7 @@ export class RepoResolver
             return response;
         }
 
-        const user = await pgCon.manager.findOne(User, { id: req.session.userId });
+        const user = await this.pgCon.manager.findOne(User, { id: req.session.userId });
         if(user === undefined)
         {
             response.error = "Internal server error";
@@ -54,19 +54,22 @@ export class RepoResolver
         }
 
         user!.repos.push(name);
-        pgCon.manager.save(user);
+        this.pgCon.manager.save(user);
 
-        response.repo = await pgCon.manager.save(repo);
+        response.repo = await this.pgCon.manager.save(repo);
         return response;
     }
 
-    @Mutation(() => Boolean)
+    @Authorized(AUTH_PASSWD)
+    @Mutation(() => Boolean, { nullable: true })
     async deleteRepo(
-        @Ctx() { pgCon, req }: ApolloContext,
+        @Ctx() { req, user }: ApolloContext,
         @Arg("name") name: string,
         @Arg("public") _public: boolean
-    ): Promise<Boolean>
+    ): Promise<boolean>
     {
+
+
         return true;
     }
 };
