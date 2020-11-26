@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, ArgsType, Authorized, Ctx, Field, Info, InputType, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import { User } from "../entities/User";
 import { rootGitDir } from "../../service/gityServer";
 import { ApolloContext } from "../../types";
@@ -145,25 +145,19 @@ export class UserResolver
     @Authorized("extended")
     @Mutation(() => Boolean, { nullable: true })
     async deleteUser(
-        @Ctx() { res, req, pgCon, redisClient } : ApolloContext,
+        @Ctx() { res, pgCon, redisClient, user } : ApolloContext,
         @Arg("password") password: string
     ): Promise<boolean>
     {
-        let user = await pgCon.manager.findOne(User, { id: req.session.userId });
-        if(user === undefined)
-        {
-            return false;
-        }
-
         /* clear user's cookies */
-        user.aliveSessions.forEach(sessId => redisClient.del(`sess:${sessId}`));
+        user!.aliveSessions.forEach(sessId => redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* delete repo entries from db */
-        user.repos.forEach(repo => {
+        user!.repos.forEach(repo => {
             pgCon.manager.delete(Repo, { name: repo });
         });
         /* remove user's directory */
-        rm(join(rootGitDir, user.username), { recursive: true, force: true }, () => {  });
+        rm(join(rootGitDir, user!.username), { recursive: true, force: true }, () => {  });
         /* remove user's db entry */
         pgCon.manager.delete(User, user);
 
@@ -173,22 +167,32 @@ export class UserResolver
     @Authorized("extended")
     @Mutation(() => Boolean, { nullable: true })
     async changeUserEmail(
-        @Ctx() { mailTransporter }: ApolloContext,
-        @Arg("password") password: string,
-        @Arg("newEmail") newEmail: string
-    )
+        @Ctx() { mailTransporter, user }: ApolloContext,
+    ): Promise<boolean>
     {
 
+        return true;
     }
 
     @Authorized("extended")
     @Mutation(() => Boolean, { nullable: true })
     async changeUserPassword(
-        @Ctx() { mailTransporter }: ApolloContext,
+        @Ctx() { user }: ApolloContext,
         @Arg("password") password: string,
-        @Arg("newPassword") newPassword: string
-    )
+        @Arg("newPassword") newPassword: string,
+    ): Promise<boolean>
+    {
+        console.log(user);
+        return true;
+    }
+
+    @Mutation(() => Boolean, { nullable: true })
+    async forgotUserPassword(
+        @Ctx() { mailTransporter }: ApolloContext,
+        @Arg("email") email: string
+    ): Promise<boolean>
     {
 
+        return true;
     }
 };

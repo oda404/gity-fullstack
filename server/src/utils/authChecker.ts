@@ -7,7 +7,7 @@ export const customAuthChecker: AuthChecker<ApolloContext> = async (
     { root, args, context, info },
     roles,
 ) => {
-
+    
     switch(roles[0])
     {
     case "basic":
@@ -23,12 +23,12 @@ export const customAuthChecker: AuthChecker<ApolloContext> = async (
             return false;
         }
 
-        const user = await context.pgCon.manager.findOne(User, { id: context.req.session.userId });
-        if(user === undefined)
+        context.user = await context.pgCon.manager.findOne(User, { id: context.req.session.userId });
+        if(context.user === undefined)
         {
             return false;
         }
-        const hashResult = await verify(user.hash, args.password);
+        const hashResult = await verify(context.user.hash, args.password);
         if(!hashResult)
         {
             return false;
