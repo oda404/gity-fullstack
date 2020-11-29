@@ -4,30 +4,17 @@
 import { Request, Response } from "express";
 import gityService = require("./gityService");
 import { tryAuthenticate, AuthResponses } from "./authentication";
-import { join } from "path";
 import { access } from "fs";
-import { Connection } from "typeorm";
+import { Client } from "pg";
+import { getGitRepoPathFromURL } from "./utils";
 
-export const rootGitDir: string = "/home/oda/Documents/git/";
 let verbose = true;
 
-function getRepoPath(reqURL: string): string
-{
-    if(reqURL.length < 1)
-    {
-        return "";
-    }
-    /* repo path is of format <userName>/<repoName> */
-    let repoName = reqURL.substring(1, reqURL.indexOf('/', reqURL.indexOf('/', 1) + 1));
-
-    return join(rootGitDir, repoName);
-}
-
-function handleResponse(req: Request, res: Response, repoPath: string, service: string, dbCon: Connection): void
+function handleResponse(req: Request, res: Response, repoPath: string, service: string, pgClient: Client): void
 {
     if(req.method === "GET")
     {
-        tryAuthenticate(req, res, repoPath, dbCon).then((val) => {
+        tryAuthenticate(req, res, repoPath, pgClient).then((val) => {
             if(val === AuthResponses.GOOD)
             {
                 gityService.handleGETService(service, res, repoPath);
@@ -36,7 +23,7 @@ function handleResponse(req: Request, res: Response, repoPath: string, service: 
     }
     else if(req.method === "POST")
     {
-        tryAuthenticate(req, res, repoPath, dbCon).then((val) => {
+        tryAuthenticate(req, res, repoPath, pgClient).then((val) => {
             if(val === AuthResponses.GOOD)
             {
                 gityService.handlePOSTService(service, req, res, repoPath);
@@ -50,9 +37,9 @@ function handleResponse(req: Request, res: Response, repoPath: string, service: 
     }
 }
 
-export function requestHandler(req: Request, res: Response, service: string, dbCon: Connection): void
+export function requestHandler(req: Request, res: Response, service: string, pgClient: Client): void
 {
-    let repoPath = getRepoPath(String(req.url));
+    let repoPath = getGitRepoPathFromURL(String(req.url));
 
     if(verbose)
     {
@@ -75,7 +62,7 @@ export function requestHandler(req: Request, res: Response, service: string, dbC
         }
         else
         {
-            handleResponse(req, res, repoPath, service, dbCon);
+            handleResponse(req, res, repoPath, service, pgClient);
         }
     });
 }

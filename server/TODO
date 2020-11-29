@@ -1,1 +1,6 @@
 - clear aliveSessions from postgres when they expire in redis
+- inject pgClient in gitService
+- cleanup gitService
+- finish user bullshit
+- write repos queries
+- get rid of typeorm

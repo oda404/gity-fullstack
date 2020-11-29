@@ -53,7 +53,7 @@ export class RepoResolver
             return response;
         }
 
-        user!.repos.push(name);
+        user!.reposId.push(name);
         this.pgCon.manager.save(user);
 
         response.repo = await this.pgCon.manager.save(repo);

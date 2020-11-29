@@ -1,42 +1,31 @@
-import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, ObjectID, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Field, ObjectType } from "type-graphql";
 import { hash } from "argon2";
 
 @ObjectType()
-@Entity("users")
 export class User
 {
-    @PrimaryGeneratedColumn()
-    id: ObjectID;
+    id: string | number;
     
     @Field(() => String)
-    @Column("timestamp", { default: new Date() })
     createdAt: Date;
 
     @Field(() => String)
-    @Column("timestamp", { default: new Date() })
     editedAt: Date;
 
     @Field(() => String)
-    @Column({ unique: true })
     username: string;
 
     @Field(() => String)
-    @Column({ unique: true })
     email: string;
 
     @Field(() => Boolean)
-    @Column({ default: false })
     isEmailVerified: boolean;
 
-    @Column()
     hash: string;
 
     @Field(() => [ String ])
-    @Column("text", { array: true, default: "{}" })
-    repos: string[];
+    reposId: string[];
 
-    @Column("text", { array: true, default: "{}" })
     aliveSessions: string[];
 
     public async build(_username: string, _email: string, _password: string)

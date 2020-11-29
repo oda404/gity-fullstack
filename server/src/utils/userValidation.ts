@@ -1,7 +1,4 @@
-import { verify } from "argon2";
-import { Connection } from "typeorm";
-import { User } from "../api/entities/User";
-import { UserFieldError, UserLoginInput, UserRegisterInput, UserResponse } from "../api/resolvers/user";
+import { UserFieldError, UserRegisterInput, UserResponse } from "../api/resolvers/user";
 
 function isInvitationValid(invitation: string): boolean
 {
@@ -63,43 +60,6 @@ export function validateUserRegisterInput(userInput: UserRegisterInput): UserFie
     }
 
     return null;
-}
-
-export async function validateUserLoginInput(userInput: UserLoginInput, con: Connection): Promise<UserResponse>
-{
-    let user = await con.manager.findOne(
-        User, 
-        userInput.usernameOrEmail.includes('@') ? 
-        { email: userInput.usernameOrEmail } :
-        { username: userInput.usernameOrEmail } 
-    );
-
-    if(user === undefined)
-    {
-        return {
-            error: {
-                field: "usernameOrEmail",
-                message: "Username or email not found"
-            }
-        };
-    }
-
-    return verify(user.hash, userInput.password).then( result => {
-
-        if(!result)
-        {
-            return {
-                error: {
-                    field: "password",
-                    message: "Invalid password"
-                }
-            };
-        }
-
-        return {
-            user
-        }
-    });
 }
 
 export function parsePGError(err: any): UserFieldError

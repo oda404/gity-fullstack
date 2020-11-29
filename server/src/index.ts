@@ -12,13 +12,11 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema, ResolverData } from "type-graphql";
 import { UserResolver } from "./api/resolvers/user";
 import { RepoResolver } from "./api/resolvers/repo";
-import { Connection, createConnection } from "typeorm";
-import { join } from "path"
 import { exit } from "process";
 import { ApolloContext } from "./types";
 import { parse } from "url";
-import { isServiceValid } from "./service/gityService";
-import { requestHandler } from "./service/gityServer";
+import { isServiceValid } from "./gitService/gityService";
+import { requestHandler } from "./gitService/gityServer";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
 import session from "express-session";
@@ -27,8 +25,11 @@ import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
 import { createTransport } from "nodemailer";
 import { Container } from "typedi";
+import { Client } from "pg";
+import { runMigrations } from "./db/migrations";
+import { initDB } from "./db/init";
 
-function baseMiddleware(pgCon: Connection): RequestHandler
+function baseMiddleware(pgClient: Client): RequestHandler
 {
     return (req, res, next) => {
         // check if request is coming from a git client
@@ -45,7 +46,7 @@ function baseMiddleware(pgCon: Connection): RequestHandler
 
         if(isServiceValid(parsedService))
         {
-            requestHandler(req, res, parsedService, pgCon);
+            requestHandler(req, res, parsedService, pgClient);
             return;
         }
 
@@ -55,30 +56,23 @@ function baseMiddleware(pgCon: Connection): RequestHandler
 
 async function main(): Promise<void>
 {
-    let pgCon = await createConnection({
-        type: "postgres",
+    let pgClient = new Client({
         host: "localhost",
         port: 5432,
         database: "gity",
-        synchronize: !__prod__,
-        logging: !__prod__, 
-        username: "gity",
+        user: "gity",
         password: DB_PASS,
-        entities: [
-            join(__dirname, "api/entities/**/*.js")
-        ]
     });
+    pgClient.connect().then( async () => {
+        //runMigrations(pgClient);
+        initDB(pgClient);
 
-    if(pgCon.isConnected)
-    {
         logInfo("PostgreSQL connection established");
-        Container.set("pgCon", pgCon);
-    }
-    else
-    {
+        Container.set("pgClient", pgClient);
+    }).catch(() => {
         logErr("PostgreSQL connection failed. aborting...");
         exit();
-    }
+    });
 
     const RedisStore = connectRedis(session);
     const redisClient = new Redis();
@@ -121,7 +115,7 @@ async function main(): Promise<void>
         context: ({ req, res }): ApolloContext => ({ req, res })
     });
 
-    app.use(baseMiddleware(pgCon));
+    app.use(baseMiddleware(pgClient));
     app.use(
         cors({
             origin: "http://localhost:3000",

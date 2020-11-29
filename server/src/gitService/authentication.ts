@@ -3,8 +3,9 @@
 
 import { verify } from "argon2";
 import { Request, Response } from "express";
-import { Connection } from "typeorm";
-import { User } from "../api/entities/User"
+import { Client } from "pg";
+import { PG_findUser } from "../db/user";
+import { Container } from "typedi";
 
 export enum AuthResponses
 {
@@ -25,7 +26,7 @@ function validateRepoUserName(repoPath: string, username: string): boolean
     return (repoPath.substring(repoPath.lastIndexOf('/', lastI - 1) + 1, lastI) === username);
 }
 
-export async function tryAuthenticate(req: Request, res: Response, repoPath: string, dbCon: Connection): Promise<AuthResponses>
+export async function tryAuthenticate(req: Request, res: Response, repoPath: string, pgClient: Client): Promise<AuthResponses>
 {
     if(req.headers.authorization === undefined)
     {
@@ -46,15 +47,15 @@ export async function tryAuthenticate(req: Request, res: Response, repoPath: str
         return AuthResponses.BAD;
     }
 
-    const user = await dbCon.manager.findOne(User, { username: username });
+    const user = await (await PG_findUser(pgClient, { username })).user;
     if(user === undefined)
     {
         respondUnauthorized(res);
         return AuthResponses.BAD;
     }
         
-    return verify(user.hash, password).then(result => {
-        if(result)
+    return verify(user.hash, password).then( match => {
+        if(match)
         {
             return AuthResponses.GOOD;
         }
