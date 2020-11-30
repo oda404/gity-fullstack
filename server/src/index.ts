@@ -6,7 +6,6 @@ import {
     SESSION_COOKIE_NAME,
     SESSION_SECRET
 } from "./consts";
-import { RequestHandler } from "express";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema, ResolverData } from "type-graphql";
@@ -18,7 +17,6 @@ import { gitService } from "./gitService/service";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
 import session from "express-session";
-import { logInfo, logErr } from "./utils";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
 import { createTransport } from "nodemailer";
@@ -26,9 +24,11 @@ import { Container } from "typedi";
 import { Client } from "pg";
 import { runMigrations } from "./db/migrations";
 import { initDB } from "./db/init";
+import { printServerInfo, logInfo, logErr } from "./utils/logging";
 
 async function main(): Promise<void>
 {
+    printServerInfo();
     let pgClient = new Client({
         host: "localhost",
         port: 5432,
@@ -66,8 +66,8 @@ async function main(): Promise<void>
         }
     });
 
-    Container.set("redisClient", redisClient);
     Container.set("pgClient", pgClient);
+    Container.set("redisClient", redisClient);
     Container.set("mailTransporter", mailTransporter);
 
     const app = express();
@@ -116,9 +116,7 @@ async function main(): Promise<void>
     );
     apolloServer.applyMiddleware({ app, cors: false });
 
-    app.listen(SERVER_PORT, () => {
-        logInfo(`Server started on port ${SERVER_PORT}`);
-    });
+    app.listen(SERVER_PORT);
 }
 
 main().catch(err => console.error(err));
