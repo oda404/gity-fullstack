@@ -5,7 +5,6 @@ import { verify } from "argon2";
 import { Request, Response } from "express";
 import { Client } from "pg";
 import { PG_findUser } from "../db/user";
-import { Container } from "typedi";
 
 export enum AuthResponses
 {
