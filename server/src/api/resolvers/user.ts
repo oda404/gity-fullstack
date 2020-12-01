@@ -2,10 +2,7 @@ import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Re
 import { User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
-import { mkdirSync, rm } from "fs";
-import { join } from "path";
 import { parsePGError, validateUserRegisterInput } from "../../utils/userValidation";
-import { Repo } from "../entities/Repo";
 import Container from "typedi";
 import { Redis } from "ioredis";
 import Mail from "nodemailer/lib/mailer";
@@ -14,6 +11,8 @@ import { Client } from "pg";
 import { verify } from "argon2";
 import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser } from "../../db/user";
 import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
+import { v4 as genuuidV4 } from "uuid";
+import { getTestMessageUrl } from "nodemailer";
 
 @InputType()
 export class UserLoginInput
@@ -206,6 +205,8 @@ export class UserResolver
         @Arg("newEmail") newEmail: string
     ): Promise<boolean>
     {
+        user!.email = newEmail;
+        PG_updateUser(this.pgClient, user!);
 
         return true;
     }
@@ -215,18 +216,40 @@ export class UserResolver
     async changeUserPassword(
         @Ctx() { user }: ApolloContext,
         @Arg("password") password: string, // for the Authorized middleware
-        @Arg("newPassword") newPassword: string,
+        @Arg("newPassword") newPassword: string
     ): Promise<boolean>
     {
-        console.log(user);
+        user!.build = new User().build;
+        user!.build(user!.username, user!.email, newPassword).then( () => {
+            PG_updateUser(this.pgClient, user!);
+        });
+
         return true;
     }
 
     @Mutation(() => Boolean, { nullable: true })
     async forgotUserPassword(
-        @Arg("usernameOrEmail") usernameOrEmail: string
+        @Arg("email") email: string
     ): Promise<boolean>
     {
+        let key = `forgotPassToken:${genuuidV4()}`;
+
+        this.redisClient.exists(key).then( async foundN => {
+            if(foundN > 0)
+            {
+                // handle regen
+            }
+
+            this.redisClient.set(key, email, "EX", 60 * 60 /* one hour */);
+            // let mail =  await this.mailTransporter.sendMail({
+            //     from: "no-reply",
+            //     to: email,
+            //     subject: "[Gity] Password reset request",
+            //     html: `Your password reset link is <a href=\"localhost:3000\">${key}</a>`
+            // });
+
+            // console.log(getTestMessageUrl(mail));
+        });
 
         return true;
     }
