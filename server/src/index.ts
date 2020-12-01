@@ -19,7 +19,7 @@ import connectRedis from "connect-redis";
 import session from "express-session";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
-import { createTransport } from "nodemailer";
+import { createTestAccount, createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
 import { runMigrations } from "./db/migrations";
@@ -61,8 +61,8 @@ async function main(): Promise<void>
         port: 587,
         secure: false,
         auth: {
-            user: "xi4sevkyi3agmrie@ethereal.email",
-            pass: "bbmESj8ZW8RCsPu9Md"
+            user: "htucl6fvuvgxdfgo@ethereal.email",
+            pass: "ZwesZCREerPdkGv9UH"
         }
     });
 

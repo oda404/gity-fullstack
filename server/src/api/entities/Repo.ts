@@ -1,6 +1,4 @@
 import { Field, Int, ObjectType } from "type-graphql";
-import { join } from "path";
-import { createGitRepoOnDisk } from "../../gitService/utils";
 
 @ObjectType()
 export class Repo
@@ -26,12 +24,4 @@ export class Repo
     likes: number;
 
     isPrivate: boolean;
-
-    public build(owner: string, name: string, isPrivate: boolean): boolean
-    {
-        this.owner = owner;
-        this.name = name;
-        this.isPrivate = isPrivate;
-        return createGitRepoOnDisk(join(owner, name));
-    }
 };

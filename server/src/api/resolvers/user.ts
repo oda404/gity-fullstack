@@ -13,6 +13,7 @@ import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser } from "../../db/
 import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
+import { PG_deleteRepo } from "../../db/repo";
 
 @InputType()
 export class UserLoginInput
@@ -186,8 +187,8 @@ export class UserResolver
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* delete user's repos db entries */
-        user!.reposId.forEach(repo => {
-            //this.pgCon.manager.delete(Repo, { name: repo });
+        user!.reposId.forEach(repoId => {
+            PG_deleteRepo(this.pgClient, repoId);
         });
         /* remove user's directory */
         deleteUserGitDirFromDisk(user!.username);

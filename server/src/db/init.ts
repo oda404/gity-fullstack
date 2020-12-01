@@ -1,12 +1,12 @@
 import { Client } from "pg";
-import { EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH } from "./conts";
+import { EMAIL_TYPE, REPO_NAME_TYPE, USERNAME_TYPE } from "./conts";
 
 const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\
         find_user(\
             _id BIGINT DEFAULT NULL,\
-            _username VARCHAR(${USERNAME_MAX_LENGTH}) DEFAULT NULL,\
-            _email VARCHAR(${EMAIL_MAX_LENGTH}) DEFAULT NULL\
+            _username ${USERNAME_TYPE} DEFAULT NULL,\
+            _email ${EMAIL_TYPE} DEFAULT NULL\
         )\
         RETURNS SETOF users\
     AS $$\
@@ -18,8 +18,8 @@ const FUNCTIONS = [
 
     `CREATE OR REPLACE FUNCTION\
         add_user(\
-            _username VARCHAR(${USERNAME_MAX_LENGTH}),\
-            _email VARCHAR(${EMAIL_MAX_LENGTH}),\
+            _username ${USERNAME_TYPE},\
+            _email ${EMAIL_TYPE},\
             _hash TEXT\
         )\
         RETURNS SETOF users\
@@ -43,8 +43,8 @@ const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\
         update_user(\
             _id BIGINT,\
-            _username VARCHAR(${USERNAME_MAX_LENGTH}),\
-            _email VARCHAR(${EMAIL_MAX_LENGTH}),\
+            _username ${USERNAME_TYPE},\
+            _email ${EMAIL_TYPE},\
             _isEmailVerified BOOLEAN,\
             _hash TEXT,\
             _reposId BIGINT[],\
@@ -62,6 +62,48 @@ const FUNCTIONS = [
             "editedAt" = CURRENT_TIMESTAMP\
         WHERE "id" = _id RETURNING *;\
     $$ LANGUAGE 'sql';`,
+
+    `CREATE OR REPLACE FUNCTION\
+        add_repo(\
+            _name ${REPO_NAME_TYPE},\
+            _owner ${USERNAME_TYPE},\
+            _isPrivate BOOLEAN\
+        )\
+        RETURNS SETOF repos\
+    AS $$\
+        INSERT INTO repos("name", "owner", "isPrivate") VALUES(\
+            _name, _owner, _isPrivate\
+        ) RETURNING *;\
+    $$ LANGUAGE 'sql';`,
+
+    `CREATE OR REPLACE FUNCTION\
+        find_repo(\
+            _id BIGINT DEFAULT NULL,\
+            _name ${REPO_NAME_TYPE} DEFAULT NULL,\
+            _owner ${USERNAME_TYPE} DEFAULT NULL\
+        )\
+        RETURNS SETOF repos\
+    AS $$\
+        SELECT * FROM repos WHERE\
+            (_id IS NULL OR "id" = _id)\
+            AND (_name IS NULL OR "name" = _name)\
+            AND (_owner IS NULL OR "owner" = _owner)\
+    $$ LANGUAGE 'sql';`,
+
+    `CREATE OR REPLACE FUNCTION\
+        delete_repo(\
+            _id BIGINT\
+        )\
+        RETURNS INT\
+    AS $$
+        WITH c as (
+            DELETE FROM repos WHERE "id" = _id RETURNING *\
+        ) SELECT COUNT (*) FROM c;
+    $$ LANGUAGE 'sql';`
+];
+
+const PREPARES = [
+    
 ];
 
 export function initDB(client: Client): void

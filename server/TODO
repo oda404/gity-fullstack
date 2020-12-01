@@ -1,4 +1,2 @@
 - clear aliveSessions from postgres when they expire in redis
 - finish user bullshit
-- write repos queries
-- get rid of typeorm
