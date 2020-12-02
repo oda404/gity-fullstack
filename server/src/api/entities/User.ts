@@ -1,6 +1,13 @@
 import { Field, ObjectType } from "type-graphql";
 import { hash } from "argon2";
 
+export async function hashPassword(password: string): Promise<string>
+{
+    return hash(password, { timeCost: 32, saltLength: 64 }).then(hash => {
+        return hash;
+    });
+}
+
 @ObjectType()
 export class User
 {
@@ -27,13 +34,4 @@ export class User
     reposId: string[];
 
     aliveSessions: string[];
-
-    public async build(_username: string, _email: string, _password: string)
-    {
-        this.username = _username;
-        this.email = _email;
-        return hash(_password, { timeCost: 32, saltLength: 64 }).then(hash => {
-            this.hash = hash;
-        });
-    }
 };

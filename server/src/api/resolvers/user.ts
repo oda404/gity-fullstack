@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-import { User } from "../entities/User";
+import { hashPassword, User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
 import { parsePGError, validateUserRegisterInput } from "../../utils/userValidation";
@@ -8,7 +8,7 @@ import { Redis } from "ioredis";
 import Mail from "nodemailer/lib/mailer";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
-import { verify } from "argon2";
+import { hash, verify } from "argon2";
 import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser } from "../../db/user";
 import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
 import { v4 as genuuidV4 } from "uuid";
@@ -91,12 +91,13 @@ export class UserResolver
         }
 
         const user = new User();
-        return user.build(userInput.username, userInput.email, userInput.password).then( async () => {
-
+        user.username = userInput.username;
+        user.email = userInput.email;
+        return hashPassword(userInput.password).then( hash => {
             return PG_addUser(this.pgClient, {
                 username: userInput.username,
                 email: userInput.email,
-                hash: user.hash
+                hash: hash
             }).then( res => {
                 if(res.err !== undefined)
                 {
@@ -146,10 +147,10 @@ export class UserResolver
 
             req.session.userId = String(user.id);
             user.aliveSessions.push(req.session.id);
-            PG_updateUser(this.pgClient, user);
-            
-            response.user = user;
-            return response;
+            return PG_updateUser(this.pgClient, user).then(() => {
+                response.user = user;
+                return response;
+            });
         });
     }
 
@@ -187,9 +188,7 @@ export class UserResolver
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* delete user's repos db entries */
-        user!.reposId.forEach(repoId => {
-            PG_deleteRepo(this.pgClient, repoId);
-        });
+        user!.reposId.forEach(repoId => PG_deleteRepo(this.pgClient, repoId));
         /* remove user's directory */
         deleteUserGitDirFromDisk(user!.username);
         /* delete user's db entry */
@@ -201,12 +200,21 @@ export class UserResolver
     @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
     async changeUserEmail(
-        @Ctx() { user }: ApolloContext,
+        @Ctx() { req, user }: ApolloContext,
         @Arg("password") password: string, // for the Authorized middleware
         @Arg("newEmail") newEmail: string
     ): Promise<boolean>
     {
         user!.email = newEmail;
+        const aliveSessionCopy = user!.aliveSessions;
+        aliveSessionCopy.forEach( sessId => {
+            if(sessId !== req.session.id)
+            {
+                this.redisClient.del(`sess:${sessId}`);
+            }
+        });
+        user!.aliveSessions = [];
+        user!.aliveSessions.push(req.session.id);
         PG_updateUser(this.pgClient, user!);
 
         return true;
@@ -215,17 +223,21 @@ export class UserResolver
     @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
     async changeUserPassword(
-        @Ctx() { user }: ApolloContext,
+        @Ctx() { user, res }: ApolloContext,
         @Arg("password") password: string, // for the Authorized middleware
         @Arg("newPassword") newPassword: string
     ): Promise<boolean>
     {
-        user!.build = new User().build;
-        user!.build(user!.username, user!.email, newPassword).then( () => {
+        return hashPassword(newPassword).then( async hash => {
+            user!.hash = hash;
+            const aliveSessionCopy = user!.aliveSessions;
+            aliveSessionCopy.forEach( sessId => this.redisClient.del(`sess:${sessId}`) );
+            user!.aliveSessions = [];
             PG_updateUser(this.pgClient, user!);
-        });
+            res.clearCookie(SESSION_COOKIE_NAME);
 
-        return true;
+            return true;
+        });
     }
 
     @Mutation(() => Boolean, { nullable: true })
