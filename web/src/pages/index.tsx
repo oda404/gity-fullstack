@@ -1,4 +1,5 @@
 import { Box, Button, Flex } from "@chakra-ui/core";
+import { useRouter } from "next/router";
 import { FC } from "react";
 import Container from "../components/Container";
 import Footer from "../components/Footer";
@@ -13,6 +14,7 @@ interface IndexProps
 const Index: FC<IndexProps> = () =>
 {
   const [{data, fetching}] = useSelfQuery();
+  const router = useRouter();
 
   let body = null;
 
@@ -44,7 +46,7 @@ const Index: FC<IndexProps> = () =>
                 borderRadius="5px"
                 flexDir="column"
               >
-                New
+                <a href="/new">New</a>
               </Button>
             </Flex>
             <Box
@@ -61,6 +63,10 @@ const Index: FC<IndexProps> = () =>
           </Box>
         </>
       );
+    }
+    else
+    {
+      router.push("/register");
     }
   }
 

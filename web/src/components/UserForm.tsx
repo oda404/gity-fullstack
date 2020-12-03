@@ -41,13 +41,13 @@ const UserForm: FC<UserFormProps> = (props) =>
       {({ isSubmitting }) => (
         <Form>
           <InputField name="username" label="Username" />
-          <Box mt={1}>
-            <InputField name="email" label="Email" type="email" />
+          <Box mt={5}>
+            <InputField name="email" label="Email" />
           </Box>
-          <Box mt={1}>
+          <Box mt={5}>
             <InputField name="password" label="Password" type="password" />
           </Box>
-          <Box mt={1}>
+          <Box mt={5}>
             <InputField name="invitation" label="Invitation" />
           </Box>
           <Button
@@ -85,7 +85,7 @@ const UserForm: FC<UserFormProps> = (props) =>
       {({ isSubmitting }) => (
         <Form>
           <InputField name="usernameOrEmail" label="Username or Email" />
-          <Box mt={1}>
+          <Box mt={5}>
             <InputField name="password" label="Password" type="password" />
           </Box>
           <Button
@@ -108,11 +108,11 @@ const UserForm: FC<UserFormProps> = (props) =>
       border="2px solid inherit"
       borderRadius="10px"
       alignSelf="center"
-      ml="auto"
-      mr="auto"
+      boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
+      mx="auto"
     >
       {form}
-      {props.type === "register" ? <Box mt="13px" fontSize="12px">
+      {props.type === "register" ? <Box mt="13px" color="#b1a4a4" fontSize="12px">
         By signing up for Gity, you agree to our <Link href="/tos" color="#12a0d3" variant="link">Terms of service</Link>
         .
       </Box> : null}
