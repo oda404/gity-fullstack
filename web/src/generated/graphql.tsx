@@ -24,7 +24,7 @@ export type User = {
   username: Scalars['String'];
   email: Scalars['String'];
   isEmailVerified: Scalars['Boolean'];
-  repos: Array<Scalars['String']>;
+  reposId: Array<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -33,8 +33,11 @@ export type Mutation = {
   loginUser: UserResponse;
   logoutUser?: Maybe<Scalars['Boolean']>;
   deleteUser?: Maybe<Scalars['Boolean']>;
-  createRepo: RepoResponse;
-  deleteRepo: RepoDeleteResponse;
+  changeUserEmail?: Maybe<Scalars['Boolean']>;
+  changeUserPassword?: Maybe<Scalars['Boolean']>;
+  forgotUserPassword?: Maybe<Scalars['Boolean']>;
+  createRepo?: Maybe<RepoResponse>;
+  deleteRepo?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -53,13 +56,32 @@ export type MutationDeleteUserArgs = {
 };
 
 
+export type MutationChangeUserEmailArgs = {
+  newEmail: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationChangeUserPasswordArgs = {
+  newPassword: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationForgotUserPasswordArgs = {
+  email: Scalars['String'];
+};
+
+
 export type MutationCreateRepoArgs = {
-  repoInput: RepoAddInput;
+  isPrivate: Scalars['Boolean'];
+  name: Scalars['String'];
 };
 
 
 export type MutationDeleteRepoArgs = {
-  repoInput: RepoDeleteInput;
+  name: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type UserResponse = {
@@ -97,30 +119,43 @@ export type Repo = {
   name: Scalars['String'];
   owner: Scalars['String'];
   createdAt: Scalars['String'];
-  modifiedAt: Scalars['String'];
+  editedAt: Scalars['String'];
   description: Scalars['String'];
   likes: Scalars['Int'];
-};
-
-export type RepoAddInput = {
-  name: Scalars['String'];
-  public: Scalars['Boolean'];
-};
-
-export type RepoDeleteResponse = {
-  __typename?: 'RepoDeleteResponse';
-  error?: Maybe<Scalars['String']>;
-  deleted?: Maybe<Scalars['Boolean']>;
-};
-
-export type RepoDeleteInput = {
-  name: Scalars['String'];
-  password: Scalars['String'];
 };
 
 export type GenericUserFragment = (
   { __typename?: 'User' }
   & Pick<User, 'username'>
+);
+
+export type CreateRepoMutationVariables = Exact<{
+  name: Scalars['String'];
+  isPrivate: Scalars['Boolean'];
+}>;
+
+
+export type CreateRepoMutation = (
+  { __typename?: 'Mutation' }
+  & { createRepo?: Maybe<(
+    { __typename?: 'RepoResponse' }
+    & Pick<RepoResponse, 'error'>
+    & { repo?: Maybe<(
+      { __typename?: 'Repo' }
+      & Pick<Repo, 'name'>
+    )> }
+  )> }
+);
+
+export type DeleteRepoMutationVariables = Exact<{
+  name: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type DeleteRepoMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deleteRepo'>
 );
 
 export type LoginUserMutationVariables = Exact<{
@@ -185,6 +220,29 @@ export const GenericUserFragmentDoc = gql`
   username
 }
     `;
+export const CreateRepoDocument = gql`
+    mutation CreateRepo($name: String!, $isPrivate: Boolean!) {
+  createRepo(name: $name, isPrivate: $isPrivate) {
+    error
+    repo {
+      name
+    }
+  }
+}
+    `;
+
+export function useCreateRepoMutation() {
+  return Urql.useMutation<CreateRepoMutation, CreateRepoMutationVariables>(CreateRepoDocument);
+};
+export const DeleteRepoDocument = gql`
+    mutation DeleteRepo($name: String!, $password: String!) {
+  deleteRepo(name: $name, password: $password)
+}
+    `;
+
+export function useDeleteRepoMutation() {
+  return Urql.useMutation<DeleteRepoMutation, DeleteRepoMutationVariables>(DeleteRepoDocument);
+};
 export const LoginUserDocument = gql`
     mutation LoginUser($userInput: UserLoginInput!) {
   loginUser(userInput: $userInput) {

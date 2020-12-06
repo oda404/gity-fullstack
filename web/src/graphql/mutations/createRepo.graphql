@@ -1,0 +1,17 @@
+mutation CreateRepo(
+    $name: String!
+    $isPrivate: Boolean!
+)
+{
+    createRepo(
+        name: $name
+        isPrivate: $isPrivate
+    )
+    {
+        error
+
+        repo{
+            name
+        }
+    }
+}
