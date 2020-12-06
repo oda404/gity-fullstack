@@ -12,6 +12,12 @@ function isInvitationValid(invitation: string): boolean
 
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
+const FORBIDDEN_USERNAMES = [
+    "login",
+    "regiser",
+    "new",
+    "tos",
+];
 
 export function validateUserRegisterInput(userInput: UserRegisterInput): UserFieldError | null
 {
@@ -30,6 +36,14 @@ export function validateUserRegisterInput(userInput: UserRegisterInput): UserFie
         return {
             field: "username",
             message: "The username can only contain letters, numbers and the -_ symbols"
+        };
+    }
+
+    if(FORBIDDEN_USERNAMES.indexOf(userInput.username) > -1)
+    {
+        return {
+            field: "username",
+            message: "The username you chose is reserved"
         };
     }
 
