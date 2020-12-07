@@ -4,7 +4,7 @@ import { Repo } from "../api/entities/Repo";
 interface RepoAddArgs
 {
     name: string;
-    owner: string;
+    ownerId: number | string;
     isPrivate: boolean;
 };
 
@@ -12,7 +12,7 @@ interface RepoLookupArgs
 {
     id?: string | number;
     name?: string;
-    owner?: string;
+    ownerId?: string | number;
 };
 
 interface RepoDBQueryResponse
@@ -23,12 +23,12 @@ interface RepoDBQueryResponse
 
 export function PG_addRepo(
     client: Client, 
-    { name, owner, isPrivate }: RepoAddArgs
+    { name, ownerId, isPrivate }: RepoAddArgs
 ): Promise<RepoDBQueryResponse>
 {
     return client.query(`SELECT * FROM add_repo(\
         '${name}',\
-        '${owner}',\
+        '${ownerId}',\
         ${isPrivate}\
     );`).then( res => {
         return { repo: res.rows[0], err: undefined };
@@ -39,10 +39,10 @@ export function PG_addRepo(
 
 export async function PG_findRepo(
     client: Client,
-    { id, name, owner }: RepoLookupArgs
+    { id, name, ownerId }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    if(id === undefined && name === undefined && owner === undefined)
+    if(id === undefined && name === undefined && ownerId === undefined)
     {
         return { repo: undefined, err: "No args specified" }
     }
@@ -50,7 +50,7 @@ export async function PG_findRepo(
     return client.query(`SELECT * FROM find_repo(\
         "_id" => ${ id === undefined ? `NULL` : `'${id}'` },\
         "_name" => ${ name === undefined ? `NULL` : `'${name}'` },\
-        "_owner" => ${ owner === undefined ? `NULL` : `'${owner}'` }\
+        "_ownerId" => ${ ownerId === undefined ? `NULL` : `'${ownerId}'` }\
     );`).then( res => {
         return { repo: res.rows[0], err: undefined };
     }).catch( err => {

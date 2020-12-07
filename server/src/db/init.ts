@@ -66,13 +66,13 @@ const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\
         add_repo(\
             _name ${REPO_NAME_TYPE},\
-            _owner ${USERNAME_TYPE},\
+            _ownerId BIGINT,\
             _isPrivate BOOLEAN\
         )\
         RETURNS SETOF repos\
     AS $$\
-        INSERT INTO repos("name", "owner", "isPrivate") VALUES(\
-            _name, _owner, _isPrivate\
+        INSERT INTO repos("name", "ownerId", "isPrivate") VALUES(\
+            _name, _ownerId, _isPrivate\
         ) RETURNING *;\
     $$ LANGUAGE 'sql';`,
 
@@ -80,14 +80,14 @@ const FUNCTIONS = [
         find_repo(\
             _id BIGINT DEFAULT NULL,\
             _name ${REPO_NAME_TYPE} DEFAULT NULL,\
-            _owner ${USERNAME_TYPE} DEFAULT NULL\
+            _ownerId BIGINT DEFAULT NULL\
         )\
         RETURNS SETOF repos\
     AS $$\
         SELECT * FROM repos WHERE\
             (_id IS NULL OR "id" = _id)\
             AND (_name IS NULL OR "name" = _name)\
-            AND (_owner IS NULL OR "owner" = _owner)\
+            AND (_ownerId IS NULL OR "ownerId" = _ownerId)\
     $$ LANGUAGE 'sql';`,
 
     `CREATE OR REPLACE FUNCTION\

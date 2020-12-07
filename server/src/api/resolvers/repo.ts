@@ -64,7 +64,7 @@ export class RepoResolver
 
         response.repo = (await PG_addRepo(this.pgClient, {
             name,
-            owner: user.username,
+            ownerId: user.id,
             isPrivate
         })).repo;
 
@@ -88,7 +88,7 @@ export class RepoResolver
         @Arg("name") name: string,
     ): Promise<boolean>
     {
-        const repo = (await PG_findRepo(this.pgClient, { name, owner: user!.username })).repo;
+        const repo = (await PG_findRepo(this.pgClient, { name, ownerId: user!.id })).repo;
         if(repo === undefined)
         {
             return false;
