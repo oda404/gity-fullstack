@@ -15,6 +15,13 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   self?: Maybe<User>;
+  getRepo: RepoResponse;
+};
+
+
+export type QueryGetRepoArgs = {
+  name: Scalars['String'];
+  owner: Scalars['String'];
 };
 
 export type User = {
@@ -25,6 +32,22 @@ export type User = {
   email: Scalars['String'];
   isEmailVerified: Scalars['Boolean'];
   reposId: Array<Scalars['String']>;
+};
+
+export type RepoResponse = {
+  __typename?: 'RepoResponse';
+  error?: Maybe<Scalars['String']>;
+  repos: Array<Repo>;
+};
+
+export type Repo = {
+  __typename?: 'Repo';
+  name: Scalars['String'];
+  owner: Scalars['String'];
+  createdAt: Scalars['String'];
+  editedAt: Scalars['String'];
+  description: Scalars['String'];
+  likes: Scalars['Int'];
 };
 
 export type Mutation = {
@@ -108,22 +131,6 @@ export type UserLoginInput = {
   password: Scalars['String'];
 };
 
-export type RepoResponse = {
-  __typename?: 'RepoResponse';
-  error?: Maybe<Scalars['String']>;
-  repo?: Maybe<Repo>;
-};
-
-export type Repo = {
-  __typename?: 'Repo';
-  name: Scalars['String'];
-  owner: Scalars['String'];
-  createdAt: Scalars['String'];
-  editedAt: Scalars['String'];
-  description: Scalars['String'];
-  likes: Scalars['Int'];
-};
-
 export type GenericUserFragment = (
   { __typename?: 'User' }
   & Pick<User, 'username'>
@@ -140,7 +147,7 @@ export type CreateRepoMutation = (
   & { createRepo?: Maybe<(
     { __typename?: 'RepoResponse' }
     & Pick<RepoResponse, 'error'>
-    & { repo?: Maybe<(
+    & { repos: Array<(
       { __typename?: 'Repo' }
       & Pick<Repo, 'name'>
     )> }
@@ -224,7 +231,7 @@ export const CreateRepoDocument = gql`
     mutation CreateRepo($name: String!, $isPrivate: Boolean!) {
   createRepo(name: $name, isPrivate: $isPrivate) {
     error
-    repo {
+    repos {
       name
     }
   }

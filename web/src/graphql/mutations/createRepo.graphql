@@ -10,7 +10,7 @@ mutation CreateRepo(
     {
         error
 
-        repo{
+        repos{
             name
         }
     }
