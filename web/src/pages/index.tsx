@@ -66,7 +66,7 @@ const Index: FC<IndexProps> = () =>
     }
     else
     {
-      router.push("/register");
+      router.replace("/register");
     }
   }
 

@@ -147,7 +147,7 @@ const New: FC<NewProps> = () =>
     }
     else
     {
-      router.push("/register");
+      router.replace("/register");
     }
   }
 

@@ -22,7 +22,7 @@ const Register: FC<RegisterProps> = () =>
   {
     if(data?.self)
     {
-      router.push('/')
+      router.replace('/')
     }
     else
     {

@@ -22,7 +22,7 @@ const Login: FC<LoginProps> = () =>
   {
     if(data?.self)
     {
-      router.push('/')
+      router.replace('/')
     }
     else
     {
