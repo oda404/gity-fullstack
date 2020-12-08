@@ -47,7 +47,7 @@ const FUNCTIONS = [
             _email ${EMAIL_TYPE},\
             _isEmailVerified BOOLEAN,\
             _hash TEXT,\
-            _reposId BIGINT[],\
+            _repos ${REPO_NAME_TYPE}[],\
             _aliveSessions TEXT[]\
         )\
         RETURNS SETOF users\
@@ -57,7 +57,7 @@ const FUNCTIONS = [
             "email" = _email,\
             "isEmailVerified" = _isEmailVerified,\
             "hash" = _hash,\
-            "reposId" = _reposId,\
+            "repos" = _repos,\
             "aliveSessions" = _aliveSessions,\
             "editedAt" = CURRENT_TIMESTAMP\
         WHERE "id" = _id RETURNING *;\

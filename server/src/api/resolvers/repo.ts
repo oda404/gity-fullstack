@@ -74,7 +74,7 @@ export class RepoResolver
             return response;
         }
 
-        user.reposId.push(repo.id.toString());
+        user.repos.push(repo.name);
         PG_updateUser(this.pgClient, user);
         
         response.repos.push(repo);
@@ -96,10 +96,10 @@ export class RepoResolver
         }
 
         /* update user's repos */
-        const index = user!.reposId.indexOf(repo.id.toString());
+        const index = user!.repos.indexOf(repo.name);
         if(index > -1)
         {
-            user!.reposId.splice(index, 1);
+            user!.repos.splice(index, 1);
             PG_updateUser(this.pgClient, user!);
         }
         /* delete repo from disk */

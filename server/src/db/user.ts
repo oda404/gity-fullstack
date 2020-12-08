@@ -23,7 +23,7 @@ interface UserAddArgs
 
 export async function PG_updateUser(
     client: Client,
-    { id, username, email, hash, isEmailVerified, reposId, aliveSessions }: User
+    { id, username, email, hash, isEmailVerified, repos, aliveSessions }: User
 ): Promise<UserDBQueryResponse>
 {
     return client.query(`SELECT * FROM update_user(\
@@ -32,7 +32,7 @@ export async function PG_updateUser(
         '${email}',\
         '${isEmailVerified}',\
         '${hash}',\
-        '{${reposId}}',\
+        '{${repos}}',\
         '{${aliveSessions}}'\
     );`).then( res => {
         return { user: res.rows[0], err: undefined };

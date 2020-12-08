@@ -31,7 +31,7 @@ export class User
     hash: string;
 
     @Field(() => [ String ])
-    reposId: string[];
+    repos: string[];
 
     aliveSessions: string[];
 };

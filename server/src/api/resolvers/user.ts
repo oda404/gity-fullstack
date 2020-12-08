@@ -187,8 +187,6 @@ export class UserResolver
         /* clear user's cookies */
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
-        /* delete user's repos db entries */
-        user!.reposId.forEach(repoId => PG_deleteRepo(this.pgClient, repoId));
         /* remove user's directory */
         deleteUserGitDirFromDisk(user!.username);
         /* delete user's db entry */
