@@ -15,6 +15,13 @@ interface RepoLookupArgs
     ownerId?: string | number;
 };
 
+interface ReposLookupArgs
+{
+    ownerId: string | number;
+    count: number;
+    start: number
+};
+
 interface RepoDBQueryResponse
 {
     repo?: Repo;
@@ -72,5 +79,17 @@ export async function PG_deleteRepo(
         return false;
     }).catch( () => {
         return false;
+    });
+}
+
+export async function PG_findRepos(
+    client: Client,
+    { ownerId, count, start }: ReposLookupArgs
+): Promise<Repo[]>
+{
+    return client.query(`SELECT * FROM find_repos('${ownerId}', '${count}', '${start}');`).then( res => {
+        return res.rows;
+    }).catch( () => {
+        return [];
     });
 }

@@ -99,6 +99,17 @@ const FUNCTIONS = [
         WITH c as (
             DELETE FROM repos WHERE "id" = _id RETURNING *\
         ) SELECT COUNT (*) FROM c;
+    $$ LANGUAGE 'sql';`,
+
+    `CREATE OR REPLACE FUNCTION \
+        find_repos(\
+            _ownerId BIGINT,\
+            _count INT,\
+            _start INT\
+        )\
+        RETURNS SETOF repos\
+    AS $$
+        SELECT * FROM repos WHERE "ownerId" = _ownerId OFFSET _start LIMIT _count;
     $$ LANGUAGE 'sql';`
 ];
 

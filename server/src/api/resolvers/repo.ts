@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Field, Mutation, ObjectType, Resolver } from "type-graphql";
+import { Arg, Authorized, Ctx, Field, Int, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { Repo } from "../entities/Repo";
 import { ApolloContext } from "../../types";
 import { Container } from "typedi";
@@ -6,7 +6,7 @@ import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { REPO_NAME_MAX_LENGTH } from "../../db/conts";
 import { PG_findUser, PG_updateUser } from "../../db/user";
-import { PG_addRepo, PG_deleteRepo, PG_findRepo } from "../../db/repo";
+import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findRepos } from "../../db/repo";
 import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
 
@@ -16,8 +16,8 @@ class RepoResponse
     @Field(() => String, { nullable: true })
     error?: string;
 
-    @Field(() => Repo, { nullable: true })
-    repo?: Repo;
+    @Field(() => [Repo], { defaultValue: [] })
+    repos: Repo[] = [];
 };
 
 const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
@@ -62,21 +62,22 @@ export class RepoResolver
             return response;
         }
 
-        response.repo = (await PG_addRepo(this.pgClient, {
+        const repo = (await PG_addRepo(this.pgClient, {
             name,
             ownerId: user.id,
             isPrivate
         })).repo;
 
-        if(response.repo === undefined)
+        if(repo === undefined)
         {
             response.error = "Internal server error.";
             return response;
         }
 
-        user.reposId.push(response.repo.id.toString());
+        user.reposId.push(repo.id.toString());
         PG_updateUser(this.pgClient, user);
-
+        
+        response.repos.push(repo);
         return response;
     }
 
@@ -113,5 +114,76 @@ export class RepoResolver
         }
         
         return true;
+    }
+
+    @Query(() => RepoResponse)
+    async getRepo(
+        @Ctx() { req }: ApolloContext,
+        @Arg("owner") owner: string,
+        @Arg("name") name: string
+    ): Promise<RepoResponse>
+    {
+        const response = new RepoResponse();
+
+        const user = (await PG_findUser(this.pgClient, { username: owner })).user;
+        if(user === undefined)
+        {
+            response.error = "User not found"
+            return response;
+        }
+
+        const repo = (await PG_findRepo(this.pgClient, { name, ownerId: user.id })).repo;
+        if(repo === undefined)
+        {
+            response.error = "Repo not found";
+            return response;
+        }
+
+        if(repo.isPrivate)
+        {
+            if(!req.session.userId || req.session.userId !== user.id)
+            {
+                response.error = "Repo not found";
+                return response;
+            }
+        }
+
+        response.repos.push(repo);
+        return response;
+    }
+
+    @Query(() => RepoResponse)
+    async getRepos(
+        @Ctx() { req }: ApolloContext,
+        @Arg("owner") owner: string,
+        @Arg("count", () => Int) count: number,
+        @Arg("start", () => Int, { defaultValue: 0 }) start: number
+    ): Promise<RepoResponse>
+    {
+        const response = new RepoResponse();
+        
+        const user = (await PG_findUser(this.pgClient, { username: owner })).user;
+        if(user === undefined)
+        {
+            response.error = "User not found";
+            return response;
+        }
+
+        response.repos = (await PG_findRepos(this.pgClient, { ownerId: user.id, count, start }));
+
+        /* strip out private repos if user is not logged in */
+        if(req.session.userId === undefined || req.session.userId !== user.id)
+        {
+            let i = response.repos.length;
+            while(i--)
+            {
+                if(response.repos[i].isPrivate)
+                {
+                    response.repos.splice(i, 1);
+                }
+            }
+        }
+
+        return response;
     }
 };
