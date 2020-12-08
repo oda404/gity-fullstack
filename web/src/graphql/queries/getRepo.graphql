@@ -1,0 +1,17 @@
+query GetRepo(
+    $name: String!
+    $owner: String!
+)
+{
+    getRepo(
+        name: $owner
+        owner: $owner
+    )
+    {
+        repos{
+            ...GenericRepo
+        }
+
+        error
+    }
+}

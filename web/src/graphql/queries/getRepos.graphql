@@ -1,0 +1,19 @@
+query GetRepos(
+    $owner: String!
+    $count: Int!
+    $start: Int = 0
+)
+{
+    getRepos(
+        owner: $owner
+        count: $count
+        start: $start
+    )
+    {
+        repos{
+            ...GenericRepo
+        }
+
+        error
+    }
+}
