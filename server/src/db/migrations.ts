@@ -21,7 +21,7 @@ const CREATE_REPOS_TABLE_QUERY = `\
         "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
         "editedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
         "name" ${REPO_NAME_TYPE} NOT NULL,\
-        "ownerId" BIGINT REFERENCES users(id) ON DELETE CASCADE,\
+        "ownerId" BIGINT REFERENCES "users"("id") ON DELETE CASCADE,\
         "description" ${REPO_DESCRIPTION_TYPE} DEFAULT 'No description provided.',\
         "likes" INT DEFAULT 0,\
         "isPrivate" BOOLEAN DEFAULT FALSE\
