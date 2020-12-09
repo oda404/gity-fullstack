@@ -13,16 +13,15 @@ export class User
 {
     id: string | number;
     
-    @Field(() => String)
+    @Field(() => Date)
     createdAt: Date;
 
-    @Field(() => String)
+    @Field(() => Date)
     editedAt: Date;
 
     @Field(() => String)
     username: string;
 
-    @Field(() => String)
     email: string;
 
     @Field(() => Boolean)

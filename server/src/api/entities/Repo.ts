@@ -11,10 +11,10 @@ export class Repo
     @Field(() => String)
     owner: string;
 
-    @Field(() => String)
+    @Field(() => Date)
     createdAt: Date;
 
-    @Field(() => String)
+    @Field(() => Date)
     editedAt: Date;
 
     @Field(() => String)
