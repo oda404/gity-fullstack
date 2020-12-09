@@ -141,7 +141,7 @@ export type UserLoginInput = {
 
 export type GenericRepoFragment = (
   { __typename?: 'Repo' }
-  & Pick<Repo, 'name' | 'owner' | 'likes'>
+  & Pick<Repo, 'name' | 'likes'>
 );
 
 export type GenericUserFragment = (
@@ -275,7 +275,6 @@ export type SelfQuery = (
 export const GenericRepoFragmentDoc = gql`
     fragment GenericRepo on Repo {
   name
-  owner
   likes
 }
     `;
