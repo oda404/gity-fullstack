@@ -1,2 +1,3 @@
 - clear aliveSessions from postgres when they expire in redis
 - finish user bullshit
+- bundle up multiple queries into a transaction
