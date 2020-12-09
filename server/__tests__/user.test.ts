@@ -13,7 +13,7 @@ const registerPostData = {
         username
         email
         isEmailVerified
-        reposId
+        repos
       }
     }
   }`,
@@ -41,7 +41,7 @@ const loginPostData = {
         username
         email
         isEmailVerified
-        reposId
+        repos
       }
     }
   }`,
@@ -60,7 +60,7 @@ const selfPostData = {
       username
       email
       isEmailVerified
-      reposId
+      repos
     }
   }`,
   operationName: 'self'
@@ -108,7 +108,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("test@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       done();
     });
   });
@@ -122,7 +122,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("test@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
       done();
@@ -138,7 +138,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("test@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
@@ -152,7 +152,7 @@ describe("User", () => {
         expect(userRes.username).toEqual("test");
         expect(userRes.email).toEqual("test@testmail.com");
         expect(userRes.isEmailVerified).toEqual(false);
-        expect(userRes.reposId).toEqual([]);
+        expect(userRes.repos).toEqual([]);
 
         done();
       });
@@ -168,7 +168,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("test@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
@@ -201,7 +201,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("newTest@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
@@ -223,7 +223,7 @@ describe("User", () => {
           expect(_userRes.username).toEqual("test");
           expect(_userRes.email).toEqual("newTest@testmail.com");
           expect(_userRes.isEmailVerified).toEqual(false);
-          expect(_userRes.reposId).toEqual([]);
+          expect(_userRes.repos).toEqual([]);
           expect(__res.headers["set-cookie"]).toBeDefined();
           expect(__res.headers["set-cookie"].length).toBeGreaterThan(0);
 
@@ -246,7 +246,7 @@ describe("User", () => {
       expect(userRes.username).toEqual("test");
       expect(userRes.email).toEqual("newTest@testmail.com");
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.reposId).toEqual([]);
+      expect(userRes.repos).toEqual([]);
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
