@@ -13,6 +13,7 @@ import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } 
 import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
+import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 
 @InputType()
 export class UserLoginInput
@@ -138,6 +139,10 @@ export class UserResolver
             };
             return response;
         }
+
+        console.log(user.aliveSessions)
+        await clearUnusedCookies(user, this.redisClient);
+        console.log(user.aliveSessions)
 
         if(user.aliveSessions.indexOf(req.session.id) === -1)
         {
