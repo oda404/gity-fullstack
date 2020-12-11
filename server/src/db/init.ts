@@ -47,7 +47,6 @@ const FUNCTIONS = [
             _email ${EMAIL_TYPE},\
             _isEmailVerified BOOLEAN,\
             _hash TEXT,\
-            _repos ${REPO_NAME_TYPE}[],\
             _aliveSessions TEXT[]\
         )\
         RETURNS SETOF users\
@@ -57,10 +56,19 @@ const FUNCTIONS = [
             "email" = _email,\
             "isEmailVerified" = _isEmailVerified,\
             "hash" = _hash,\
-            "repos" = _repos,\
             "aliveSessions" = _aliveSessions,\
             "editedAt" = CURRENT_TIMESTAMP\
         WHERE "id" = _id RETURNING *;\
+    $$ LANGUAGE 'sql';`,
+
+    `CREATE OR REPLACE FUNCTION
+        logout_user(
+            _id BIGINT,
+            _sessId TEXT
+        )
+        RETURNS SETOF users
+    AS $$
+        UPDATE users SET "editedAt" = CURRENT_TIMESTAMP, "aliveSessions" = (SELECT * FROM array_remove("aliveSessions", _sessId)) WHERE "id" = _id RETURNING *;
     $$ LANGUAGE 'sql';`,
 
     `CREATE OR REPLACE FUNCTION\
@@ -76,28 +84,26 @@ const FUNCTIONS = [
         ) RETURNING *;\
     $$ LANGUAGE 'sql';`,
 
-    `CREATE OR REPLACE FUNCTION\
-        find_repo(\
-            _id BIGINT DEFAULT NULL,\
-            _name ${REPO_NAME_TYPE} DEFAULT NULL,\
-            _ownerId BIGINT DEFAULT NULL\
-        )\
-        RETURNS SETOF repos\
-    AS $$\
-        SELECT * FROM repos WHERE\
-            (_id IS NULL OR "id" = _id)\
-            AND (_name IS NULL OR "name" = _name)\
-            AND (_ownerId IS NULL OR "ownerId" = _ownerId)\
+    `CREATE OR REPLACE FUNCTION
+        find_repo(
+            _name ${REPO_NAME_TYPE},
+            _owner ${USERNAME_TYPE}
+        )
+        RETURNS SETOF repos
+    AS $$
+        SELECT r.* FROM repos r
+        WHERE r."name" = _name AND r."ownerId" = (SELECT "id" FROM users WHERE "username" = _owner);
     $$ LANGUAGE 'sql';`,
 
     `CREATE OR REPLACE FUNCTION\
         delete_repo(\
-            _id BIGINT\
+            _name ${REPO_NAME_TYPE},
+            _ownerId BIGINT
         )\
         RETURNS INT\
     AS $$
         WITH c as (
-            DELETE FROM repos WHERE "id" = _id RETURNING *\
+            DELETE FROM repos WHERE "name" = _name AND "ownerId" = _ownerId RETURNING *\
         ) SELECT COUNT (*) FROM c;
     $$ LANGUAGE 'sql';`,
 

@@ -10,9 +10,8 @@ interface RepoAddArgs
 
 interface RepoLookupArgs
 {
-    id?: string | number;
-    name?: string;
-    ownerId?: string | number;
+    name: string;
+    owner: string;
 };
 
 interface ReposLookupArgs
@@ -46,19 +45,10 @@ export function PG_addRepo(
 
 export async function PG_findRepo(
     client: Client,
-    { id, name, ownerId }: RepoLookupArgs
+    { name, owner }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    if(id === undefined && name === undefined && ownerId === undefined)
-    {
-        return { repo: undefined, err: "No args specified" }
-    }
-
-    return client.query(`SELECT * FROM find_repo(\
-        "_id" => ${ id === undefined ? `NULL` : `'${id}'` },\
-        "_name" => ${ name === undefined ? `NULL` : `'${name}'` },\
-        "_ownerId" => ${ ownerId === undefined ? `NULL` : `'${ownerId}'` }\
-    );`).then( res => {
+    return client.query(`SELECT * FROM find_repo('${name}', '${owner}');`).then( res => {
         return { repo: res.rows[0], err: undefined };
     }).catch( err => {
         return { repo: undefined, err };
@@ -67,10 +57,11 @@ export async function PG_findRepo(
 
 export async function PG_deleteRepo(
     client: Client,
-    id: number | string
+    name: string,
+    ownerId: string | number
 ): Promise<boolean>
 {
-    return client.query(`SELECT * FROM delete_repo('${id}');`).then( res => {
+    return client.query(`SELECT * FROM delete_repo('${name}', '${ownerId}');`).then( res => {
         if(res.rows[0] !== undefined)
         {
             return !(res.rows[0].delete_user === 0);

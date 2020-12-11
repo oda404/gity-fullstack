@@ -23,7 +23,7 @@ interface UserAddArgs
 
 export async function PG_updateUser(
     client: Client,
-    { id, username, email, hash, isEmailVerified, repos, aliveSessions }: User
+    { id, username, email, hash, isEmailVerified, aliveSessions }: User
 ): Promise<UserDBQueryResponse>
 {
     return client.query(`SELECT * FROM update_user(\
@@ -32,7 +32,6 @@ export async function PG_updateUser(
         '${email}',\
         '${isEmailVerified}',\
         '${hash}',\
-        '{${repos}}',\
         '{${aliveSessions}}'\
     );`).then( res => {
         return { user: res.rows[0], err: undefined };
@@ -89,4 +88,21 @@ export async function PG_deleteUser(
     }).catch( () => {
         return false;
     });
+}
+
+export async function PG_logoutUser(
+    client: Client,
+    id: string | number,
+    sessId: string
+): Promise<UserDBQueryResponse>
+{
+    return client.query(`SELECT * FROM logout_user('${id}', '${sessId}');`).then(res => {
+        return {
+            user: res.rows[0]
+        }
+    }).catch(err => {
+        return {
+            err
+        }
+    })
 }

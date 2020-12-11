@@ -11,7 +11,6 @@ const CREATE_USERS_TABLE_QUERY = `\
         "email" ${EMAIL_TYPE} UNIQUE NOT NULL,\
         "isEmailVerified" BOOLEAN DEFAULT FALSE,\
         "hash" TEXT NOT NULL,\
-        "repos" ${USERNAME_TYPE}[] DEFAULT '{}',\
         "aliveSessions" TEXT[] DEFAULT '{}'\
     );`;
 
