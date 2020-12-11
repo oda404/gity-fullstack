@@ -4,11 +4,11 @@ import { ApolloContext } from "../../types";
 import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
-import { REPO_NAME_MAX_LENGTH } from "../../db/consts";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findRepos } from "../../db/repo";
 import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
+import { validateRepoName } from "../../utils/repoValidation";
 
 @ObjectType()
 class RepoResponse
@@ -19,8 +19,6 @@ class RepoResponse
     @Field(() => [Repo], { defaultValue: [] })
     repos: Repo[] = [];
 };
-
-const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
 
 @Resolver(Repo)
 export class RepoResolver
@@ -37,15 +35,10 @@ export class RepoResolver
     {
         let response = new RepoResponse();
 
-        if(!name.match(REPO_NAME_REGEX))
+        const valRepoNameRes = validateRepoName(name);
+        if(!valRepoNameRes.result)
         {
-            response.error = "Repo name contains invalid characters";
-            return response;
-        }
-
-        if(name.length > REPO_NAME_MAX_LENGTH)
-        {
-            response.error = `Repo name can't be longer than ${REPO_NAME_MAX_LENGTH}`;
+            response.error = valRepoNameRes.err!;
             return response;
         }
 
@@ -79,7 +72,8 @@ export class RepoResolver
         @Arg("name") name: string,
     ): Promise<boolean>
     {
-        if(!name.match(REPO_NAME_REGEX))
+        const valRepoNameRes = validateRepoName(name);
+        if(!valRepoNameRes.result)
         {
             return false;
         }
@@ -106,7 +100,7 @@ export class RepoResolver
     {
         const response = new RepoResponse();
 
-        if(!name.match(REPO_NAME_REGEX) || !validateUsername(owner).result)
+        if(!validateRepoName(name).result || !validateUsername(owner).result)
         {
             response.error = "Repo not found";
             return response;
