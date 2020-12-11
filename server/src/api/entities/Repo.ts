@@ -1,4 +1,5 @@
 import { Field, Int, ObjectType } from "type-graphql";
+import { User } from "./User";
 
 @ObjectType()
 export class Repo
@@ -8,8 +9,10 @@ export class Repo
     @Field(() => String)
     name: string;
 
-    @Field(() => String)
-    owner: string;
+    ownerId: string;
+
+    @Field(() => User)
+    owner: User;
 
     @Field(() => Date)
     createdAt: Date;

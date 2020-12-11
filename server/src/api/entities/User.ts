@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "type-graphql";
 import { hash } from "argon2";
+import { Repo } from "./Repo";
 
 export async function hashPassword(password: string): Promise<string>
 {
@@ -29,8 +30,8 @@ export class User
 
     hash: string;
 
-    @Field(() => [ String ])
-    repos: string[];
+    @Field(() => [ Repo ], { defaultValue: [] })
+    repos: Repo[] = [];
 
     aliveSessions: string[];
 };
