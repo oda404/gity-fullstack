@@ -9,11 +9,10 @@ import Mail from "nodemailer/lib/mailer";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { hash, verify } from "argon2";
-import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser } from "../../db/user";
+import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } from "../../db/user";
 import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
-import { PG_deleteRepo } from "../../db/repo";
 
 @InputType()
 export class UserLoginInput
@@ -61,7 +60,7 @@ export class UserResponse
     user?: User | null = null;
 };
 
-@Resolver(of => User)
+@Resolver(User)
 export class UserResolver
 {
     private readonly pgClient = Container.get<Client>("pgClient");
@@ -90,26 +89,22 @@ export class UserResolver
             return response;
         }
 
-        const user = new User();
-        user.username = userInput.username;
-        user.email = userInput.email;
-        return hashPassword(userInput.password).then( hash => {
-            return PG_addUser(this.pgClient, {
-                username: userInput.username,
-                email: userInput.email,
-                hash: hash
-            }).then( res => {
-                if(res.err !== undefined)
-                {
-                    response.error = parsePGError(res.err);
-                    return response;
-                }
-
-                createUserGitDirOnDisk(userInput.username);
-
-                response.user = res.user!;
+        const hash = await hashPassword(userInput.password);
+        return PG_addUser(this.pgClient, {
+            username: userInput.username,
+            email: userInput.email,
+            hash: hash
+        }).then( res => {
+            if(res.err !== undefined)
+            {
+                response.error = parsePGError(res.err);
                 return response;
-            });
+            }
+
+            createUserGitDirOnDisk(res.user!.id.toString());
+
+            response.user = res.user!;
+            return response;
         });
     }
 
@@ -134,23 +129,36 @@ export class UserResolver
             return response;
         }
 
-        return verify(user.hash, password).then( async result => {
+        const hashResult = await verify(user.hash, password);
+        if(!hashResult)
+        {
+            response.error = {
+                field: "password",
+                message: "Invalid password"
+            };
+            return response;
+        }
 
-            if(!result)
+        if(user.aliveSessions.indexOf(req.session.id) === -1)
+        {
+            user.aliveSessions.push(req.session.id);
+        }
+
+        return PG_updateUser(this.pgClient, user).then(result => {
+            if(result.err)
             {
                 response.error = {
-                    field: "password",
-                    message: "Invalid password"
-                };
+                    field: "none",
+                    message: "Intenal server error"
+                }
                 return response;
             }
 
+            /* only set cookie if we can update */
             req.session.userId = String(user.id);
-            user.aliveSessions.push(req.session.id);
-            return PG_updateUser(this.pgClient, user).then(() => {
-                response.user = user;
-                return response;
-            });
+
+            response.user = result.user;
+            return response;
         });
     }
 
@@ -160,17 +168,7 @@ export class UserResolver
         @Ctx() { req, res }: ApolloContext
     ): Promise<boolean>
     {
-        const user = (await PG_findUser(this.pgClient, { id: req.session.userId })).user;
-        if(user !== undefined)
-        {
-            let index = user.aliveSessions.indexOf(req.session.id);
-            if(index > -1)
-            {
-                user.aliveSessions.splice(index, 1);
-            }
-            PG_updateUser(this.pgClient, user);
-        }
-        
+        PG_logoutUser(this.pgClient, req.session.userId!, req.session.id);
         res.clearCookie(SESSION_COOKIE_NAME);
         req.session.destroy(() => {});
 
@@ -188,7 +186,7 @@ export class UserResolver
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* remove user's directory */
-        deleteUserGitDirFromDisk(user!.username);
+        deleteUserGitDirFromDisk(user!.id.toString());
         /* delete user's db entry */
         PG_deleteUser(this.pgClient, user!.id);
 
@@ -204,8 +202,7 @@ export class UserResolver
     ): Promise<boolean>
     {
         user!.email = newEmail;
-        const aliveSessionCopy = user!.aliveSessions;
-        aliveSessionCopy.forEach( sessId => {
+        user!.aliveSessions.forEach( sessId => {
             if(sessId !== req.session.id)
             {
                 this.redisClient.del(`sess:${sessId}`);
@@ -226,16 +223,13 @@ export class UserResolver
         @Arg("newPassword") newPassword: string
     ): Promise<boolean>
     {
-        return hashPassword(newPassword).then( async hash => {
-            user!.hash = hash;
-            const aliveSessionCopy = user!.aliveSessions;
-            aliveSessionCopy.forEach( sessId => this.redisClient.del(`sess:${sessId}`) );
-            user!.aliveSessions = [];
-            PG_updateUser(this.pgClient, user!);
-            res.clearCookie(SESSION_COOKIE_NAME);
-
-            return true;
-        });
+        const newHash = await hashPassword(newPassword);
+        user!.hash = newHash;
+        user!.aliveSessions.forEach( sessId => this.redisClient.del(`sess:${sessId}`) );
+        user!.aliveSessions = [];
+        res.clearCookie(SESSION_COOKIE_NAME);
+        PG_updateUser(this.pgClient, user!);
+        return true;
     }
 
     @Mutation(() => Boolean, { nullable: true })
