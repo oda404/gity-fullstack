@@ -4,12 +4,12 @@ import { User } from "./User";
 @ObjectType()
 export class Repo
 {
-    id: string | number;
+    id: number;
 
     @Field(() => String)
     name: string;
 
-    ownerId: string;
+    ownerId: number;
 
     @Field(() => User)
     owner: User;

@@ -140,9 +140,7 @@ export class UserResolver
             return response;
         }
 
-        console.log(user.aliveSessions)
         await clearUnusedCookies(user, this.redisClient);
-        console.log(user.aliveSessions)
 
         if(user.aliveSessions.indexOf(req.session.id) === -1)
         {
@@ -160,7 +158,7 @@ export class UserResolver
             }
 
             /* only set cookie if we can update */
-            req.session.userId = String(user.id);
+            req.session.userId = user.id;
 
             response.user = result.user;
             return response;

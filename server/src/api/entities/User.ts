@@ -12,7 +12,7 @@ export async function hashPassword(password: string): Promise<string>
 @ObjectType()
 export class User
 {
-    id: string | number;
+    id: number;
     
     @Field(() => Date)
     createdAt: Date;

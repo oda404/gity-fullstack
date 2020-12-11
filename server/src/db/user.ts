@@ -1,5 +1,6 @@
 import { Client } from "pg";
 import { User } from "../api/entities/User";
+import { sanitizeSingleQuotes } from "../utils/sanitizeSingleQuotes";
 
 interface UserDBQueryResponse
 {
@@ -9,7 +10,7 @@ interface UserDBQueryResponse
 
 interface UserLookupArgs
 {
-    id?: string | number | null;
+    id?: number;
     username?: string;
     email?: string;
 };
@@ -26,6 +27,9 @@ export async function PG_updateUser(
     { id, username, email, hash, isEmailVerified, aliveSessions }: User
 ): Promise<UserDBQueryResponse>
 {
+    username = sanitizeSingleQuotes(username)!;
+    email = sanitizeSingleQuotes(email)!;
+
     return client.query(`SELECT * FROM update_user(\
         '${id}',\
         '${username}',\
@@ -50,6 +54,9 @@ export async function PG_findUser(
         return { user: undefined, err: "No args specified" };
     }
 
+    username = sanitizeSingleQuotes(username);
+    email = sanitizeSingleQuotes(email);
+
     return client.query(`SELECT * FROM find_user(\
         "_id"       => ${ id       === undefined ? `NULL` : `'${id}'` },\
         "_username" => ${ username === undefined ? `NULL` : `'${username}'` },\
@@ -66,6 +73,9 @@ export async function PG_addUser(
     { username, email, hash }: UserAddArgs
 ): Promise<UserDBQueryResponse>
 {
+    username = sanitizeSingleQuotes(username)!;
+    email = sanitizeSingleQuotes(email)!;
+
     return client.query(`SELECT * FROM add_user('${username}', '${email}', '${hash}');`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
@@ -75,7 +85,7 @@ export async function PG_addUser(
 
 export async function PG_deleteUser(
     client: Client,
-    id: string | number
+    id: number
 ): Promise<boolean>
 {
     return client.query(`SELECT * FROM delete_user('${id}');`).then( res => {

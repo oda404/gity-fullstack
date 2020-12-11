@@ -1,10 +1,11 @@
 import { Client } from "pg";
 import { Repo } from "../api/entities/Repo";
+import { sanitizeSingleQuotes } from "../utils/sanitizeSingleQuotes";
 
 interface RepoAddArgs
 {
     name: string;
-    ownerId: number | string;
+    ownerId: number;
     isPrivate: boolean;
 };
 
@@ -16,7 +17,7 @@ interface RepoLookupArgs
 
 interface ReposLookupArgs
 {
-    ownerId: string | number;
+    ownerId: number;
     count: number;
     start: number
 };
@@ -32,6 +33,8 @@ export function PG_addRepo(
     { name, ownerId, isPrivate }: RepoAddArgs
 ): Promise<RepoDBQueryResponse>
 {
+    name = sanitizeSingleQuotes(name)!;
+
     return client.query(`SELECT * FROM add_repo(\
         '${name}',\
         '${ownerId}',\
@@ -48,6 +51,9 @@ export async function PG_findRepo(
     { name, owner }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
+    name = sanitizeSingleQuotes(name)!;
+    owner = sanitizeSingleQuotes(owner)!;
+
     return client.query(`SELECT * FROM find_repo('${name}', '${owner}');`).then( res => {
         return { repo: res.rows[0], err: undefined };
     }).catch( err => {
@@ -58,9 +64,11 @@ export async function PG_findRepo(
 export async function PG_deleteRepo(
     client: Client,
     name: string,
-    ownerId: string | number
+    ownerId: number
 ): Promise<boolean>
 {
+    name = sanitizeSingleQuotes(name)!;
+    
     return client.query(`SELECT * FROM delete_repo('${name}', '${ownerId}');`).then( res => {
         if(res.rows[0] !== undefined)
         {

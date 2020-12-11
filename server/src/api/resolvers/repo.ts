@@ -63,7 +63,7 @@ export class RepoResolver
             return response;
         }
 
-        if(!createGitRepoOnDisk(join(req.session.userId!, name)))
+        if(!createGitRepoOnDisk(join(req.session.userId!.toString(), name)))
         {
             response.error = "Repo already exists";
             return response;
