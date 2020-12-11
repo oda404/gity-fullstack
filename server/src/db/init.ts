@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { EMAIL_TYPE, REPO_NAME_TYPE, USERNAME_TYPE } from "./conts";
+import { EMAIL_TYPE, REPO_NAME_TYPE, USERNAME_TYPE } from "./consts";
 
 const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\

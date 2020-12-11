@@ -4,13 +4,11 @@ import { ApolloContext } from "../../types";
 import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
-import { REPO_NAME_MAX_LENGTH } from "../../db/conts";
-import { PG_findUser, PG_updateUser } from "../../db/user";
+import { REPO_NAME_MAX_LENGTH } from "../../db/consts";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findRepos } from "../../db/repo";
 import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
-import { USERNAME_REGEX } from "../../utils/userValidation";
-import { info } from "console";
+import { validateUsername } from "../../utils/userValidation";
 
 @ObjectType()
 class RepoResponse
@@ -108,7 +106,7 @@ export class RepoResolver
     {
         const response = new RepoResponse();
 
-        if(!name.match(REPO_NAME_REGEX) || !owner.match(USERNAME_REGEX))
+        if(!name.match(REPO_NAME_REGEX) || !validateUsername(owner).result)
         {
             response.error = "Repo not found";
             return response;

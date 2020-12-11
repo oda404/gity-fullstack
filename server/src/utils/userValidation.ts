@@ -1,17 +1,12 @@
 import { UserFieldError, UserRegisterInput, UserResponse } from "../api/resolvers/user";
-
-function isInvitationValid(invitation: string): boolean
-{
-    if(invitation === "")
-    {
-        return false;
-    }
-
-    return true;
-};
+import {  } from "../db/consts";
 
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-export const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
+export const EMAIL_MAX_LENGTH = 80;
+
+const USERNAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
+const USERNAME_MIN_LENGTH = 3;
+export const USERNAME_MAX_LENGTH = 35;
 const FORBIDDEN_USERNAMES = [
     "login",
     "regiser",
@@ -19,58 +14,161 @@ const FORBIDDEN_USERNAMES = [
     "tos",
 ];
 
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 80;
+const PASSWORD_REGEX = /^(.*?)$/;
+
+interface ValidateFieldResponse
+{
+    result: boolean;
+    err?: string;
+}
+
+export function validateUsername(username: string): ValidateFieldResponse
+{
+    if(username.length < USERNAME_MIN_LENGTH)
+    {
+        return {
+            result: false,
+            err: `Username can't be shorter than ${USERNAME_MIN_LENGTH} characters`
+        }
+    }
+
+    if(username.length > USERNAME_MAX_LENGTH)
+    {
+        return {
+            result: false,
+            err: `Username can't be longer than ${USERNAME_MAX_LENGTH} characters`
+        }
+    }
+
+    if(!username.match(USERNAME_REGEX))
+    {
+        return {
+            result: false,
+            err: "The username can only contain letters, numbers and the -_ symbols"
+        }
+    }
+
+    if(FORBIDDEN_USERNAMES.indexOf(username) > -1)
+    {
+        return {
+            result: false,
+            err: "The username you chose is reserved"
+        }
+    }
+
+    return {
+        result: true
+    }
+}
+
+export function validateEmail(email: string): ValidateFieldResponse
+{
+    if(email.length > EMAIL_MAX_LENGTH)
+    {
+        return {
+            result: false,
+            err: `Email can't be longer than ${EMAIL_MAX_LENGTH}`
+        }
+    }
+
+    if(!email.match(EMAIL_REGEX))
+    {
+        return {
+            result: false,
+            err: "Invalid email"
+        }
+    }
+
+    return {
+        result: true
+    }
+}
+
+export function validatePassword(password: string): ValidateFieldResponse
+{
+    /* check password length */
+    if(password.length < PASSWORD_MIN_LENGTH)
+    {
+        return {
+            result: false,
+            err: `Password can't be shorter than ${PASSWORD_MIN_LENGTH} characters`
+        }
+    }
+
+    if(password.length > PASSWORD_MAX_LENGTH)
+    {
+        return {
+            result: false,
+            err: `Password can't be longer than ${PASSWORD_MAX_LENGTH} characters`
+        }
+    }
+
+    if(!password.match(PASSWORD_REGEX))
+    {
+        return {
+            result: false,
+            err: "something about password"
+        }
+    }
+
+    return {
+        result: true
+    }
+}
+
+export function validateInvitation(invitation: string): ValidateFieldResponse
+{
+    if(invitation === "")
+    {
+        return {
+            result: false,
+            err: "Bad invitation"
+        }
+    }
+
+    return {
+        result: true
+    }
+}
+
 export function validateUserRegisterInput(userInput: UserRegisterInput): UserFieldError | null
 {
-    /* check username length */
-    if(userInput.username.length < 3)
+    const valUsernameRes = validateUsername(userInput.username);
+    if(!valUsernameRes.result)
     {
         return {
             field: "username",
-            message: "Username can't be shorter than 3 characters"
-        };
+            message: valUsernameRes.err!
+        }
     }
 
-    // /* check username for forbidden chars */
-    if(!userInput.username.match(USERNAME_REGEX))
-    {
-        return {
-            field: "username",
-            message: "The username can only contain letters, numbers and the -_ symbols"
-        };
-    }
-
-    if(FORBIDDEN_USERNAMES.indexOf(userInput.username) > -1)
-    {
-        return {
-            field: "username",
-            message: "The username you chose is reserved"
-        };
-    }
-
-    /* check email validity */
-    if(!userInput.email.match(EMAIL_REGEX))
+    const valEmailRes = validateEmail(userInput.email);
+    if(!valEmailRes.result)
     {
         return {
             field: "email",
-            message: "Invalid email"
-        };
+            message: valEmailRes.err!
+        }
     }
 
-    /* check password length */
-    if(userInput.password.length < 8)
+    const valPasswordRes = validatePassword(userInput.password);
+    if(!valPasswordRes.result)
     {
         return {
             field: "password",
-            message: "Password can't be shorter than 8 characters"
-        };
+            message: valPasswordRes.err!
+        }
     }
 
-    if(!isInvitationValid(userInput.invitation))
+    const valInvitationRes = validateInvitation(userInput.invitation);
+    if(!valInvitationRes.result)
     {
         return {
             field: "invitation",
-            message: "Bad invitation"
-        };
+            message: valInvitationRes.err!
+        }
     }
 
     return null;

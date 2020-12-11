@@ -1,6 +1,6 @@
 import { Client } from "pg";
 import { __prod__ } from "../consts";
-import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./conts";
+import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./consts";
 
 const CREATE_USERS_TABLE_QUERY = `\
     CREATE TABLE users(\
