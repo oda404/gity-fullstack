@@ -1,3 +1,2 @@
-- if user login fails be less explicit
 - sanitize ' from repo descriptions
 - get nested objects in graphql / postgres
