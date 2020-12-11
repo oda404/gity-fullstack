@@ -114,7 +114,7 @@ async function main(): Promise<void>
             saveUninitialized: false
         })
     );
-    apolloServer.applyMiddleware({ app, cors: false });
+    apolloServer.applyMiddleware({ app, cors: false, path: "/api/private" });
 
     app.listen(SERVER_PORT);
 }
