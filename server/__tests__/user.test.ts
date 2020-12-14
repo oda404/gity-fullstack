@@ -1,5 +1,8 @@
 import request from "supertest";
 
+const apiEndpoint = "/api/private";
+const host = "localhost:4200";
+
 const registerPostData = {
   query: `mutation registerUser($userInput: UserRegisterInput!){
     registerUser(userInput: $userInput)
@@ -11,9 +14,7 @@ const registerPostData = {
   
       user{
         username
-        email
         isEmailVerified
-        repos
       }
     }
   }`,
@@ -39,9 +40,7 @@ const loginPostData = {
   
       user{
         username
-        email
         isEmailVerified
-        repos
       }
     }
   }`,
@@ -58,9 +57,7 @@ const selfPostData = {
   query: `query self{
     self{
       username
-      email
       isEmailVerified
-      repos
     }
   }`,
   operationName: 'self'
@@ -98,31 +95,38 @@ const deleteUserPostData = {
   }
 };
 
+const logoutUserPostData = {
+  query: `mutation LogoutUser{
+    logoutUser
+  }`,
+  operationName: "LogoutUser"
+}
+
 describe("User", () => {
   it("regiserUser", async done => {
     /* register */
-    request("localhost:4200").post("/graphql").send(registerPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(registerPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.registerUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("test@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       done();
     });
   });
 
   it("loginUser", async done => {
     /* login */
-    request("localhost:4200").post("/graphql").send(loginPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(loginPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.loginUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("test@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
       done();
@@ -131,28 +135,28 @@ describe("User", () => {
 
   it("self", async done => {
     /* login */
-    request("localhost:4200").post("/graphql").send(loginPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(loginPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.loginUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("test@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
       const cookie = res.headers["set-cookie"][0];
 
       /* self */
-      request("localhost:4200").post("/graphql").set("Cookie", [cookie]).send(selfPostData).end((_err, _res) => {
+      request(host).post(apiEndpoint).set("Cookie", [cookie]).send(selfPostData).end((_err, _res) => {
         expect(_err).toEqual(null);
         expect(_res.status).toEqual(200);
         const userRes = _res.body.data.self;
         expect(userRes.username).toEqual("test");
-        expect(userRes.email).toEqual("test@testmail.com");
+        
         expect(userRes.isEmailVerified).toEqual(false);
-        expect(userRes.repos).toEqual([]);
+        
 
         done();
       });
@@ -161,54 +165,68 @@ describe("User", () => {
 
   it("changeUserEmail", async done => {
     /* login */
-    request("localhost:4200").post("/graphql").send(loginPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(loginPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.loginUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("test@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
       const cookie = res.headers["set-cookie"][0];
 
       /* changeEmail */
-      request("localhost:4200").post("/graphql").set("Cookie", [cookie]).send(changeUserEmailPostData).end((_err, _res) => {
+      request(host).post(apiEndpoint).set("Cookie", [cookie]).send(changeUserEmailPostData).end((_err, _res) => {
         expect(_err).toEqual(null);
         expect(_res.status).toEqual(200);
         expect(_res.body.data.changeUserEmail).toEqual(true);
-        
-        /* self */
-        request("localhost:4200").post("/graphql").set("Cookie", [cookie]).send(selfPostData).end((__err, __res) => {
+
+        request(host).post(apiEndpoint).set("Cookie", [cookie]).send(logoutUserPostData).end((__err, __res) => {
           expect(__err).toEqual(null);
           expect(__res.status).toEqual(200);
-          expect(__res.body.data.self.email).toEqual("newTest@testmail.com");
+          expect(__res.body.data.logoutUser).toEqual(true);
 
-          done();
-        });
+          const newLoginPostData = loginPostData;
+          newLoginPostData.variables.userInput.usernameOrEmail = changeUserEmailPostData.variables.newEmail;
+
+          request(host).post(apiEndpoint).send(newLoginPostData).end((___err, ___res) => {
+            expect(___err).toEqual(null);
+            expect(___res.status).toEqual(200);
+            const userRes = ___res.body.data.loginUser.user;
+            expect(userRes.username).toEqual("test");
+            
+            expect(userRes.isEmailVerified).toEqual(false);
+            
+            expect(___res.headers["set-cookie"]).toBeDefined();
+            expect(___res.headers["set-cookie"].length).toBeGreaterThan(0);
+
+            done();
+          })
+        })
       });
     });
   });
 
   it("changeUserPassword", async done => {
     /* login */
-    request("localhost:4200").post("/graphql").send(loginPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(loginPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.loginUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("newTest@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
       const cookie = res.headers["set-cookie"][0];
 
       /* changePassword */
-      request("localhost:4200").post("/graphql").set("Cookie", [cookie]).send(changeUserPasswordPostData).end((_err, _res) => {
+      request(host).post(apiEndpoint).set("Cookie", [cookie]).send(changeUserPasswordPostData).end((_err, _res) => {
         expect(_err).toEqual(null);
         expect(_res.status).toEqual(200);
         expect(_res.body.data.changeUserPassword).toEqual(true);
@@ -216,14 +234,12 @@ describe("User", () => {
         let modLoginPostData = loginPostData;
         modLoginPostData.variables.userInput.password = "1234567890";
         /* login again */
-        request("localhost:4200").post("/graphql").send(modLoginPostData).end((__err, __res) => {
+        request(host).post(apiEndpoint).send(modLoginPostData).end((__err, __res) => {
           expect(__err).toEqual(null);
           expect(__res.status).toEqual(200);
           const _userRes = __res.body.data.loginUser.user;
           expect(_userRes.username).toEqual("test");
-          expect(_userRes.email).toEqual("newTest@testmail.com");
           expect(_userRes.isEmailVerified).toEqual(false);
-          expect(_userRes.repos).toEqual([]);
           expect(__res.headers["set-cookie"]).toBeDefined();
           expect(__res.headers["set-cookie"].length).toBeGreaterThan(0);
 
@@ -239,21 +255,21 @@ describe("User", () => {
     modLoginPostData.variables.userInput.usernameOrEmail = "newTest@testmail.com";
 
     /* login */
-    request("localhost:4200").post("/graphql").send(modLoginPostData).end((err, res) => {
+    request(host).post(apiEndpoint).send(modLoginPostData).end((err, res) => {
       expect(err).toEqual(null);
       expect(res.status).toEqual(200);
       const userRes = res.body.data.loginUser.user;
       expect(userRes.username).toEqual("test");
-      expect(userRes.email).toEqual("newTest@testmail.com");
+      
       expect(userRes.isEmailVerified).toEqual(false);
-      expect(userRes.repos).toEqual([]);
+      
       expect(res.headers["set-cookie"]).toBeDefined();
       expect(res.headers["set-cookie"].length).toBeGreaterThan(0);
 
       const cookie = res.headers["set-cookie"][0];
 
       /* deleteUser */
-      request("localhost:4200").post("/graphql").set("Cookie", [cookie]).send(deleteUserPostData).end((_err, _res) => {
+      request(host).post(apiEndpoint).set("Cookie", [cookie]).send(deleteUserPostData).end((_err, _res) => {
         expect(_err).toEqual(null);
         expect(_res.status).toEqual(200);
         expect(_res.body.data.deleteUser).toEqual(true);
