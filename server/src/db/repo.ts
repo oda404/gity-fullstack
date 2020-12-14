@@ -15,11 +15,11 @@ interface RepoLookupArgs
     owner: string;
 };
 
-interface ReposLookupArgs
+interface UserReposLookupArgs
 {
-    ownerId: number;
+    owner: string;
     count: number;
-    start: number
+    start: number;
 };
 
 interface RepoDBQueryResponse
@@ -35,10 +35,10 @@ export function PG_addRepo(
 {
     name = sanitizeSingleQuotes(name)!;
 
-    return client.query(`SELECT * FROM add_repo(\
+    return client.query(`EXECUTE addRepoPlan(\
         '${name}',\
         '${ownerId}',\
-        ${isPrivate}\
+        '${isPrivate}'\
     );`).then( res => {
         return { repo: res.rows[0], err: undefined };
     }).catch( err => {
@@ -54,7 +54,7 @@ export async function PG_findRepo(
     name = sanitizeSingleQuotes(name)!;
     owner = sanitizeSingleQuotes(owner)!;
 
-    return client.query(`SELECT * FROM find_repo('${name}', '${owner}');`).then( res => {
+    return client.query(`EXECUTE findRepoPlan('${name}', '${owner}');`).then( res => {
         return { repo: res.rows[0], err: undefined };
     }).catch( err => {
         return { repo: undefined, err };
@@ -69,10 +69,10 @@ export async function PG_deleteRepo(
 {
     name = sanitizeSingleQuotes(name)!;
     
-    return client.query(`SELECT * FROM delete_repo('${name}', '${ownerId}');`).then( res => {
+    return client.query(`EXECUTE deleteRepoPlan('${name}', '${ownerId}');`).then( res => {
         if(res.rows[0] !== undefined)
         {
-            return !(res.rows[0].delete_user === 0);
+            return !(res.rows[0].count === 0);
         }
 
         return false;
@@ -81,12 +81,12 @@ export async function PG_deleteRepo(
     });
 }
 
-export async function PG_findRepos(
+export async function PG_findUserRepos(
     client: Client,
-    { ownerId, count, start }: ReposLookupArgs
+    { owner, count, start }: UserReposLookupArgs
 ): Promise<Repo[]>
 {
-    return client.query(`SELECT * FROM find_repos('${ownerId}', '${count}', '${start}');`).then( res => {
+    return client.query(`EXECUTE findUserReposPlan('${owner}', '${count}', '${start}');`).then( res => {
         return res.rows;
     }).catch( () => {
         return [];

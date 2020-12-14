@@ -101,8 +101,15 @@ export class UserResolver
                 response.error = parsePGError(res.err);
                 return response;
             }
-
-            createUserGitDirOnDisk(res.user!.id.toString());
+            
+            if(!createUserGitDirOnDisk(res.user!.id.toString()))
+            {
+                response.error = {
+                    field: "none",
+                    message: "Internal server error"
+                };
+                return response;
+            }
 
             response.user = res.user!;
             return response;

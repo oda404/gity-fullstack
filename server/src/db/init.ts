@@ -15,117 +15,68 @@ const FUNCTIONS = [
             AND (_username IS NULL OR "username" = _username)\
             AND (_email IS NULL OR "email" = _email);\
     $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION\
-        add_user(\
-            _username ${USERNAME_TYPE},\
-            _email ${EMAIL_TYPE},\
-            _hash TEXT\
-        )\
-        RETURNS SETOF users\
-    AS $$\
-        INSERT INTO users("username", "email", "hash") VALUES(\
-            _username, _email, _hash\
-        ) RETURNING *;\
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION\
-        delete_user(\
-            _id BIGINT\
-        )\
-        RETURNS INT\
-    AS $$\
-        WITH c as (
-            DELETE FROM users WHERE "id" = _id RETURNING *\
-        ) SELECT COUNT (*) FROM c;
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION\
-        update_user(\
-            _id BIGINT,\
-            _username ${USERNAME_TYPE},\
-            _email ${EMAIL_TYPE},\
-            _isEmailVerified BOOLEAN,\
-            _hash TEXT,\
-            _aliveSessions TEXT[]\
-        )\
-        RETURNS SETOF users\
-    AS $$\
-        UPDATE users SET\
-            "username" = _username,\
-            "email" = _email,\
-            "isEmailVerified" = _isEmailVerified,\
-            "hash" = _hash,\
-            "aliveSessions" = _aliveSessions,\
-            "editedAt" = CURRENT_TIMESTAMP\
-        WHERE "id" = _id RETURNING *;\
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION
-        logout_user(
-            _id BIGINT,
-            _sessId TEXT
-        )
-        RETURNS SETOF users
-    AS $$
-        UPDATE users SET "editedAt" = CURRENT_TIMESTAMP, "aliveSessions" = (SELECT * FROM array_remove("aliveSessions", _sessId)) WHERE "id" = _id RETURNING *;
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION\
-        add_repo(\
-            _name ${REPO_NAME_TYPE},\
-            _ownerId BIGINT,\
-            _isPrivate BOOLEAN\
-        )\
-        RETURNS SETOF repos\
-    AS $$\
-        INSERT INTO repos("name", "ownerId", "isPrivate") VALUES(\
-            _name, _ownerId, _isPrivate\
-        ) RETURNING *;\
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION
-        find_repo(
-            _name ${REPO_NAME_TYPE},
-            _owner ${USERNAME_TYPE}
-        )
-        RETURNS SETOF repos
-    AS $$
-        SELECT r.* FROM repos r
-        WHERE r."name" = _name AND r."ownerId" = (SELECT "id" FROM users WHERE "username" = _owner);
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION\
-        delete_repo(\
-            _name ${REPO_NAME_TYPE},
-            _ownerId BIGINT
-        )\
-        RETURNS INT\
-    AS $$
-        WITH c as (
-            DELETE FROM repos WHERE "name" = _name AND "ownerId" = _ownerId RETURNING *\
-        ) SELECT COUNT (*) FROM c;
-    $$ LANGUAGE 'sql';`,
-
-    `CREATE OR REPLACE FUNCTION \
-        find_repos(\
-            _ownerId BIGINT,\
-            _count INT,\
-            _start INT\
-        )\
-        RETURNS SETOF repos\
-    AS $$
-        SELECT * FROM repos WHERE "ownerId" = _ownerId OFFSET _start LIMIT _count;
-    $$ LANGUAGE 'sql';`
 ];
 
 const PREPARES = [
-    
+    `PREPARE addUserPlan(${USERNAME_TYPE}, ${EMAIL_TYPE}, TEXT) AS
+        INSERT INTO users("username", "email", "hash")
+        VALUES($1, $2, $3) RETURNING *;
+    `,
+    `PREPARE deleteUserPlan(BIGINT) AS
+        WITH c AS (
+            DELETE FROM users WHERE
+            "id" = $1
+            RETURNING *
+        ) SELECT COUNT (*) FROM c;
+    `,
+    `PREPARE updateUserPlan(BIGINT, ${USERNAME_TYPE}, ${EMAIL_TYPE}, BOOLEAN, TEXT, TEXT[]) AS
+        UPDATE users SET
+            "username" = $2,
+            "email" = $3,
+            "isEmailVerified" = $4,
+            "hash" = $5,
+            "aliveSessions" = $6,
+            "editedAt" = CURRENT_TIMESTAMP
+        WHERE "id" = $1 RETURNING *;
+    `,
+    `PREPARE logoutUserPlan(BIGINT, TEXT) AS
+        UPDATE users SET
+            "editedAt" = CURRENT_TIMESTAMP,
+            "aliveSessions" = (SELECT * FROM array_remove("aliveSessions", $2))
+        WHERE "id" = $1 RETURNING *;
+    `,
+    `PREPARE addRepoPlan(${REPO_NAME_TYPE}, BIGINT, BOOLEAN) AS
+        INSERT INTO repos("name", "ownerId", "isPrivate")
+        VALUES($1, $2, $3) RETURNING *;
+    `,
+    `PREPARE findRepoPlan(${REPO_NAME_TYPE}, ${USERNAME_TYPE}) AS
+        SELECT * FROM repos WHERE
+        "name"    = $1 AND
+        "ownerId" = (SELECT "id" FROM users WHERE "username" = $2);
+    `,
+    `PREPARE deleteRepoPlan(${REPO_NAME_TYPE}, BIGINT) AS
+        WITH c AS (
+            DELETE FROM repos WHERE
+            "name" = $1 AND 
+            "ownerId" = $2
+            RETURNING *
+        ) SELECT COUNT (*) FROM c;
+    `,
+    `PREPARE findUserReposPlan(${USERNAME_TYPE}, INT, INT) AS
+        SELECT * FROM repos WHERE
+        "ownerId" = (SELECT "id" FROM users WHERE "username" = $1)
+        OFFSET $3
+        LIMIT $2;
+    `
 ];
 
 export function initDB(client: Client): void
 {
     FUNCTIONS.forEach( func => {
         client.query(func);
+    });
+
+    PREPARES.forEach( prep => {
+        client.query(prep);
     });
 }

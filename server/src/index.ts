@@ -37,7 +37,7 @@ async function main(): Promise<void>
         password: DB_PASS,
     });
     pgClient.connect().then( async () => {
-        runMigrations(pgClient);
+        //runMigrations(pgClient);
         initDB(pgClient);
         logInfo("PostgreSQL connection established");
     }).catch(() => {

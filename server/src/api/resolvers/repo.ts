@@ -4,7 +4,7 @@ import { ApolloContext } from "../../types";
 import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
-import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findRepos } from "../../db/repo";
+import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findUserRepos } from "../../db/repo";
 import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";

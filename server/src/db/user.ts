@@ -30,7 +30,7 @@ export async function PG_updateUser(
     username = sanitizeSingleQuotes(username)!;
     email = sanitizeSingleQuotes(email)!;
 
-    return client.query(`SELECT * FROM update_user(\
+    return client.query(`EXECUTE updateUserPlan(\
         '${id}',\
         '${username}',\
         '${email}',\
@@ -76,7 +76,7 @@ export async function PG_addUser(
     username = sanitizeSingleQuotes(username)!;
     email = sanitizeSingleQuotes(email)!;
 
-    return client.query(`SELECT * FROM add_user('${username}', '${email}', '${hash}');`).then( res => {
+    return client.query(`EXECUTE addUserPlan('${username}', '${email}', '${hash}');`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
         return { user: undefined, err };
@@ -88,10 +88,11 @@ export async function PG_deleteUser(
     id: number
 ): Promise<boolean>
 {
-    return client.query(`SELECT * FROM delete_user('${id}');`).then( res => {
+
+    return client.query(`EXECUTE deleteUserPlan('${id}');`).then( res => {
         if(res.rows[0] !== undefined)
         {
-            return !(res.rows[0].delete_user === 0);
+            return !(res.rows[0].count === 0);
         }
 
         return false;
@@ -102,11 +103,11 @@ export async function PG_deleteUser(
 
 export async function PG_logoutUser(
     client: Client,
-    id: string | number,
+    id: number,
     sessId: string
 ): Promise<UserDBQueryResponse>
 {
-    return client.query(`SELECT * FROM logout_user('${id}', '${sessId}');`).then(res => {
+    return client.query(`EXECUTE logoutUserPlan('${id}', '${sessId}');`).then(res => {
         return {
             user: res.rows[0]
         }
