@@ -4,11 +4,9 @@
    "description": "",
    "main": "index.js",
    "scripts": {
-      "dev": "yarn start-psql-cont && yarn start-redis-cont && nodemon --ext ts --exec npm run tcstart ./src/",
+      "dev": "nodemon --ext ts --exec npm run tcstart ./src/",
       "tcstart": "tsc && node dist/index.js || exit 1",
       "start": "node dist/index.js",
-      "start-psql-cont": "sudo docker container start postgres-devel",
-      "start-redis-cont": "sudo docker container start redis-devel",
       "test": "yarn jest",
       "create-redis-container": "sudo docker run --name redis-devel -p 6379:6379 -d redis",
       "create-pg-container": "sudo docker run --name postgres-devel -p 5432:5432 -e POSTGRES_PASSWORD=pass -d postgres"

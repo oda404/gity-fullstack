@@ -30,14 +30,14 @@ async function main(): Promise<void>
 {
     printServerInfo();
     let pgClient = new Client({
-        host: "localhost",
+        host: "192.168.0.59",
         port: 5432,
         database: "gity",
         user: "gity",
         password: DB_PASS,
     });
     pgClient.connect().then( async () => {
-        //runMigrations(pgClient);
+        runMigrations(pgClient);
         initDB(pgClient);
         logInfo("PostgreSQL connection established");
     }).catch(() => {
@@ -46,7 +46,10 @@ async function main(): Promise<void>
     });
 
     const RedisStore = connectRedis(session);
-    const redisClient = new Redis();
+    const redisClient = new Redis({
+        host: "192.168.0.59",
+        port: 6379
+    });
     
     redisClient.on("ready", () => {
         logInfo("Redis connection established");
