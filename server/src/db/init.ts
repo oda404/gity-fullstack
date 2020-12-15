@@ -63,7 +63,9 @@ const PREPARES = [
         ) SELECT COUNT (*) FROM c;
     `,
     `PREPARE findUserReposPlan(${USERNAME_TYPE}, INT, INT) AS
-        SELECT * FROM repos WHERE
+        SELECT r.*
+        FROM repos r
+        WHERE 
         "ownerId" = (SELECT "id" FROM users WHERE "username" = $1)
         OFFSET $3
         LIMIT $2;

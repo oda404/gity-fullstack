@@ -24,8 +24,8 @@ interface UserReposLookupArgs
 
 interface RepoDBQueryResponse
 {
-    repo?: Repo;
-    err?: any;
+    repos: Repo[];
+    error?: any;
 }
 
 export function PG_addRepo(
@@ -40,9 +40,9 @@ export function PG_addRepo(
         '${ownerId}',\
         '${isPrivate}'\
     );`).then( res => {
-        return { repo: res.rows[0], err: undefined };
-    }).catch( err => {
-        return { repo: undefined, err };
+        return { repos: res.rows, error: undefined };
+    }).catch( error => {
+        return { repos: [], error };
     });
 }
 
@@ -55,9 +55,9 @@ export async function PG_findRepo(
     owner = sanitizeSingleQuotes(owner)!;
 
     return client.query(`EXECUTE findRepoPlan('${name}', '${owner}');`).then( res => {
-        return { repo: res.rows[0], err: undefined };
-    }).catch( err => {
-        return { repo: undefined, err };
+        return { repos: res.rows, error: undefined };
+    }).catch( error => {
+        return { repos: [], error };
     })
 }
 
@@ -84,11 +84,15 @@ export async function PG_deleteRepo(
 export async function PG_findUserRepos(
     client: Client,
     { owner, count, start }: UserReposLookupArgs
-): Promise<Repo[]>
+): Promise<RepoDBQueryResponse>
 {
     return client.query(`EXECUTE findUserReposPlan('${owner}', '${count}', '${start}');`).then( res => {
-        return res.rows;
-    }).catch( () => {
-        return [];
+        return {
+            repos: res.rows, error: undefined
+        };
+    }).catch( error => {
+        return {
+            repos: [], error
+        }
     });
 }

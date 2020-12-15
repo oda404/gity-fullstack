@@ -48,7 +48,7 @@ export class RepoResolver
             isPrivate
         }));
 
-        if(repoResponse.repo === undefined || repoResponse.err)
+        if(repoResponse.repos?.[0] === undefined || repoResponse.error)
         {
             response.error = "Internal server error.";
             return response;
@@ -60,7 +60,7 @@ export class RepoResolver
             return response;
         }
         
-        response.repos.push(repoResponse.repo);
+        response.repos = repoResponse.repos;
         return response;
     }
 
@@ -107,57 +107,36 @@ export class RepoResolver
         }
 
         const repoResponse = (await PG_findRepo(this.pgClient, { name, owner }));
-        if(repoResponse.repo === undefined || repoResponse.err)
+        if(repoResponse.repos?.[0] === undefined || repoResponse.error)
         {
             response.error = "Repo not found";
             return response;
         }
 
-        if(repoResponse.repo.isPrivate)
+        if(repoResponse.repos![0].isPrivate)
         {
-            if(!req.session.userId || req.session.userId !== repoResponse.repo.ownerId)
+            if(!req.session.userId || req.session.userId !== repoResponse.repos![0].ownerId)
             {
                 response.error = "Repo not found";
                 return response;
             }
         }
 
-        response.repos.push(repoResponse.repo);
+        response.repos = repoResponse.repos!;
         return response;
     }
 
     @Query(() => RepoResponse)
-    async getRepos(
+    async getUserRepos(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
         @Arg("count", () => Int) count: number,
         @Arg("start", () => Int, { defaultValue: 0 }) start: number
-    )
+    ): Promise<RepoResponse>
     {
-        // const response = new RepoResponse();
-        
-        // const user = (await PG_findUser(this.pgClient, { username: owner })).user;
-        // if(user === undefined)
-        // {
-        //     response.error = "User not found";
-        //     return response;
-        // }
-
-        // response.repos = (await PG_findRepos(this.pgClient, { ownerId: user.id, count, start }));
-
-        // /* strip out private repos if user is not logged in */
-        // if(req.session.userId === undefined || req.session.userId !== user.id)
-        // {
-        //     let i = response.repos.length;
-        //     while(i--)
-        //     {
-        //         if(response.repos[i].isPrivate)
-        //         {
-        //             response.repos.splice(i, 1);
-        //         }
-        //     }
-        // }
-
-        // return response;
+        return PG_findUserRepos(this.pgClient, { owner, count, start }).then( res => {
+            /* check for private repos */
+            return res;
+        } )
     }
 };
