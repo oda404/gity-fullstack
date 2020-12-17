@@ -5,16 +5,10 @@ import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findUserRepos } from "../../db/repo";
-import { PG_findUser } from "../../db/user";
 import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
-
-const START_MIN = 0;
-const START_MAX = Number.MAX_SAFE_INTEGER;
-const COUNT_MIN = 1;
-const COUNT_MAX = 15;
 
 @ObjectType()
 class RepoResponse
@@ -136,7 +130,7 @@ export class RepoResolver
     async getUserRepos(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
-        @Arg("count", () => Int,) count: number,
+        @Arg("count", () => Int) count: number,
         @Arg("start", () => Int, { defaultValue: 0 }) start: number
     ): Promise<RepoResponse>
     {
