@@ -56,13 +56,13 @@ export class RepoResolver
 
         if(repoResponse.repos?.[0] === undefined || repoResponse.error)
         {
-            response.error = "Internal server error.";
+            response.error = "Repo already exists";
             return response;
         }
 
         if(!createGitRepoOnDisk(join(req.session.userId!.toString(), name)))
         {
-            response.error = "Repo already exists";
+            response.error = "Internal server error";
             return response;
         }
         
