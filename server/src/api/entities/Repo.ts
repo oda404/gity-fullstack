@@ -4,6 +4,7 @@ import { User } from "./User";
 @ObjectType()
 export class Repo
 {
+    @Field(() => String)
     id: number;
 
     @Field(() => String)
@@ -26,5 +27,6 @@ export class Repo
     @Field(() => Int)
     likes: number;
 
+    @Field(() => Boolean)
     isPrivate: boolean;
 };
