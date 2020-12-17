@@ -8,10 +8,6 @@ query GetRepo(
         owner: $owner
     )
     {
-        repos{
-            ...GenericRepo
-        }
-
-        error
+         ...GenericRepo
     }
 }

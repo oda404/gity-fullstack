@@ -1,3 +1,4 @@
 fragment GenericUser on User {
+    id
     username
 }

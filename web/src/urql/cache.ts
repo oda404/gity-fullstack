@@ -30,21 +30,30 @@ const customCacheExchange = cacheExchange({
                 self: res.loginUser.user
               }
             }
-            }
+          }
         );
-    },
+      },
 
-    logoutUser: (result, _, cache, __) => {
+      logoutUser: (result, _, cache, __) => {
         typesafeUpdateQuery<LogoutUserMutation, SelfQuery>(
-            cache, 
-            { query: SelfDocument }, 
-            result, 
-            (_, __) => {
-              return {
-                self: null
-              }
+          cache, 
+          { query: SelfDocument }, 
+          result, 
+          (_, __) => {
+            return {
+              self: null
             }
+          }
         );
+      },
+
+      createRepo: (_, __, cache, ___) => {
+        const allFields = cache.inspectFields("Query");
+        console.log(allFields);
+        const fieldInfos = allFields.filter((info) => info.fieldName === "getUserRepos");
+        fieldInfos.forEach((fi) => {
+          cache.invalidate("Query", "getUserRepos", fi.arguments || {});
+        });
       }
     }
   }

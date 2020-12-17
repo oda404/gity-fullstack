@@ -1,19 +1,15 @@
-query GetRepos(
+query GetUserRepos(
     $owner: String!
     $count: Int!
     $start: Int = 0
 )
 {
-    getRepos(
+    getUserRepos(
         owner: $owner
         count: $count
         start: $start
     )
     {
-        repos{
-            ...GenericRepo
-        }
-
-        error
+        ...GenericRepo
     }
 }

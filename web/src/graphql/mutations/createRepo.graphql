@@ -8,10 +8,10 @@ mutation CreateRepo(
         isPrivate: $isPrivate
     )
     {
-        error
-
         repos{
-            name
+            ...GenericRepo
         }
+
+        error
     }
 }

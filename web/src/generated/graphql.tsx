@@ -10,13 +10,15 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
+  DateTime: any;
 };
 
 export type Query = {
   __typename?: 'Query';
   self?: Maybe<User>;
-  getRepo: RepoResponse;
-  getRepos: RepoResponse;
+  getRepo?: Maybe<Repo>;
+  getUserRepos?: Maybe<Array<Repo>>;
 };
 
 
@@ -26,7 +28,7 @@ export type QueryGetRepoArgs = {
 };
 
 
-export type QueryGetReposArgs = {
+export type QueryGetUserReposArgs = {
   start?: Maybe<Scalars['Int']>;
   count: Scalars['Int'];
   owner: Scalars['String'];
@@ -34,28 +36,25 @@ export type QueryGetReposArgs = {
 
 export type User = {
   __typename?: 'User';
-  createdAt: Scalars['String'];
-  editedAt: Scalars['String'];
+  id: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  editedAt: Scalars['DateTime'];
   username: Scalars['String'];
-  email: Scalars['String'];
   isEmailVerified: Scalars['Boolean'];
-  reposId: Array<Scalars['String']>;
-};
-
-export type RepoResponse = {
-  __typename?: 'RepoResponse';
-  error?: Maybe<Scalars['String']>;
   repos?: Maybe<Array<Repo>>;
 };
 
+
 export type Repo = {
   __typename?: 'Repo';
+  id: Scalars['String'];
   name: Scalars['String'];
-  owner: Scalars['String'];
-  createdAt: Scalars['String'];
-  editedAt: Scalars['String'];
+  owner: User;
+  createdAt: Scalars['DateTime'];
+  editedAt: Scalars['DateTime'];
   description: Scalars['String'];
   likes: Scalars['Int'];
+  isPrivate: Scalars['Boolean'];
 };
 
 export type Mutation = {
@@ -139,14 +138,20 @@ export type UserLoginInput = {
   password: Scalars['String'];
 };
 
+export type RepoResponse = {
+  __typename?: 'RepoResponse';
+  error?: Maybe<Scalars['String']>;
+  repos?: Maybe<Array<Repo>>;
+};
+
 export type GenericRepoFragment = (
   { __typename?: 'Repo' }
-  & Pick<Repo, 'name' | 'likes'>
+  & Pick<Repo, 'id' | 'name' | 'likes' | 'isPrivate'>
 );
 
 export type GenericUserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'username'>
+  & Pick<User, 'id' | 'username'>
 );
 
 export type CreateRepoMutationVariables = Exact<{
@@ -162,7 +167,7 @@ export type CreateRepoMutation = (
     & Pick<RepoResponse, 'error'>
     & { repos?: Maybe<Array<(
       { __typename?: 'Repo' }
-      & Pick<Repo, 'name'>
+      & GenericRepoFragment
     )>> }
   )> }
 );
@@ -232,33 +237,25 @@ export type GetRepoQueryVariables = Exact<{
 
 export type GetRepoQuery = (
   { __typename?: 'Query' }
-  & { getRepo: (
-    { __typename?: 'RepoResponse' }
-    & Pick<RepoResponse, 'error'>
-    & { repos?: Maybe<Array<(
-      { __typename?: 'Repo' }
-      & GenericRepoFragment
-    )>> }
-  ) }
+  & { getRepo?: Maybe<(
+    { __typename?: 'Repo' }
+    & GenericRepoFragment
+  )> }
 );
 
-export type GetReposQueryVariables = Exact<{
+export type GetUserReposQueryVariables = Exact<{
   owner: Scalars['String'];
   count: Scalars['Int'];
   start?: Maybe<Scalars['Int']>;
 }>;
 
 
-export type GetReposQuery = (
+export type GetUserReposQuery = (
   { __typename?: 'Query' }
-  & { getRepos: (
-    { __typename?: 'RepoResponse' }
-    & Pick<RepoResponse, 'error'>
-    & { repos?: Maybe<Array<(
-      { __typename?: 'Repo' }
-      & GenericRepoFragment
-    )>> }
-  ) }
+  & { getUserRepos?: Maybe<Array<(
+    { __typename?: 'Repo' }
+    & GenericRepoFragment
+  )>> }
 );
 
 export type SelfQueryVariables = Exact<{ [key: string]: never; }>;
@@ -274,25 +271,28 @@ export type SelfQuery = (
 
 export const GenericRepoFragmentDoc = gql`
     fragment GenericRepo on Repo {
+  id
   name
   likes
+  isPrivate
 }
     `;
 export const GenericUserFragmentDoc = gql`
     fragment GenericUser on User {
+  id
   username
 }
     `;
 export const CreateRepoDocument = gql`
     mutation CreateRepo($name: String!, $isPrivate: Boolean!) {
   createRepo(name: $name, isPrivate: $isPrivate) {
-    error
     repos {
-      name
+      ...GenericRepo
     }
+    error
   }
 }
-    `;
+    ${GenericRepoFragmentDoc}`;
 
 export function useCreateRepoMutation() {
   return Urql.useMutation<CreateRepoMutation, CreateRepoMutationVariables>(CreateRepoDocument);
@@ -352,10 +352,7 @@ export function useRegisterUserMutation() {
 export const GetRepoDocument = gql`
     query GetRepo($name: String!, $owner: String!) {
   getRepo(name: $owner, owner: $owner) {
-    repos {
-      ...GenericRepo
-    }
-    error
+    ...GenericRepo
   }
 }
     ${GenericRepoFragmentDoc}`;
@@ -363,19 +360,16 @@ export const GetRepoDocument = gql`
 export function useGetRepoQuery(options: Omit<Urql.UseQueryArgs<GetRepoQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetRepoQuery>({ query: GetRepoDocument, ...options });
 };
-export const GetReposDocument = gql`
-    query GetRepos($owner: String!, $count: Int!, $start: Int = 0) {
-  getRepos(owner: $owner, count: $count, start: $start) {
-    repos {
-      ...GenericRepo
-    }
-    error
+export const GetUserReposDocument = gql`
+    query GetUserRepos($owner: String!, $count: Int!, $start: Int = 0) {
+  getUserRepos(owner: $owner, count: $count, start: $start) {
+    ...GenericRepo
   }
 }
     ${GenericRepoFragmentDoc}`;
 
-export function useGetReposQuery(options: Omit<Urql.UseQueryArgs<GetReposQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetReposQuery>({ query: GetReposDocument, ...options });
+export function useGetUserReposQuery(options: Omit<Urql.UseQueryArgs<GetUserReposQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetUserReposQuery>({ query: GetUserReposDocument, ...options });
 };
 export const SelfDocument = gql`
     query Self {
