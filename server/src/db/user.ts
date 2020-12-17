@@ -107,6 +107,8 @@ export async function PG_logoutUser(
     sessId: string
 ): Promise<UserDBQueryResponse>
 {
+    sessId = sanitizeSingleQuotes(sessId)!;
+
     return client.query(`EXECUTE logoutUserPlan('${id}', '${sessId}');`).then(res => {
         return {
             user: res.rows[0]

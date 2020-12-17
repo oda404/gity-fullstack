@@ -86,6 +86,8 @@ export async function PG_findUserRepos(
     { owner, count, start }: UserReposLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
+    owner = sanitizeSingleQuotes(owner)!;
+    
     return client.query(`EXECUTE findUserReposPlan('${owner}', '${count}', '${start}');`).then( res => {
         return {
             repos: res.rows, error: undefined
