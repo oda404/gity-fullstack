@@ -49,7 +49,6 @@ const customCacheExchange = cacheExchange({
 
       createRepo: (_, __, cache, ___) => {
         const allFields = cache.inspectFields("Query");
-        console.log(allFields);
         const fieldInfos = allFields.filter((info) => info.fieldName === "getUserRepos");
         fieldInfos.forEach((fi) => {
           cache.invalidate("Query", "getUserRepos", fi.arguments || {});
