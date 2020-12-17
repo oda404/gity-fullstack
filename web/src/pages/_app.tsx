@@ -5,7 +5,7 @@ import theme from '../theme';
 import "../styles.css";
 
 const client = createClient({
-  url: "http://localhost:4200/graphql",
+  url: "http://localhost:4200/api/private",
   fetchOptions: { credentials: "include" },
   exchanges: [dedupExchange, customCacheExchange, fetchExchange]
 });
