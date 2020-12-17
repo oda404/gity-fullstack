@@ -9,6 +9,12 @@ import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/uti
 import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
+import { PG_findUser } from "../../db/user";
+
+const START_MIN = 0;
+const START_MAX = Number.MAX_SAFE_INTEGER;
+const COUNT_MIN = 1;
+const COUNT_MAX = 15;
 
 @ObjectType()
 class RepoResponse
@@ -91,52 +97,73 @@ export class RepoResolver
         return true;
     }
 
-    @Query(() => RepoResponse)
+    @Query(() => Repo, { nullable: true })
     async getRepo(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
         @Arg("name") name: string
-    ): Promise<RepoResponse>
+    ): Promise<Repo | null>
     {
-        const response = new RepoResponse();
-
         if(!validateRepoName(name).result || !validateUsername(owner).result)
         {
-            response.error = "Repo not found";
-            return response;
+            return null;
         }
 
         const repoResponse = (await PG_findRepo(this.pgClient, { name, owner }));
         if(repoResponse.repos?.[0] === undefined || repoResponse.error)
         {
-            response.error = "Repo not found";
-            return response;
+            return null;
         }
 
         if(repoResponse.repos![0].isPrivate)
         {
             if(!req.session.userId || req.session.userId !== repoResponse.repos![0].ownerId)
             {
-                response.error = "Repo not found";
-                return response;
+                return null;
             }
         }
 
-        response.repos = repoResponse.repos!;
-        return response;
+        return repoResponse.repos[0];
     }
 
-    @Query(() => RepoResponse)
+    @Query(() => [Repo], { nullable: true })
     async getUserRepos(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
         @Arg("count", () => Int) count: number,
         @Arg("start", () => Int, { defaultValue: 0 }) start: number
-    ): Promise<RepoResponse>
+    ): Promise<Repo[] | null>
     {
-        return PG_findUserRepos(this.pgClient, { owner, count, start }).then( res => {
-            /* check for private repos */
-            return res;
-        } )
+        if(!validateUsername(owner))
+        {
+            return null;
+        }
+
+        count = Math.min(count, COUNT_MAX);
+        count = Math.max(count, COUNT_MIN);
+        start = Math.min(start, START_MAX);
+        start = Math.max(start, START_MIN);
+
+        const user = (await PG_findUser(this.pgClient, { username: owner })).user
+        if(user === undefined)
+        {
+            return null;
+        }
+
+        const repos = (await PG_findUserRepos(this.pgClient, { owner, count, start })).repos;
+
+        /* strip out private repos if user is not logged in or unauthorized */
+        if(req.session.userId === undefined || req.session.userId !== user.id)
+        {
+            for(let i = 0; i < repos.length; ++i)
+            {
+                if(repos[i].isPrivate)
+                {
+                    repos.splice(i--, 1);
+                }
+            }
+        }
+
+        return repos;
     }
 };
