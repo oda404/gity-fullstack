@@ -26,6 +26,10 @@ const CREATE_REPOS_TABLE_QUERY = `\
         "isPrivate" BOOLEAN DEFAULT FALSE\
     );`;
 
+const CONSTRAINTS = [
+    "ALTER TABLE repos ADD CONSTRAINT UNIQUE_ownerId_name UNIQUE(\"name\", \"ownerId\");"
+]
+
 /*  */
 export function runMigrations(client: Client): void
 {
@@ -33,5 +37,8 @@ export function runMigrations(client: Client): void
     {
         client.query(CREATE_USERS_TABLE_QUERY);
         client.query(CREATE_REPOS_TABLE_QUERY);
+        CONSTRAINTS.forEach( contraint => {
+            client.query(contraint);
+        });
     }
 }
