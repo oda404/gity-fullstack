@@ -1,4 +1,4 @@
-export const __prod__ = false;
+export const __prod__ = Boolean(process.env.PROD) || false;
 export const SERVER_PORT = 4200;
 export const DB_PASS = process.env.DB_PASS || "pass";
 export const SESSION_SECRET = process.env.SESSION_SECRET || "secret";

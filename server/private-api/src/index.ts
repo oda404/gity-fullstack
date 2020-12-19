@@ -13,7 +13,6 @@ import { UserResolver } from "./api/resolvers/user";
 import { RepoResolver } from "./api/resolvers/repo";
 import { exit } from "process";
 import { ApolloContext } from "./types";
-import { gitService } from "./gitService/service";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
 import session from "express-session";
@@ -90,9 +89,6 @@ async function main(): Promise<void>
         context: ({ req, res }): ApolloContext => ({ req, res })
     });
 
-    app.use(
-        gitService()
-    );
     app.use(
         cors({
             origin: "http://localhost:3000",

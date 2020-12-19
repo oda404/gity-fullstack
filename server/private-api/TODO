@@ -1,6 +1,4 @@
 - get nested objects in graphql / postgres
-- add support for "dumb" git clients
-- standalone git server
 - add user invitiations
 - add forgot user password mutation
 - public api ?

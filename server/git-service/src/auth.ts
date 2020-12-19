@@ -4,7 +4,8 @@
 import { verify } from "argon2";
 import { Request, Response } from "express";
 import { Client } from "pg";
-import { PG_findUser } from "../db/user";
+import { PG_findUser } from "./db/user";
+import { PG_findRepo } from "./db/repo";
 
 export enum AuthResponses
 {
@@ -19,14 +20,27 @@ function respondUnauthorized(res: Response)
     res.end();
 }
 
-function validateRepoUserName(repoPath: string, username: string): boolean
-{
-    const lastI = repoPath.lastIndexOf('/');
-    return (repoPath.substring(repoPath.lastIndexOf('/', lastI - 1) + 1, lastI) === username);
-}
-
 export async function tryAuthenticate(req: Request, res: Response, repoPath: string, pgClient: Client): Promise<AuthResponses>
 {
+    const lastIndexOfSlash = repoPath.lastIndexOf('/');
+    
+    /* wtf is this */
+    const URLRepoName = repoPath.substring(lastIndexOfSlash + 1, repoPath.length);
+    const URLRepoOwner = repoPath.substring(repoPath.lastIndexOf('/', lastIndexOfSlash - 1) + 1, lastIndexOfSlash);
+
+    const repo = (await PG_findRepo(pgClient, { name: URLRepoName, owner: URLRepoOwner })).repo;
+
+    if(repo === undefined)
+    {
+        respondUnauthorized(res);
+        return AuthResponses.BAD;
+    }
+
+    if(!repo.isPrivate)
+    {
+        return AuthResponses.GOOD;
+    }
+
     if(req.headers.authorization === undefined)
     {
         respondUnauthorized(res);
@@ -40,7 +54,7 @@ export async function tryAuthenticate(req: Request, res: Response, repoPath: str
     let username = decodedAuthHeader.substring(0, decodedAuthHeader.indexOf(':'));
     let password = decodedAuthHeader.substring(decodedAuthHeader.indexOf(':') + 1);
 
-    if(!validateRepoUserName(repoPath, username))
+    if(username !== URLRepoOwner)
     {
         respondUnauthorized(res);
         return AuthResponses.BAD;

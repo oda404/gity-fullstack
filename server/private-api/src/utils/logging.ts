@@ -1,5 +1,4 @@
 import * as consts from "../consts";
-import * as gitConsts from "../gitService/consts";
 
 const PREFIX = '>';
 
@@ -25,40 +24,29 @@ function magenta(str: string): string
 
 export function logInfo(str: string): void
 {
-    console.info(green(`${PREFIX} ${str}`));
+    console.info(green(`[PRIVATE_API] ${PREFIX} ${str}`));
 }
 
 export function logErr(str: string): void
 {
-    console.error(red(`ERROR: ${str}`));
+    console.error(red(`[PRIVATE_API] ERROR: ${str}`));
 }
 
 export function logWarn(str: string): void
 {
-    console.warn(yellow(`WARNING: ${str}`));
+    console.warn(yellow(`[PRIVATE_API] WARNING: ${str}`));
 }
 
 export function printServerInfo(): void
 {
-    console.log("=============================================================");
     if(consts.__prod__)
     {
         logInfo(`Server is running in ${magenta("PRODUCTION")} ${green("mode on")} ${magenta(`PORT ${consts.SERVER_PORT}!`)}`);
-        if(consts.DB_PASS === "pass")
-        {
-            logWarn("DB_PASS was NOT set as an ENV varible!")
-        }
-        if(consts.SESSION_SECRET === "secret")
-        {
-            logWarn("SESSION_SECRET was NOT set as an ENV varible!");
-        }
     }
     else
     {
         logInfo(`Server is running in ${magenta("DEVELOPMENT")} ${green("mode on")} ${magenta(`PORT ${consts.SERVER_PORT}!`)}`);
     }
-
-    logInfo(`${magenta("GIT_ROOT_DIR")} ${green("is")} ${magenta(`${gitConsts.GIT_ROOT_DIR}`)}`);
 
     console.log();
 }
