@@ -1,0 +1,7 @@
+- get nested objects in graphql / postgres
+- add user invitiations
+- add forgot user password mutation
+- public api ?
+- repo description manipulation and validation
+- actual password validation
+- fix repo creation
