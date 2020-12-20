@@ -1,0 +1,19 @@
+The goal here is to create an infrastructure such, if one service fails the others should continue working
+server
+├─ core
+|  ├─ description: Code that all other services require (constants + db stuff + other)
+|  └─ depends on: --
+|
+├─ git-service
+|  ├─ description: Service that serves git clients
+|  └─ depends on: core (logging + postgres + entities constants)
+|
+├─ private-api
+|  ├─ description: API Service for all front ends
+|  └─ depends on: core (logging + postgres + entities constants)
+|
+└─ public-api
+   ├─ description: Publically available API Service
+   └─ depends on: core (logging + postgres + entities constants)
+
+web
