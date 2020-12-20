@@ -1,11 +1,9 @@
 
-export const REPO_NAME_MAX_LENGTH = 35;
-const REPO_NAME_MIN_LENGTH = 3;
-const REPO_NAME_REGEX = /^[a-zA-Z0-9\-_]*$/;
-
-export const REPO_DESCRIPTION_MAX_LENGTH = 100;
-const REPO_DESCRIPTION_MIN_LENGTH = 3;
-const REPO_DESCRIPTION_REGEX =  /^[a-zA-Z0-9\-_]*$/;
+import { 
+    REPO_NAME_MAX_LENGTH, 
+    REPO_NAME_MIN_LENGTH, 
+    REPO_NAME_REGEX 
+} from "../../../core/src/entities/repo/consts";
 
 interface ValidateFieldResponse
 {

@@ -6,12 +6,20 @@ import { Request, Response } from "express";
 import { Client } from "pg";
 import { PG_findUser } from "./db/user";
 import { PG_findRepo } from "./db/repo";
+import { isPasswordValid, isUsernameValid } from "./utils/userValidation";
+import { isRepoNameValid } from "./utils/repoValidation";
 
-export enum AuthResponses
+export enum AuthStatus
 {
     GOOD = 0,
     BAD = 1
 };
+
+interface AuthResponse
+{
+    status: AuthStatus;
+    ownerId: number;
+}
 
 function respondUnauthorized(res: Response)
 {
@@ -20,31 +28,53 @@ function respondUnauthorized(res: Response)
     res.end();
 }
 
-export async function tryAuthenticate(req: Request, res: Response, repoPath: string, pgClient: Client): Promise<AuthResponses>
+export async function tryAuthenticate(req: Request, res: Response, owner: string, name: string, pgClient: Client): Promise<AuthResponse>
 {
-    const lastIndexOfSlash = repoPath.lastIndexOf('/');
-    
-    /* wtf is this */
-    const URLRepoName = repoPath.substring(lastIndexOfSlash + 1, repoPath.length);
-    const URLRepoOwner = repoPath.substring(repoPath.lastIndexOf('/', lastIndexOfSlash - 1) + 1, lastIndexOfSlash);
+    if(!isUsernameValid(owner) || !isRepoNameValid(name))
+    {
+        respondUnauthorized(res);
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
+    }
 
-    const repo = (await PG_findRepo(pgClient, { name: URLRepoName, owner: URLRepoOwner })).repo;
+    const repo = (await PG_findRepo(pgClient, { name, owner })).repo;
 
     if(repo === undefined)
     {
         respondUnauthorized(res);
-        return AuthResponses.BAD;
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
+    }
+
+    const user = await (await PG_findUser(pgClient, { username: owner })).user;
+    if(user === undefined)
+    {
+        respondUnauthorized(res);
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
     }
 
     if(!repo.isPrivate)
     {
-        return AuthResponses.GOOD;
+        return {
+            status: AuthStatus.GOOD,
+            ownerId: user.id
+        }
     }
 
     if(req.headers.authorization === undefined)
     {
         respondUnauthorized(res);
-        return AuthResponses.BAD;
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
     }
 
     let authHeader = String(req.headers.authorization.substring(6));
@@ -54,26 +84,28 @@ export async function tryAuthenticate(req: Request, res: Response, repoPath: str
     let username = decodedAuthHeader.substring(0, decodedAuthHeader.indexOf(':'));
     let password = decodedAuthHeader.substring(decodedAuthHeader.indexOf(':') + 1);
 
-    if(username !== URLRepoOwner)
+    if(username !== owner || !isPasswordValid(password))
     {
         respondUnauthorized(res);
-        return AuthResponses.BAD;
-    }
-
-    const user = await (await PG_findUser(pgClient, { username })).user;
-    if(user === undefined)
-    {
-        respondUnauthorized(res);
-        return AuthResponses.BAD;
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
     }
         
     return verify(user.hash, password).then( match => {
         if(match)
         {
-            return AuthResponses.GOOD;
+            return {
+                status: AuthStatus.GOOD,
+                ownerId: user.id
+            }
         }
         
         respondUnauthorized(res);
-        return AuthResponses.BAD;
+        return {
+            status: AuthStatus.BAD,
+            ownerId: -1
+        }
     });
 }

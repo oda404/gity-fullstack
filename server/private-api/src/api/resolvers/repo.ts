@@ -5,7 +5,6 @@ import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findUserRepos } from "../../db/repo";
-import { createGitRepoOnDisk, deleteGitRepoFromDisk } from "../../gitService/utils";
 import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
@@ -60,11 +59,11 @@ export class RepoResolver
             return response;
         }
 
-        if(!createGitRepoOnDisk(join(req.session.userId!.toString(), name)))
-        {
-            response.error = "Internal server error";
-            return response;
-        }
+        // if(!createGitRepoOnDisk(join(req.session.userId!.toString(), name)))
+        // {
+        //     response.error = "Internal server error";
+        //     return response;
+        // }
         
         response.repos = repoResponse.repos;
         return response;
@@ -84,10 +83,10 @@ export class RepoResolver
             return false;
         }
         /* delete repo from disk */
-        if(!deleteGitRepoFromDisk(join(user!.id.toString(), name)))
-        {
-            return false;
-        }
+        // if(!deleteGitRepoFromDisk(join(user!.id.toString(), name)))
+        // {
+        //     return false;
+        // }
         /* delete repo db entry */
         if(!(await PG_deleteRepo(this.pgClient, name, user!.id)))
         {

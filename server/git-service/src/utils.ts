@@ -53,15 +53,3 @@ export function deleteUserGitDirFromDisk(username: string): boolean
         return false;
     }
 }
-
-export function getGitRepoPathFromURL(url: string): string
-{
-    if(url.length < 1)
-    {
-        return "";
-    }
-    /* repo path is of format <userName>/<repoName> */
-    let repoName = url.substring(1, url.indexOf('/', url.indexOf('/', 1) + 1));
-
-    return join(GIT_ROOT_DIR, repoName);
-}

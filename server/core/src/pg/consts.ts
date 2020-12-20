@@ -1,5 +1,5 @@
-import { USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH } from "../utils/userValidation";
-import { REPO_NAME_MAX_LENGTH, REPO_DESCRIPTION_MAX_LENGTH } from "../utils/repoValidation";
+import { REPO_NAME_MAX_LENGTH, REPO_DESCRIPTION_MAX_LENGTH } from "../entities/repo/consts";
+import { USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH } from "../entities/user/consts";
 
 export const USERNAME_TYPE = `VARCHAR(${USERNAME_MAX_LENGTH})`;
 export const EMAIL_TYPE = `VARCHAR(${EMAIL_MAX_LENGTH})`;

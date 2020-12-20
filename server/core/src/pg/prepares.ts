@@ -1,21 +1,6 @@
-import { Client } from "pg";
-import { EMAIL_TYPE, REPO_NAME_TYPE, USERNAME_TYPE } from "./consts";
 
-const FUNCTIONS = [
-    `CREATE OR REPLACE FUNCTION\
-        find_user(\
-            _id BIGINT DEFAULT NULL,\
-            _username ${USERNAME_TYPE} DEFAULT NULL,\
-            _email ${EMAIL_TYPE} DEFAULT NULL\
-        )\
-        RETURNS SETOF users\
-    AS $$\
-        SELECT * FROM users WHERE\
-            (_id IS NULL OR "id" = _id)\
-            AND (_username IS NULL OR "username" = _username)\
-            AND (_email IS NULL OR "email" = _email);\
-    $$ LANGUAGE 'sql';`,
-];
+import { Client } from "pg";
+import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE } from "./consts";
 
 const PREPARES = [
     `PREPARE addUserPlan(${USERNAME_TYPE}, ${EMAIL_TYPE}, TEXT) AS
@@ -72,13 +57,12 @@ const PREPARES = [
     `
 ];
 
-export function initDB(client: Client): void
+export async function runPreparedStatements(client: Client): Promise<void>
 {
-    FUNCTIONS.forEach( func => {
-        client.query(func);
-    });
+    return new Promise<void>( resolve => {
 
-    PREPARES.forEach( prep => {
-        client.query(prep);
+        PREPARES.forEach(async prep => await client.query(prep));
+
+        resolve();
     });
 }

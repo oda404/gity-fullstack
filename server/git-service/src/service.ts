@@ -4,9 +4,11 @@
 import { Request, RequestHandler, Response } from "express";
 import { spawn } from "child_process";
 import { Client } from "pg";
-import { getGitRepoPathFromURL } from "./utils";
-import { tryAuthenticate, AuthResponses } from "./auth";
+import { tryAuthenticate, AuthStatus } from "./auth";
 import { parse } from "url";
+import { Repo } from "./db/entities/repo";
+import { GIT_ROOT_DIR } from "./consts";
+import { join } from "path";
 
 function pack(message: string): string
 {
@@ -41,6 +43,22 @@ function isServiceValid(service: string): boolean
     return !(validServices.indexOf(service) === -1)
 }
 
+interface RepoInfo
+{
+    owner: string;
+    name: string;
+}
+
+function getRepoInfoFromUrl(url: string): RepoInfo
+{
+   
+    const i = url.indexOf('/', 1);
+    const owner = url.substring(1, i);
+    const name = url.substring(i + 1, url.indexOf('/', i + 1));
+
+    return { owner, name };
+}
+
 export function gitService(pgClient: Client): RequestHandler
 {
     return (req, res, next) => {
@@ -60,12 +78,13 @@ export function gitService(pgClient: Client): RequestHandler
                     next();
                     return;
                 }
+                
+                const repoInfo = getRepoInfoFromUrl(String(req.url));
 
-                const repoPath = getGitRepoPathFromURL(String(req.url));
-
-                tryAuthenticate(req, res, repoPath, pgClient).then( authRes => {
-                    if(authRes === AuthResponses.GOOD)
+                tryAuthenticate(req, res, repoInfo.owner, repoInfo.name, pgClient).then( authRes => {
+                    if(authRes.status === AuthStatus.GOOD)
                     {
+                        const repoPath = join(GIT_ROOT_DIR, authRes.ownerId.toString(), repoInfo.name);
                         handleGETService(parsedService, res, repoPath);
                     }
                 });
@@ -82,11 +101,12 @@ export function gitService(pgClient: Client): RequestHandler
                     return;
                 }
 
-                const repoPath = getGitRepoPathFromURL(String(req.url));
+                const repoInfo = getRepoInfoFromUrl(String(req.url));
 
-                tryAuthenticate(req, res, repoPath, pgClient).then( authRes => {
-                    if(authRes === AuthResponses.GOOD)
+                tryAuthenticate(req, res, repoInfo.owner, repoInfo.name, pgClient).then( authRes => {
+                    if(authRes.status === AuthStatus.GOOD)
                     {
+                        const repoPath = join(GIT_ROOT_DIR, authRes.ownerId.toString(), repoInfo.name);
                         handlePOSTService(parsedService, req, res, repoPath);
                     }
                 });

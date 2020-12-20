@@ -10,7 +10,6 @@ import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { hash, verify } from "argon2";
 import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } from "../../db/user";
-import { createUserGitDirOnDisk, deleteUserGitDirFromDisk } from "../../gitService/utils";
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
@@ -102,14 +101,14 @@ export class UserResolver
                 return response;
             }
             
-            if(!createUserGitDirOnDisk(res.user!.id.toString()))
-            {
-                response.error = {
-                    field: "none",
-                    message: "Internal server error"
-                };
-                return response;
-            }
+            // if(!createUserGitDirOnDisk(res.user!.id.toString()))
+            // {
+            //     response.error = {
+            //         field: "none",
+            //         message: "Internal server error"
+            //     };
+            //     return response;
+            // }
 
             response.user = res.user!;
             return response;
@@ -196,7 +195,7 @@ export class UserResolver
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* remove user's directory */
-        deleteUserGitDirFromDisk(user!.id.toString());
+        //deleteUserGitDirFromDisk(user!.id.toString());
         /* delete user's db entry */
         PG_deleteUser(this.pgClient, user!.id);
 

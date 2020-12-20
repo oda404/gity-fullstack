@@ -21,12 +21,26 @@ import { customAuthChecker } from "./utils/authChecker";
 import { createTestAccount, createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
-import { runMigrations } from "./db/migrations";
-import { initDB } from "./db/init";
-import { printServerInfo, logInfo, logErr } from "./utils/logging";
+import { runPreparedStatements } from "../../core/src/pg/prepares";
+import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
+
+export function printServerInfo(): void
+{
+    if(__prod__)
+    {
+        logInfo(`Server is running in ${magenta("PRODUCTION")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
+    }
+    else
+    {
+        logInfo(`Server is running in ${magenta("DEVELOPMENT")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
+    }
+
+    console.log();
+}
 
 async function main(): Promise<void>
 {
+    initLogging("[PRIVATE_API]");
     printServerInfo();
     let pgClient = new Client({
         host: "192.168.0.59",
@@ -36,8 +50,7 @@ async function main(): Promise<void>
         password: DB_PASS,
     });
     pgClient.connect().then( async () => {
-        //runMigrations(pgClient);
-        initDB(pgClient);
+        await runPreparedStatements(pgClient);
         logInfo("PostgreSQL connection established");
     }).catch(() => {
         logErr("PostgreSQL connection failed. aborting...");

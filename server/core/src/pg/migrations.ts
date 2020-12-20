@@ -1,9 +1,9 @@
+
 import { Client } from "pg";
-import { __prod__ } from "../consts";
 import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./consts";
 
-const CREATE_USERS_TABLE_QUERY = `\
-    CREATE TABLE users(\
+const TABLES = [
+    `CREATE TABLE users(\
         "id" BIGINT GENERATED ALWAYS AS IDENTITY UNIQUE,\
         "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
         "editedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
@@ -12,10 +12,9 @@ const CREATE_USERS_TABLE_QUERY = `\
         "isEmailVerified" BOOLEAN DEFAULT FALSE,\
         "hash" TEXT NOT NULL,\
         "aliveSessions" TEXT[] DEFAULT '{}'\
-    );`;
+    );`,
 
-const CREATE_REPOS_TABLE_QUERY = `\
-    CREATE TABLE repos(\
+    `CREATE TABLE repos(\
         "id" BIGINT GENERATED ALWAYS AS IDENTITY,\
         "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
         "editedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
@@ -24,21 +23,20 @@ const CREATE_REPOS_TABLE_QUERY = `\
         "description" ${REPO_DESCRIPTION_TYPE} DEFAULT 'No description provided.',\
         "likes" INT DEFAULT 0,\
         "isPrivate" BOOLEAN DEFAULT FALSE\
-    );`;
+    );`
+];
 
 const CONSTRAINTS = [
     "ALTER TABLE repos ADD CONSTRAINT UNIQUE_ownerId_name UNIQUE(\"name\", \"ownerId\");"
 ]
 
-/*  */
-export function runMigrations(client: Client): void
+export async function runMigrations(client: Client): Promise<void>
 {
-    if(!__prod__)
-    {
-        client.query(CREATE_USERS_TABLE_QUERY);
-        client.query(CREATE_REPOS_TABLE_QUERY);
-        CONSTRAINTS.forEach( contraint => {
-            client.query(contraint);
-        });
-    }
+    return new Promise<void>( resolve => {
+
+        TABLES.forEach(async table => await client.query(table));
+        CONSTRAINTS.forEach(async constraint => await client.query(constraint));
+
+        resolve();
+    });
 }

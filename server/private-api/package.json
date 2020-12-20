@@ -5,7 +5,7 @@
    "main": "index.js",
    "scripts": {
       "dev": "nodemon --ext ts --exec npm run tcstart ./src/",
-      "tcstart": "tsc && node dist/index.js || exit 1",
+      "tcstart": "tsc --build && node dist/index.js || exit 1",
       "start": "node dist/index.js",
       "test": "yarn jest",
       "create-redis-container": "sudo docker run --name redis-devel -p 6379:6379 -d redis",
