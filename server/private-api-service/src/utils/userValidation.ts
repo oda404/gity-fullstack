@@ -103,7 +103,7 @@ export function validatePassword(password: string): ValidateFieldResponse
     {
         return {
             result: false,
-            err: "something about password"
+            err: "Invalid password"
         }
     }
 

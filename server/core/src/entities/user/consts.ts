@@ -14,4 +14,4 @@ export const FORBIDDEN_USERNAMES = [
 
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 80;
-export const PASSWORD_REGEX = /^(.*?)$/;
+export const PASSWORD_REGEX = /^.*(?=.{8,80})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+[{\]\};:'",<.>/?\\|`~]).*$/;
