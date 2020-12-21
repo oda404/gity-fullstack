@@ -68,7 +68,7 @@ export function gitService(pgClient: Client): RequestHandler
             res.setHeader("Cache-Control", "no-cache");
 
             let parsedService = "";
-            if(req.method === "GET")
+            if(req.method === "GET" || req.method === "HEAD")
             {
                 const queries = parse(String(req.url), true);
                 parsedService = String(queries.query["service"]);
@@ -80,7 +80,6 @@ export function gitService(pgClient: Client): RequestHandler
                 }
                 
                 const repoInfo = getRepoInfoFromUrl(String(req.url));
-
                 tryAuthenticate(req, res, repoInfo.owner, repoInfo.name, pgClient).then( authRes => {
                     if(authRes.status === AuthStatus.GOOD)
                     {
