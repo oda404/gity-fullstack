@@ -84,7 +84,7 @@ export class UserResolver
     {
         const response = new UserResponse();
 
-        response.error = validateUserRegisterInput(userInput);
+        response.error = await validateUserRegisterInput(userInput);
         if(response.error)
         {
             return response;

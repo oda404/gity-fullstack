@@ -1,5 +1,6 @@
 import { UserFieldError, UserRegisterInput } from "../api/resolvers/user";
-
+import { Container } from "typedi";
+import { Redis } from "ioredis";
 import { 
     EMAIL_MAX_LENGTH, 
     EMAIL_REGEX, 
@@ -112,9 +113,12 @@ export function validatePassword(password: string): ValidateFieldResponse
     }
 }
 
-export function validateInvitation(invitation: string): ValidateFieldResponse
+export async function validateInvitation(invitation: string): Promise<ValidateFieldResponse>
 {
-    if(invitation === "")
+    const redisClient = Container.get<Redis>("redisClient");
+
+    const found = await redisClient.exists(`inv:${invitation}`);
+    if(found <= 0)
     {
         return {
             result: false,
@@ -122,12 +126,14 @@ export function validateInvitation(invitation: string): ValidateFieldResponse
         }
     }
 
+    redisClient.del(`inv:${invitation}`);
+
     return {
         result: true
     }
 }
 
-export function validateUserRegisterInput(userInput: UserRegisterInput): UserFieldError | null
+export async function validateUserRegisterInput(userInput: UserRegisterInput): Promise<UserFieldError | null>
 {
     const valUsernameRes = validateUsername(userInput.username);
     if(!valUsernameRes.result)
@@ -156,7 +162,7 @@ export function validateUserRegisterInput(userInput: UserRegisterInput): UserFie
         }
     }
 
-    const valInvitationRes = validateInvitation(userInput.invitation);
+    const valInvitationRes = await validateInvitation(userInput.invitation);
     if(!valInvitationRes.result)
     {
         return {

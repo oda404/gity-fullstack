@@ -14,4 +14,4 @@ exports.FORBIDDEN_USERNAMES = [
 ];
 exports.PASSWORD_MIN_LENGTH = 8;
 exports.PASSWORD_MAX_LENGTH = 80;
-exports.PASSWORD_REGEX = /^(.*?)$/;
+exports.PASSWORD_REGEX = /^.*(?=.{8,80})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()\-_=+[{\]\};:'",<.>/?\\|`~]).*$/;
