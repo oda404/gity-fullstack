@@ -30,6 +30,9 @@ const PREPARES = [
             "aliveSessions" = (SELECT * FROM array_remove("aliveSessions", $2))
         WHERE "id" = $1 RETURNING *;
     `,
+    `PREPARE findUserByUsernamePlan(${USERNAME_TYPE}) AS
+        SELECT * FROM users WHERE "username" = $1;
+    `,
     `PREPARE addRepoPlan(${REPO_NAME_TYPE}, BIGINT, BOOLEAN) AS
         INSERT INTO repos("name", "ownerId", "isPrivate")
         VALUES($1, $2, $3) RETURNING *;

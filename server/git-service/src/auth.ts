@@ -51,7 +51,7 @@ export async function tryAuthenticate(req: Request, res: Response, owner: string
         }
     }
 
-    const user = await (await PG_findUser(pgClient, { username: owner })).user;
+    const user = await (await PG_findUser(pgClient, owner)).user;
     if(user === undefined)
     {
         respondUnauthorized(res);
