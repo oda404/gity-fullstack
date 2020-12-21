@@ -4,4 +4,5 @@
 - public api ?
 - repo description manipulation and validation
 - actual password validation
-- fix repo creation
+- create unix user on register
+- strict directory permissions
