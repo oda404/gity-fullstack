@@ -6,14 +6,14 @@ server
 |
 ├─ git-service
 |  ├─ description: Service that serves git clients
-|  └─ depends on: core (logging + postgres + entities constants)
+|  └─ depends on: core (logging + postgres + constants)
 |
 ├─ private-api
 |  ├─ description: API Service for all front ends
-|  └─ depends on: core (logging + postgres + entities constants)
+|  └─ depends on: core (logging + postgres + constants)
 |
 └─ public-api
    ├─ description: Publically available API Service
-   └─ depends on: core (logging + postgres + entities constants)
+   └─ depends on: core (logging + postgres + constants)
 
 web
