@@ -24,8 +24,9 @@ interface AuthResponse
 function respondUnauthorized(res: Response)
 {
     res.statusCode = 401;
-    res.setHeader("WWW-Authenticate", "Basic realm=\"auth needed\"");
-    res.end();
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("WWW-Authenticate", "Basic realm=\"authorization needed\"");
+    res.end("unauthorized");
 }
 
 export async function tryAuthenticate(req: Request, res: Response, owner: string, name: string, pgClient: Client): Promise<AuthResponse>

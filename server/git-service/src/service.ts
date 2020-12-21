@@ -6,7 +6,6 @@ import { spawn } from "child_process";
 import { Client } from "pg";
 import { tryAuthenticate, AuthStatus } from "./auth";
 import { parse } from "url";
-import { Repo } from "./db/entities/repo";
 import { GIT_ROOT_DIR } from "./consts";
 import { join } from "path";
 
@@ -21,7 +20,7 @@ const validServices = [ "git-upload-pack", "git-receive-pack" ];
 function handleGETService(service: string, targetRes: Response, repoPath: string): void
 {
     targetRes.statusCode = 200;
-    targetRes.setHeader("Content-type", `application/x-${service}-advertisement`);
+    targetRes.setHeader("Content-Type", `application/x-${service}-advertisement`);
 
     targetRes.write(pack(`# service=${service}\n`) + "0000");
 
@@ -31,7 +30,7 @@ function handleGETService(service: string, targetRes: Response, repoPath: string
 function handlePOSTService(service: string, req: Request, targetRes: Response, repoPath: string): void
 {
     targetRes.statusCode = 200;
-    targetRes.setHeader("Content-type", `application/x-${service}-result`);
+    targetRes.setHeader("Content-Type", `application/x-${service}-result`);
 
     const proc = spawn(service, [ "--stateless-rpc", repoPath ]);
     req.pipe(proc.stdin);
@@ -51,11 +50,9 @@ interface RepoInfo
 
 function getRepoInfoFromUrl(url: string): RepoInfo
 {
-   
     const i = url.indexOf('/', 1);
     const owner = url.substring(1, i);
     const name = url.substring(i + 1, url.indexOf('/', i + 1));
-
     return { owner, name };
 }
 
@@ -65,13 +62,14 @@ export function gitService(pgClient: Client): RequestHandler
 
         if(req.headers["user-agent"]?.includes("git/"))
         {
-            res.setHeader("Cache-Control", "no-cache");
+            res.setHeader("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
+            res.setHeader("Pragma", "no-cache");
+            res.setHeader("Cache-Control", "no-cache, max-age=0, must-revalidate");
 
-            let parsedService = "";
             if(req.method === "GET" || req.method === "HEAD")
             {
                 const queries = parse(String(req.url), true);
-                parsedService = String(queries.query["service"]);
+                const parsedService = String(queries.query["service"]);
                 
                 if(!isServiceValid(parsedService))
                 {
@@ -92,7 +90,7 @@ export function gitService(pgClient: Client): RequestHandler
             }
             else if(req.method === "POST")
             {
-                parsedService = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
+                const parsedService = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
 
                 if(!isServiceValid(parsedService))
                 {
@@ -114,8 +112,9 @@ export function gitService(pgClient: Client): RequestHandler
             }
             else
             {
-                res.status(401);
-                res.end(`Unknown method ${req.method}`);
+                res.status(405);
+                res.setHeader("Content-Type", "text/plain");
+                res.end(`unsupported method ${req.method}`);
                 return;
             }
         }
