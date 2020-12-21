@@ -13,6 +13,7 @@ import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } 
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
+import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
 
 @InputType()
 export class UserLoginInput
@@ -95,20 +96,20 @@ export class UserResolver
             email: userInput.email,
             hash: hash
         }).then( res => {
-            if(res.err !== undefined)
+            if(res.err !== undefined || res.user === undefined)
             {
                 response.error = parsePGError(res.err);
                 return response;
             }
             
-            // if(!createUserGitDirOnDisk(res.user!.id.toString()))
-            // {
-            //     response.error = {
-            //         field: "none",
-            //         message: "Internal server error"
-            //     };
-            //     return response;
-            // }
+            if(!createUserDirOnDisk(res.user.id))
+            {
+                response.error = {
+                    field: "none",
+                    message: "Internal server error"
+                };
+                return response;
+            }
 
             response.user = res.user!;
             return response;
@@ -195,7 +196,7 @@ export class UserResolver
         user!.aliveSessions.forEach(sessId => this.redisClient.del(`sess:${sessId}`));
         res.clearCookie(SESSION_COOKIE_NAME);
         /* remove user's directory */
-        //deleteUserGitDirFromDisk(user!.id.toString());
+        deleteUserDirFromDisk(user!.id);
         /* delete user's db entry */
         PG_deleteUser(this.pgClient, user!.id);
 

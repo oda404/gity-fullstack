@@ -9,6 +9,7 @@ import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
 import { PG_findUser } from "../../db/user";
+import { createRepoOnDisk, deleteRepoFromDisk } from "../../utils/repo";
 
 const START_MIN = 0;
 const START_MAX = Number.MAX_SAFE_INTEGER;
@@ -59,11 +60,11 @@ export class RepoResolver
             return response;
         }
 
-        // if(!createGitRepoOnDisk(join(req.session.userId!.toString(), name)))
-        // {
-        //     response.error = "Internal server error";
-        //     return response;
-        // }
+        if(!createRepoOnDisk(req.session.userId!, name))
+        {
+            response.error = "Internal server error";
+            return response;
+        }
         
         response.repos = repoResponse.repos;
         return response;
@@ -83,10 +84,10 @@ export class RepoResolver
             return false;
         }
         /* delete repo from disk */
-        // if(!deleteGitRepoFromDisk(join(user!.id.toString(), name)))
-        // {
-        //     return false;
-        // }
+        if(!deleteRepoFromDisk(user!.id, name))
+        {
+            return false;
+        }
         /* delete repo db entry */
         if(!(await PG_deleteRepo(this.pgClient, name, user!.id)))
         {
