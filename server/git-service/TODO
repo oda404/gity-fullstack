@@ -1,4 +1,3 @@
 - add content encoding
 - create linux user for each user
 - add support for "dumb" clients
-- add server for repos manipulation

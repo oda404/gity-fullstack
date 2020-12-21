@@ -1,7 +1,7 @@
 import express from "express"
 import { Client } from "pg";
 import { exit } from "process";
-import { DB_PASS, GIT_ROOT_DIR, SERVER_PORT, __prod__ } from "./consts";
+import { DB_PASS, DB_USER, GIT_ROOT_DIR, SERVER_PORT, __prod__ } from "./consts";
 import { gitService } from "./service";
 import { runPreparedStatements } from "../../core/src/pg/prepares";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
@@ -31,7 +31,7 @@ async function main()
         host: "192.168.0.59",
         port: 5432,
         database: "gity",
-        user: "gity",
+        user: DB_USER,
         password: DB_PASS,
     });
     pgClient.connect().then( async () => {

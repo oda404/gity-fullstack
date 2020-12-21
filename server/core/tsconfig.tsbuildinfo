@@ -171,6 +171,11 @@
         "signature": "e08ea471dc86586bbd4a5155b8514ab65b07d3792bc1dd8fdbefc26ff997d95e",
         "affectsGlobalScope": false
       },
+      "./src/git/consts.ts": {
+        "version": "dddf1fa12a4f1010f223f6355ea279de1a1fae3f8fb314c3f57b23bc18fe4acd",
+        "signature": "11796b0ebef9491c85e7974a7c14c4bdc4f7a5de278942fdc5fb1e9f62dfdf8a",
+        "affectsGlobalScope": false
+      },
       "./src/pg/consts.ts": {
         "version": "6fa1fa4fc616cd8f8d4137b57c95da40393cabc9318f4abd9e13d5127d2b7d0c",
         "signature": "8ebf21092cee05b8b9d56d23662daa4f0fb8f6f90fe5209309621a6a56af2517",
@@ -885,6 +890,7 @@
       "./node_modules/pg-types/index.d.ts",
       "./src/entities/repo/consts.ts",
       "./src/entities/user/consts.ts",
+      "./src/git/consts.ts",
       "./src/logging.ts",
       "./src/pg/consts.ts",
       "./src/pg/functions.ts",
