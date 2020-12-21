@@ -2,7 +2,7 @@ import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Re
 import { hashPassword, User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
-import { parsePGError, validateEmail, validatePassword, validateUsername, validateUserRegisterInput } from "../../utils/userValidation";
+import { parsePGError, validateUserRegisterInput } from "../../utils/userValidation";
 import Container from "typedi";
 import { Redis } from "ioredis";
 import Mail from "nodemailer/lib/mailer";
