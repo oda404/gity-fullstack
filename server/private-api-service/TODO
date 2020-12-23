@@ -1,5 +1,4 @@
 - get nested objects in graphql / postgres
-- add user invitiations [X]
 - add forgot user password mutation
 - public api ?
 - repo description manipulation and validation

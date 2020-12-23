@@ -3,9 +3,9 @@ import { Client } from "pg";
 import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE } from "./consts";
 
 const PREPARES = [
-    `PREPARE addUserPlan(${USERNAME_TYPE}, ${EMAIL_TYPE}, TEXT) AS
-        INSERT INTO users("username", "email", "hash")
-        VALUES($1, $2, $3) RETURNING *;
+    `PREPARE addUserPlan(${USERNAME_TYPE}, ${EMAIL_TYPE}, TEXT, BIGINT) AS
+        INSERT INTO users("username", "email", "hash", "invitedBy")
+        VALUES($1, $2, $3, $4) RETURNING *;
     `,
     `PREPARE deleteUserPlan(BIGINT) AS
         WITH c AS (

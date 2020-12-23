@@ -14,7 +14,7 @@ import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
-import { getInvitation } from "../../utils/invitation";
+import { genInvitation, getInvitation } from "../../utils/invitation";
 import { hashPassword } from "../../../../core/src/entities/user/password";
 
 @InputType()
@@ -106,7 +106,8 @@ export class UserResolver
         return PG_addUser(this.pgClient, {
             username: userInput.username,
             email: userInput.email,
-            hash: hash
+            hash,
+            masterId
         }).then( res => {
             if(res.err !== undefined || res.user === undefined)
             {
@@ -279,5 +280,15 @@ export class UserResolver
         });
 
         return true;
+    }
+
+    @Authorized(AUTH_PASSWD)
+    @Mutation(() => String, { nullable: true })
+    async generateInvitation(
+        @Ctx() { user }: ApolloContext,
+        @Arg("password") password: string
+    ): Promise<string>
+    {
+        return genInvitation(user!.id);
     }
 };

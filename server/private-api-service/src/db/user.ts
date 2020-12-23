@@ -20,6 +20,7 @@ interface UserAddArgs
     username: string;
     email: string;
     hash: string;
+    masterId: number;
 };
 
 export async function PG_updateUser(
@@ -70,13 +71,13 @@ export async function PG_findUser(
 
 export async function PG_addUser(
     client: Client,
-    { username, email, hash }: UserAddArgs
+    { username, email, hash, masterId }: UserAddArgs
 ): Promise<UserDBQueryResponse>
 {
     username = sanitizeSingleQuotes(username)!;
     email = sanitizeSingleQuotes(email)!;
 
-    return client.query(`EXECUTE addUserPlan('${username}', '${email}', '${hash}');`).then( res => {
+    return client.query(`EXECUTE addUserPlan('${username}', '${email}', '${hash}', '${masterId}');`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
         return { user: undefined, err };
