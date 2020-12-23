@@ -1,6 +1,7 @@
 #!/usr/bin/node
 
 const argon2 = require("argon2");
+const pass = require("./src/entities/user/password");
 const pg = require("pg");
 
 const DB_PASS = process.env.DB_PASS || "pass";
@@ -17,7 +18,7 @@ async function main()
     pgClient.connect().then( async () => {
         console.log("Creating gity user...");
 
-        const hash = await argon2.hash(process.env.PASS, { timeCost: 32, saltLength: 64 });
+        const hash = await pass.hashPassword(process.env.PASS);
 
         await pgClient.query(`
             INSERT INTO users(

@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-import { hashPassword, User } from "../entities/User";
+import { User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
 import { parsePGError, validateUserRegisterInput } from "../../utils/userValidation";
@@ -15,6 +15,7 @@ import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
 import { getInvitation } from "../../utils/invitation";
+import { hashPassword } from "../../../../core/src/entities/user/password";
 
 @InputType()
 export class UserLoginInput

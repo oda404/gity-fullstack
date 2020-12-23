@@ -1,13 +1,5 @@
 import { Field, ObjectType } from "type-graphql";
-import { hash } from "argon2";
 import { Repo } from "./Repo";
-
-export async function hashPassword(password: string): Promise<string>
-{
-    return hash(password, { timeCost: 32, saltLength: 64 }).then(hash => {
-        return hash;
-    });
-}
 
 @ObjectType()
 export class User

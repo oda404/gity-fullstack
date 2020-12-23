@@ -1,7 +1,6 @@
 #!/usr/bin/node
 
 const migrations = require('./src/pg/migrations');
-const functions = require("./src/pg/functions");
 const pg = require('pg');
 
 const DB_PASS = process.env.DB_PASS || "pass";
