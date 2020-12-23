@@ -14,6 +14,7 @@ import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
+import { getInvitation } from "../../utils/invitation";
 
 @InputType()
 export class UserLoginInput
@@ -87,6 +88,16 @@ export class UserResolver
         response.error = await validateUserRegisterInput(userInput);
         if(response.error)
         {
+            return response;
+        }
+
+        const masterId = await getInvitation(userInput.invitation);
+        if(masterId === null)
+        {
+            response.error = {
+                field: "invitation",
+                message: "Invalid invitation"
+            };
             return response;
         }
 

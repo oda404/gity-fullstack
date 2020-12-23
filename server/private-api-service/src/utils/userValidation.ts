@@ -113,26 +113,6 @@ export function validatePassword(password: string): ValidateFieldResponse
     }
 }
 
-export async function validateInvitation(invitation: string): Promise<ValidateFieldResponse>
-{
-    const redisClient = Container.get<Redis>("redisClient");
-
-    const found = await redisClient.exists(`inv:${invitation}`);
-    if(found <= 0)
-    {
-        return {
-            result: false,
-            err: "Bad invitation"
-        }
-    }
-
-    redisClient.del(`inv:${invitation}`);
-
-    return {
-        result: true
-    }
-}
-
 export async function validateUserRegisterInput(userInput: UserRegisterInput): Promise<UserFieldError | null>
 {
     const valUsernameRes = validateUsername(userInput.username);
@@ -159,15 +139,6 @@ export async function validateUserRegisterInput(userInput: UserRegisterInput): P
         return {
             field: "password",
             message: valPasswordRes.err!
-        }
-    }
-
-    const valInvitationRes = await validateInvitation(userInput.invitation);
-    if(!valInvitationRes.result)
-    {
-        return {
-            field: "invitation",
-            message: valInvitationRes.err!
         }
     }
 
