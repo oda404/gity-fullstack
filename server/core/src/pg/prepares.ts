@@ -62,10 +62,8 @@ const PREPARES = [
 
 export async function runPreparedStatements(client: Client): Promise<void>
 {
-    return new Promise<void>( resolve => {
-
-        PREPARES.forEach(async prep => await client.query(prep));
-
-        resolve();
-    });
+    for(let i = 0; i < PREPARES.length; ++i)
+    {
+        await client.query(PREPARES[i]);
+    }
 }

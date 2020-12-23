@@ -20,10 +20,8 @@ const FUNCTIONS = [
 
 export async function runFunctions(client: Client): Promise<void>
 {
-    return new Promise<void>( resolve => {
-
-        FUNCTIONS.forEach(async func => await client.query(func));
-
-        resolve();
-    });
+    for(let i = 0; i < FUNCTIONS.length; ++i)
+    {
+        await client.query(FUNCTIONS[i]);
+    }
 }

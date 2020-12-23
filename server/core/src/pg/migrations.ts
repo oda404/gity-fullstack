@@ -10,6 +10,7 @@ const TABLES = [
         "username" ${USERNAME_TYPE} UNIQUE NOT NULL,\
         "email" ${EMAIL_TYPE} UNIQUE NOT NULL,\
         "isEmailVerified" BOOLEAN DEFAULT FALSE,\
+        "invitedBy" BIGINT,
         "hash" TEXT NOT NULL,\
         "aliveSessions" TEXT[] DEFAULT '{}'\
     );`,
@@ -27,16 +28,21 @@ const TABLES = [
 ];
 
 const CONSTRAINTS = [
-    "ALTER TABLE repos ADD CONSTRAINT UNIQUE_ownerId_name UNIQUE(\"name\", \"ownerId\");"
-]
+    "ALTER TABLE repos ADD CONSTRAINT UNIQUE_ownerId_name UNIQUE(\"name\", \"ownerId\");",
+];
 
 export async function runMigrations(client: Client): Promise<void>
 {
-    return new Promise<void>( resolve => {
+    for(let i = 0; i < TABLES.length; ++i)
+    {
+        await client.query(TABLES[i]);
+    }
+}
 
-        TABLES.forEach(async table => await client.query(table));
-        CONSTRAINTS.forEach(async constraint => await client.query(constraint));
-
-        resolve();
-    });
+export async function runConstraints(client: Client): Promise<void>
+{
+    for(let i = 0; i < CONSTRAINTS.length; ++i)
+    {
+        await client.query(CONSTRAINTS[i]);
+    }
 }
