@@ -255,32 +255,32 @@ export class UserResolver
         return true;
     }
 
-    @Mutation(() => Boolean, { nullable: true })
-    async forgotUserPassword(
-        @Arg("email") email: string
-    ): Promise<boolean>
-    {
-        let key = `forgotPassToken:${genuuidV4()}`;
+    // @Mutation(() => Boolean, { nullable: true })
+    // async forgotUserPassword(
+    //     @Arg("email") email: string
+    // ): Promise<boolean>
+    // {
+    //     let key = `forgotPassToken:${genuuidV4()}`;
 
-        this.redisClient.exists(key).then( async foundN => {
-            if(foundN > 0)
-            {
-                // handle regen
-            }
+    //     this.redisClient.exists(key).then( async foundN => {
+    //         if(foundN > 0)
+    //         {
+    //             // handle regen
+    //         }
 
-            this.redisClient.set(key, email, "EX", 60 * 60 /* one hour */);
-            // let mail =  await this.mailTransporter.sendMail({
-            //     from: "no-reply",
-            //     to: email,
-            //     subject: "[Gity] Password reset request",
-            //     html: `Your password reset link is <a href=\"localhost:3000\">${key}</a>`
-            // });
+    //         this.redisClient.set(key, email, "EX", 60 * 60 /* one hour */);
+    //         // let mail =  await this.mailTransporter.sendMail({
+    //         //     from: "no-reply",
+    //         //     to: email,
+    //         //     subject: "[Gity] Password reset request",
+    //         //     html: `Your password reset link is <a href=\"localhost:3000\">${key}</a>`
+    //         // });
 
-            // console.log(getTestMessageUrl(mail));
-        });
+    //         // console.log(getTestMessageUrl(mail));
+    //     });
 
-        return true;
-    }
+    //     return true;
+    // }
 
     @Authorized(AUTH_PASSWD)
     @Mutation(() => String, { nullable: true })
