@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { FC } from "react";
 import Container from "../components/Container";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import UserForm from "../components/UserForm";
 import { useSelfQuery } from "../generated/graphql";
@@ -36,7 +35,6 @@ const Register: FC<RegisterProps> = () =>
     <Container>
       <Header type="register"/>
       {body}
-      <Footer/>
     </Container>
   );
 };

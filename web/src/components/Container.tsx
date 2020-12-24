@@ -9,14 +9,14 @@ interface ContainerProps
 const Container: FC<ContainerProps> = (props) => {
   return (
     <Flex
-      bgColor="#212121"
+      bgColor="#000501"
       color="#e9e9e9"
       pos="fixed"
       h="100%"
       w="100%"
       top="0"
       left="0"
-      paddingY="55px"
+      paddingTop="50px"
       {...props}
     />
   );

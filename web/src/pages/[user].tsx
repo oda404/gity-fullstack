@@ -2,7 +2,6 @@ import { Box, Flex } from "@chakra-ui/core";
 import { useRouter } from "next/router";
 import React, { FC } from "react";
 import Container from "../components/Container";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useGetUserQuery } from "../generated/graphql";
 
@@ -30,28 +29,30 @@ const User: FC<UserProps> = () =>
             body = (
                 <>
                 <Flex
-                    paddingTop="25px"
-                    paddingBottom="15px"
                     flexDir="column"
-                    w="100%"
+                    h="100%"
+                    padding="35px"
                 >
-                    <Flex
-                        flexDir="column"
+                    <Box
+                        h="180px"
+                        w="180px"
+                        borderRadius="50%"
+                        background="#ff11ff"
+                        mx="auto"
+                    />
+                    <Box
+                        mt="10px"
+                        fontSize="28px"
+                        mx="auto"
                     >
-                        <Box 
-                            mx="auto"
-                            background="#000000"
-                            h="150px"
-                            w="150px" 
-                            borderRadius="50%"
-                            mb="10px"
-                        />
-                        <Box mx="auto" fontSize="28px">
-                            {user}
-                        </Box>
-                    </Flex>
-                    <Box background="#312e2e" w="100%" h="1px"/>
+                        {user}
+                    </Box>
                 </Flex>
+                <Box
+                    h="100%"
+                    w="1px"
+                    background="#5A0B4D"
+                />
                 </>
             );
         }
@@ -65,7 +66,6 @@ const User: FC<UserProps> = () =>
         <Container>
             <Header type="full"/>
                 {body}
-            <Footer/>
         </Container>
     );
 };

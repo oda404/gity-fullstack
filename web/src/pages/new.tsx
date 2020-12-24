@@ -3,7 +3,6 @@ import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { FC } from "react";
 import Container from "../components/Container";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useCreateRepoMutation, useSelfQuery } from "../generated/graphql";
 
@@ -26,10 +25,6 @@ const New: FC<NewProps> = () =>
     {
       body = (
         <Flex
-          paddingX="20px"
-          bgColor="#1a1a1a"
-          paddingY="17px"
-          border="2px solid inherit"
           borderRadius="10px"
           alignSelf="center"
           boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
@@ -155,7 +150,6 @@ const New: FC<NewProps> = () =>
     <Container>
       <Header type="full"/>
       {body}
-      <Footer/>
     </Container>
   );
 }

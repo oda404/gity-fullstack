@@ -15,7 +15,7 @@ function MyApp({ Component, pageProps }: any) {
     <Provider value={client}>
       <ThemeProvider theme={theme}>
         <link rel="preconnect" href="https://fonts.gstatic.com"/>
-        <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet"/> 
+        <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@500&display=swap" rel="stylesheet"/> 
         <ColorModeProvider
           options={{
             useSystemColorMode: true,

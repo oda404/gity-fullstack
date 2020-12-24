@@ -2,7 +2,6 @@ import { Box, Button, Flex, Link } from "@chakra-ui/core";
 import { useRouter } from "next/router";
 import { FC } from "react";
 import Container from "../components/Container";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useGetUserReposQuery, useSelfQuery } from "../generated/graphql";
 
@@ -27,27 +26,42 @@ const Index: FC<IndexProps> = () =>
 
   if(!reposQuery.fetching)
   {
-    if(reposQuery.data?.getUserRepos)
+    if(reposQuery.data?.getUserRepos && reposQuery.data.getUserRepos.length > 0)
     {
       repos = (
         reposQuery.data.getUserRepos.map(repo =>
           <Flex 
             key={repo.id}
-            bg="#212121"
-            border="1px solid #312e2e"
-            borderRadius="5px"
             mt="10px"
-            mx="10px"
             paddingX="10px"
           >
-            <Link mr="10px" wordBreak="break-all" href={data?.self?.username + '/' + repo.name} color="#12a0d3" fontSize="16px">
+            <Link
+              mr="10px"
+              wordBreak="break-all"
+              href={data?.self?.username + '/' + repo.name}
+              color="#12a0d3"
+              fontSize="18px"
+            >
               {data?.self?.username}/{repo.name}
             </Link>
-            <Box ml="auto">
+            <Box ml="auto" fontSize="18px">
               {repo.likes}
             </Box>
           </Flex>
         )
+      );
+    }
+    else
+    {
+      repos = (
+        <Box
+          my="auto"
+          fontSize="18px"
+          textAlign="center"
+          color="#cdbcbc"
+        >
+          You don't have any repos yet... Create one by clicking the "New" button.
+        </Box>
       );
     }
   }
@@ -59,24 +73,25 @@ const Index: FC<IndexProps> = () =>
       body = (
         <>
           <Flex
-            h="100%" w="300px" bg="#161616" flexDir="column"
+            padding="12px" h="100%" w="300px" bg="#000501" flexDir="column"
           >
             <Flex>
-              <Box my="10px" ml="10px" fontSize="19px" color="#e9e9e9">
+              <Box fontSize="18px" color="#e9e9e9">
                 Repos
               </Box>
               <Button
                 color="#e9e9e9"
-                my="10px" ml="auto"
-                mr="10px"
-                h="29px"
-                w="70px"
+                ml="auto"
+                h="28px"
+                w="68px"
                 display="flex"
                 alignItems="center"
                 padding="10px"
                 fontSize="15px"
-                bg="#212121"
-                border="1px solid #4c4c4c"
+                bg="#5c0098"
+                border="1px solid #5A0B4D"
+                _hover={{background: "#56038c"}}
+                _active={{background: "#56038c"}}
                 borderRadius="5px"
                 flexDir="column"
                 onClick={() => router.push("/new")}
@@ -85,16 +100,17 @@ const Index: FC<IndexProps> = () =>
               </Button>
             </Flex>
             <Box
+              mt="10px"
               w="100%"
               h="1px"
-              bg="#312e2e"
+              bg="#5A0B4D"
             />
             {repos}
           </Flex>
           <Box
             h="100%"
             w="1px"
-            bg="#312e2e"
+            bg="#5A0B4D"
           />
         </>
       );
@@ -109,7 +125,6 @@ const Index: FC<IndexProps> = () =>
     <Container>
       <Header type="full"/>
       {body}
-      <Footer/>
     </Container>
   );
 };

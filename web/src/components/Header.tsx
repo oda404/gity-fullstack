@@ -99,7 +99,6 @@ const Header: FC<HeaderProps> = (props) => {
         <Box id="logo" mr="auto">Gity</Box>
         {navbarContent}
       </Flex>
-      <Box id="divider" top="55px" left="0"/>
     </>
   );
 };
