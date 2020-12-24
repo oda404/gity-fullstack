@@ -113,7 +113,7 @@ export function validatePassword(password: string): ValidateFieldResponse
     }
 }
 
-export async function validateUserRegisterInput(userInput: UserRegisterInput): Promise<UserFieldError | null>
+export async function validateUserRegisterInput(userInput: UserRegisterInput): Promise<UserFieldError | undefined>
 {
     const valUsernameRes = validateUsername(userInput.username);
     if(!valUsernameRes.result)
@@ -142,7 +142,7 @@ export async function validateUserRegisterInput(userInput: UserRegisterInput): P
         }
     }
 
-    return null;
+    return undefined;
 }
 
 export function parsePGError(err: any): UserFieldError

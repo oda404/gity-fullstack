@@ -8,7 +8,7 @@ import { Redis } from "ioredis";
 import Mail from "nodemailer/lib/mailer";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
-import { hash, verify } from "argon2";
+import { verify } from "argon2";
 import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } from "../../db/user";
 import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
@@ -57,10 +57,10 @@ export class UserFieldError
 export class UserResponse
 {
     @Field(() => UserFieldError, { nullable: true })
-    error?: UserFieldError | null = null;
+    error?: UserFieldError;
 
     @Field(() => User, { nullable: true })
-    user?: User | null = null;
+    user?: User;
 };
 
 @Resolver(User)
