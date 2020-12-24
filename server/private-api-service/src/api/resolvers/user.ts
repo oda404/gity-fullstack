@@ -2,7 +2,7 @@ import { Arg, Authorized, Ctx, Field, InputType, Mutation, ObjectType, Query, Re
 import { User } from "../entities/User";
 import { ApolloContext } from "../../types";
 import { SESSION_COOKIE_NAME } from "../../consts";
-import { parsePGError, validateUserRegisterInput } from "../../utils/userValidation";
+import { parsePGError, validateUsername, validateUserRegisterInput } from "../../utils/userValidation";
 import Container from "typedi";
 import { Redis } from "ioredis";
 import Mail from "nodemailer/lib/mailer";
@@ -290,5 +290,18 @@ export class UserResolver
     ): Promise<string>
     {
         return genInvitation(user!.id);
+    }
+
+    @Query(() => User, { nullable: true })
+    async getUser(
+        @Arg("username") username: string
+    ): Promise<User | undefined | null>
+    {
+        if(!validateUsername(username).result)
+        {
+            return null;
+        }
+
+        return (await PG_findUser(this.pgClient, { username })).user
     }
 };
