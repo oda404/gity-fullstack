@@ -3,6 +3,7 @@ import { Flex, Box } from "@chakra-ui/core";
 import { useLogoutUserMutation, useSelfQuery } from "../generated/graphql";
 import LinkButton from "./LinkButton";
 import TextButton from "./TextButton";
+import { useRouter } from "next/router";
 
 interface HeaderProps
 {
@@ -11,6 +12,7 @@ interface HeaderProps
 
 const Header: FC<HeaderProps> = (props) => {
   const [{ data, fetching }] = useSelfQuery();
+  const router = useRouter();
   const [, logoutUser] = useLogoutUserMutation();
   const [dropDownUserShown, setDropDownState] = useState(false);
 
@@ -47,9 +49,9 @@ const Header: FC<HeaderProps> = (props) => {
               <Box id="user-dropdown">
                 <TextButton mr="auto" ml="auto" onClick={
                   () => {
-
+                    router.push(`/${data.self?.username}`)
                   }
-                }>View profile</TextButton>
+                }>Your profile</TextButton>
                 <Box id="user-dropdown-divider"/>
                 <Box mt="auto" id="user-dropdown-divider"/>
                 <TextButton mr="auto" ml="auto" onClick={

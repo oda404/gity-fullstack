@@ -17,8 +17,14 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   self?: Maybe<User>;
+  getUser?: Maybe<User>;
   getRepo?: Maybe<Repo>;
   getUserRepos?: Maybe<Array<Repo>>;
+};
+
+
+export type QueryGetUserArgs = {
+  username: Scalars['String'];
 };
 
 
@@ -65,7 +71,7 @@ export type Mutation = {
   deleteUser?: Maybe<Scalars['Boolean']>;
   changeUserEmail?: Maybe<Scalars['Boolean']>;
   changeUserPassword?: Maybe<Scalars['Boolean']>;
-  forgotUserPassword?: Maybe<Scalars['Boolean']>;
+  generateInvitation?: Maybe<Scalars['String']>;
   createRepo?: Maybe<RepoResponse>;
   deleteRepo?: Maybe<Scalars['Boolean']>;
 };
@@ -98,8 +104,8 @@ export type MutationChangeUserPasswordArgs = {
 };
 
 
-export type MutationForgotUserPasswordArgs = {
-  email: Scalars['String'];
+export type MutationGenerateInvitationArgs = {
+  password: Scalars['String'];
 };
 
 
@@ -243,6 +249,19 @@ export type GetRepoQuery = (
   )> }
 );
 
+export type GetUserQueryVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type GetUserQuery = (
+  { __typename?: 'Query' }
+  & { getUser?: Maybe<(
+    { __typename?: 'User' }
+    & GenericUserFragment
+  )> }
+);
+
 export type GetUserReposQueryVariables = Exact<{
   owner: Scalars['String'];
   count: Scalars['Int'];
@@ -359,6 +378,17 @@ export const GetRepoDocument = gql`
 
 export function useGetRepoQuery(options: Omit<Urql.UseQueryArgs<GetRepoQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetRepoQuery>({ query: GetRepoDocument, ...options });
+};
+export const GetUserDocument = gql`
+    query GetUser($username: String!) {
+  getUser(username: $username) {
+    ...GenericUser
+  }
+}
+    ${GenericUserFragmentDoc}`;
+
+export function useGetUserQuery(options: Omit<Urql.UseQueryArgs<GetUserQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<GetUserQuery>({ query: GetUserDocument, ...options });
 };
 export const GetUserReposDocument = gql`
     query GetUserRepos($owner: String!, $count: Int!, $start: Int = 0) {
