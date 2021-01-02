@@ -1,10 +1,16 @@
 import "reflect-metadata";
 import {
     __prod__,
-    DB_PASS,
+    PG_PASS,
+    PG_USER,
     SERVER_PORT,
     SESSION_COOKIE_NAME,
-    SESSION_SECRET
+    SESSION_SECRET,
+    PG_HOST,
+    PG_PORT,
+    PG_DB_MAIN,
+    RD_PORT,
+    RD_HOST
 } from "./consts";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -43,11 +49,11 @@ async function main(): Promise<void>
     initLogging("[PRIVATE_API]");
     printServerInfo();
     let pgClient = new Client({
-        host: "192.168.0.59",
-        port: 5432,
-        database: "gity",
-        user: "gity",
-        password: DB_PASS,
+        host: PG_HOST,
+        port: PG_PORT,
+        database: PG_DB_MAIN,
+        user: PG_USER,
+        password: PG_PASS,
     });
     pgClient.connect().then( async () => {
         await runPreparedStatements(pgClient);
@@ -59,8 +65,8 @@ async function main(): Promise<void>
 
     const RedisStore = connectRedis(session);
     const redisClient = new Redis({
-        host: "192.168.0.59",
-        port: 6379
+        host: RD_HOST,
+        port: RD_PORT
     });
     
     redisClient.on("ready", () => {
@@ -68,6 +74,13 @@ async function main(): Promise<void>
     });
 
     redisClient.on("error", (message) => {
+        if(message.errno === -3008 /* couldn't connect */)
+        {
+            logErr("Redis connection failed. aborting...");
+            pgClient.end();
+            exit();
+        }
+
         logErr(message);
     });
 

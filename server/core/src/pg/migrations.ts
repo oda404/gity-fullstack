@@ -1,6 +1,10 @@
 
 import { Client } from "pg";
-import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./consts";
+import { PG_DB_MAIN, USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./consts";
+
+const DATABASES = [
+    `CREATE DATABASE ${PG_DB_MAIN};`,
+];
 
 const TABLES = [
     `CREATE TABLE users(\
@@ -30,6 +34,14 @@ const TABLES = [
 const CONSTRAINTS = [
     "ALTER TABLE repos ADD CONSTRAINT UNIQUE_ownerId_name UNIQUE(\"name\", \"ownerId\");",
 ];
+
+export async function runDatabases(client: Client): Promise<void>
+{
+    for(let i = 0; i < DATABASES.length; ++i)
+    {
+        await client.query(DATABASES[i]);
+    }
+}
 
 export async function runMigrations(client: Client): Promise<void>
 {
