@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { existsSync, mkdirSync, rm } from "fs";
 import { join } from "path";
-import { GIT_ROOT_DIR } from "../../../core/src/git/consts";
+import { GIT_ROOT_DIR } from "../consts";
 
 
 export function createRepoOnDisk(ownerId: number, name: string): boolean

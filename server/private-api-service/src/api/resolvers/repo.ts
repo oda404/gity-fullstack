@@ -5,7 +5,6 @@ import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findUserRepos } from "../../db/repo";
-import { join } from "path";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
 import { PG_findUser } from "../../db/user";

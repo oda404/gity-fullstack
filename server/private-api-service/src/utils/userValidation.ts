@@ -1,6 +1,4 @@
 import { UserFieldError, UserRegisterInput } from "../api/resolvers/user";
-import { Container } from "typedi";
-import { Redis } from "ioredis";
 import { 
     EMAIL_MAX_LENGTH, 
     EMAIL_REGEX, 
