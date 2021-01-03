@@ -1,0 +1,20 @@
+{
+    "host": "192.168.0.200",
+    "port": 5432,
+    "databases": [
+        {
+            "alias": "main",
+            "name": "gity_main"
+        }
+    ],
+    "users": [
+        {
+            "alias": "private-api",
+            "name": "gity_private_api"
+        },
+        {
+            "alias": "git-service",
+            "name": "gity_git_service"
+        }
+    ]
+}
