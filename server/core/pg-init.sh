@@ -42,9 +42,9 @@ echo ""
 tsc --build
 DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-databases.sh
 echo ""
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-users.sh
-echo ""
 DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-migrations.sh
+echo ""
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-users.sh
 echo ""
 DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-functions.sh
 echo ""
