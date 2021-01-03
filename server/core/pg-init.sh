@@ -16,6 +16,14 @@ print_help()
     echo "  -h, --help             Prints this message"
 }
 
+check_exit_code()
+{
+    if [ $? != 0 ]; then
+        echo "Fatal error. Aborting."
+        exit
+    fi
+}
+
 while :
 do
     case "$1" in
@@ -31,21 +39,33 @@ do
     esac
 done
 
-printf "User: "
+echo "Initiating PG DB ..."
+
+printf "Superuser for your PostgreSQL installation (leave blank for 'postgres'): "
 read DB_ROOT_USER
+
+if [ ! "$DB_ROOT_USER" ]; then
+    DB_ROOT_USER="postgres"
+fi
 
 printf "Password for user $DB_ROOT_USER: "
 read DB_PASS
 
 echo ""
 
-tsc --build
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-databases.sh
+SCRIPT_DIR=$(dirname $BASH_SOURCE)
+
+tsc --build $SCRIPT_DIR/
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" $SCRIPT_DIR/pg-databases.sh
+check_exit_code
 echo ""
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-migrations.sh
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" $SCRIPT_DIR/pg-migrations.sh
+check_exit_code
 echo ""
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-users.sh
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" $SCRIPT_DIR/pg-users.sh
+check_exit_code
 echo ""
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-functions.sh
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" $SCRIPT_DIR/pg-functions.sh
+check_exit_code
 echo ""
-DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" ./pg-insert-gity-user.sh
+DB_PASS="$DB_PASS" DB_ROOT_USER="$DB_ROOT_USER" $SCRIPT_DIR/pg-insert-gity-user.sh

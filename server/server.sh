@@ -2,7 +2,7 @@
 
 print_help()
 {
-    echo "Script for starting the server"
+    echo "Script for starting/configuring the server"
     echo ""
     echo "By default all services are started in screen sessions"
     echo "with corresponding names. If either service is manually"
@@ -13,6 +13,7 @@ print_help()
     echo ""
     echo "Options:"
     echo "  -d, --deps                 Install deps for all sub projects"
+    echo "  -c, --configure            Configure the server-side"
     echo "  -g, --git-service          Start git-service"
     echo "  -p, --private-api-service  Start private-api-service"
     echo "  -P, --public-api-service   Start public-api-service"
@@ -31,6 +32,12 @@ else
                 yarn --cwd core/
                 yarn --cwd git-service/
                 yarn --cwd private-api-service/
+                ;;
+            "-c" | "--configure")
+                echo ""
+                ./core/create-default-conf.sh
+                echo ""
+                ./core/pg-init.sh
                 ;;
             "-h" | "--help")
                 print_help

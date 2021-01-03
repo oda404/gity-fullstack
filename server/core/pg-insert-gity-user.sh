@@ -52,7 +52,7 @@ async function main()
             } catch(e) {
                 console.error(e);
                 pgClient.end();
-                process.exit();
+                process.exit(1);
             }
 
             console.log(`${logging.green("Done.")}`);
@@ -62,7 +62,7 @@ async function main()
         });
     }).catch(() => {
         console.error("PostgreSQL connection failed. aborting...");
-        process.exit();
+        process.exit(1);
     });
 }
 
