@@ -115,9 +115,19 @@ export class UserResolver
                 return response;
             }
             
-            /* validation ? */
-            createUserDirOnDisk(res.user.id);
-
+            /* if there already exists a dir for this user's id 
+            something went wrong and we delete the newly created user*/
+            if(!createUserDirOnDisk(res.user.id))
+            {
+                PG_deleteUser(this.pgClient, res.user.id);
+                response.error = {
+                    field: "none",
+                    message: "Internal server error"
+                };
+                return response;
+            }
+            
+            /* the invitation remains valid unless the user is 100% successfully registered */
             await deleteInvitation(userInput.invitation);
 
             response.user = res.user!;
