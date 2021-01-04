@@ -28,8 +28,8 @@ export async function PG_updateUser(
     { id, username, email, hash, isEmailVerified, aliveSessions }: User
 ): Promise<UserDBQueryResponse>
 {
-    username = sanitizeSingleQuotes(username)!;
-    email = sanitizeSingleQuotes(email)!;
+    username = sanitizeSingleQuotes(username);
+    email = sanitizeSingleQuotes(email);
 
     return client.query(`EXECUTE updateUserPlan(\
         '${id}',\
@@ -55,8 +55,8 @@ export async function PG_findUser(
         return { user: undefined, err: "No args specified" };
     }
 
-    username = sanitizeSingleQuotes(username);
-    email = sanitizeSingleQuotes(email);
+    if(typeof username === "string") username = sanitizeSingleQuotes(username);
+    if(typeof email === "string") email = sanitizeSingleQuotes(email);
 
     return client.query(`SELECT * FROM find_user(\
         "_id"       => ${ id       === undefined ? `NULL` : `'${id}'` },\
@@ -74,8 +74,8 @@ export async function PG_addUser(
     { username, email, hash, masterId }: UserAddArgs
 ): Promise<UserDBQueryResponse>
 {
-    username = sanitizeSingleQuotes(username)!;
-    email = sanitizeSingleQuotes(email)!;
+    username = sanitizeSingleQuotes(username);
+    email = sanitizeSingleQuotes(email);
 
     return client.query(`EXECUTE addUserPlan('${username}', '${email}', '${hash}', '${masterId}');`).then( res => {
         return { user: res.rows[0], err: undefined };
@@ -89,7 +89,6 @@ export async function PG_deleteUser(
     id: number
 ): Promise<boolean>
 {
-
     return client.query(`EXECUTE deleteUserPlan('${id}');`).then( res => {
         if(res.rows[0] !== undefined)
         {
@@ -108,7 +107,7 @@ export async function PG_logoutUser(
     sessId: string
 ): Promise<UserDBQueryResponse>
 {
-    sessId = sanitizeSingleQuotes(sessId)!;
+    sessId = sanitizeSingleQuotes(sessId);
 
     return client.query(`EXECUTE logoutUserPlan('${id}', '${sessId}');`).then(res => {
         return {

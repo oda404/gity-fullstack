@@ -33,7 +33,7 @@ export function PG_addRepo(
     { name, ownerId, isPrivate }: RepoAddArgs
 ): Promise<RepoDBQueryResponse>
 {
-    name = sanitizeSingleQuotes(name)!;
+    name = sanitizeSingleQuotes(name);
 
     return client.query(`EXECUTE addRepoPlan(\
         '${name}',\
@@ -51,8 +51,8 @@ export async function PG_findRepo(
     { name, owner }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    name = sanitizeSingleQuotes(name)!;
-    owner = sanitizeSingleQuotes(owner)!;
+    name = sanitizeSingleQuotes(name);
+    owner = sanitizeSingleQuotes(owner);
 
     return client.query(`EXECUTE findRepoPlan('${name}', '${owner}');`).then( res => {
         return { repos: res.rows, error: undefined };
@@ -67,7 +67,7 @@ export async function PG_deleteRepo(
     ownerId: number
 ): Promise<boolean>
 {
-    name = sanitizeSingleQuotes(name)!;
+    name = sanitizeSingleQuotes(name);
     
     return client.query(`EXECUTE deleteRepoPlan('${name}', '${ownerId}');`).then( res => {
         if(res.rows[0] !== undefined)
@@ -86,7 +86,7 @@ export async function PG_findUserRepos(
     { owner, count, start }: UserReposLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    owner = sanitizeSingleQuotes(owner)!;
+    owner = sanitizeSingleQuotes(owner);
     
     return client.query(`EXECUTE findUserReposPlan('${owner}', '${count}', '${start}');`).then( res => {
         return {

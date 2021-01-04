@@ -1,11 +1,6 @@
 
-export function sanitizeSingleQuotes(str: string | undefined): string | undefined
-{
-    if(str === undefined)
-    {
-        return undefined;
-    }
-    
+export function sanitizeSingleQuotes(str: string): string
+{    
     let result = "";
     for(let i = 0; i < str.length; ++i)
     {
