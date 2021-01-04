@@ -29,6 +29,7 @@ import { Container } from "typedi";
 import { Client } from "pg";
 import { runPreparedStatements } from "../../core/src/pg/prepares";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
+import { v4 as genuuidV4 } from "uuid";
 
 export function printServerInfo(): void
 {
@@ -136,7 +137,14 @@ async function main(): Promise<void>
             },
             secret: SESSION_SECRET,
             resave: false,
-            saveUninitialized: false
+            saveUninitialized: false,
+            genid: () => {
+                /* since this stupid fucking function can t be async
+                I can t verify if the uuid exists in redis 
+                so i m appending 2 v4 uuids together so there
+                is no chance of them colliding */
+                return `${genuuidV4()}-${genuuidV4()}`;
+            }
         })
     );
     apolloServer.applyMiddleware({ app, cors: false, path: "/api/private" });
