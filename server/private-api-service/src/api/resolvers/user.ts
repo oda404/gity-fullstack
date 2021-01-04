@@ -14,7 +14,7 @@ import { v4 as genuuidV4 } from "uuid";
 import { getTestMessageUrl } from "nodemailer";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
-import { genInvitation, getInvitation } from "../../utils/invitation";
+import { deleteInvitation, genInvitation, getInvitation } from "../../utils/invitation";
 import { hashPassword } from "../../../../core/src/entities/user/password";
 
 @InputType()
@@ -108,21 +108,17 @@ export class UserResolver
             email: userInput.email,
             hash,
             masterId
-        }).then( res => {
+        }).then( async res => {
             if(res.err !== undefined || res.user === undefined)
             {
                 response.error = parsePGError(res.err);
                 return response;
             }
             
-            if(!createUserDirOnDisk(res.user.id))
-            {
-                response.error = {
-                    field: "none",
-                    message: "Internal server error"
-                };
-                return response;
-            }
+            /* validation ? */
+            createUserDirOnDisk(res.user.id);
+
+            await deleteInvitation(userInput.invitation);
 
             response.user = res.user!;
             return response;
@@ -225,6 +221,7 @@ export class UserResolver
     ): Promise<boolean>
     {
         user!.email = newEmail;
+        // ?
         user!.aliveSessions.forEach( sessId => {
             if(sessId !== req.session.id)
             {

@@ -16,10 +16,16 @@ export async function genInvitation(userId: number): Promise<string>
     return uuid;
 }
 
+export async function deleteInvitation(uuid: string): Promise<boolean>
+{
+    const redis = Container.get<Redis>("redisClient");
+    return (await redis.del(`inv:${uuid}`)) > 0;
+}
+
 /* The number return value is the user id associated with the invitation */
 export async function getInvitation(uuid: string): Promise<number | null>
 {
     const redis = Container.get<Redis>("redisClient");
-    const result = await redis.multi().get(`inv:${uuid}`).del(`inv:${uuid}`).exec();
-    return result[0][1];
+    const result = await redis.get(`inv:${uuid}`);
+    return result as number | null;
 }
