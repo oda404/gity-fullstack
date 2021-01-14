@@ -1,0 +1,23 @@
+
+#formSubmitButton {
+    background-color: #5c0098;
+    color: #e9e9e9;
+    font-size: 18px;
+    max-width: 400px;
+    max-height: 70px;
+    width: 100%;
+    height: 60px;
+    margin-top: 12px;
+}
+
+#formSubmitButton:hover {
+    background-color: #510086;
+}
+
+#formSubmitButton:active {
+    background-color: #450172;
+}
+
+#formSubmitButton:focus {
+    box-shadow: none;
+}

@@ -1,0 +1,53 @@
+
+.arrow {
+    border-style: solid;
+    position: absolute;
+    border-color: #4a3b3b transparent transparent transparent;
+    border-width: 8px 8px 0px 8px;
+}
+
+.speechBubble {
+    background-color: #1a1a1a;
+    border: 1px solid #4a3b3b;
+    border-style: solid;
+    border-radius: 5px;
+    width: auto;
+    height: auto;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 14px;
+    position: absolute;
+    z-index: 999;
+    white-space: nowrap;
+}
+
+@media only screen and (max-width: 1100px)
+{
+    .speechBubble {
+        right: -36px;
+        top: 63px;
+    }
+     
+    .arrow {
+        left: 70%;
+        top: -9px;
+        transform: rotate(180deg);
+        -webkit-transform: rotate(180deg);
+    }
+}
+
+@media only screen and (min-width: 1100px)
+{
+    .speechBubble {
+        margin-left: 50px;
+    }
+     
+    .arrow {
+        left: -13px;
+        top: 45%;
+        transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+    }
+}
