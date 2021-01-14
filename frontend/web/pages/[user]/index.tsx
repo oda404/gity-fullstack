@@ -1,5 +1,5 @@
 import { ApolloQueryResult } from "@apollo/client";
-import { Box, Flex, Link } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import React, { useState } from "react";
@@ -38,42 +38,42 @@ export default function UserIndex(props: UserIndexProps)
 
   return (
     <Container>
-        <Head>
-          <title>{`${props.ssr.getUser.username} | Gity`}</title>
-        </Head>
-        <Header squish type="full" username={props.ssr.sessionUsername} />
-        <Flex h="100vh" flexDir="row" paddingX="420px" paddingY="50px">
-          <Flex flexDir="column">
-            <ProfileTabSelector
-              selected={selectedTab === "profile"} 
-              text="Profile"
-              onClick={() => selectTab("profile")}
-            />
-            <ProfileTabSelector 
-              selected={selectedTab === "repos"} 
-              text="Repositories"
-              onClick={() => selectTab("repos")}
-            />
-            {props.ssr.isLoggedIn ? 
-              (
-              <>
-                <ProfileTabSelector 
-                  selected={selectedTab === "invs"} 
-                  onClick={() => selectTab("invs")}
-                  text="Invitations"
-                /> 
-                <ProfileTabSelector 
-                  selected={selectedTab === "settings"} 
-                  onClick={() => selectTab("settings")}
-                  text="Settings"
-                />
-              </>
-              ) : null
-            }
-          </Flex>
+      <Head>
+        <title>{`${props.ssr.getUser.username} | Gity`}</title>
+      </Head>
+      <Header squish type="full" username={props.ssr.sessionUsername} />
+      <Flex h="100vh" flexDir="row" paddingX="420px" paddingY="50px">
+        <Flex flexDir="column">
+          <ProfileTabSelector
+            selected={selectedTab === "profile"} 
+            text="Profile"
+            onClick={() => selectTab("profile")}
+          />
+          <ProfileTabSelector 
+            selected={selectedTab === "repos"} 
+            text="Repositories"
+            onClick={() => selectTab("repos")}
+          />
+          {props.ssr.isLoggedIn ? 
+            (
+            <>
+              <ProfileTabSelector 
+                selected={selectedTab === "invs"} 
+                onClick={() => selectTab("invs")}
+                text="Invitations"
+              /> 
+              <ProfileTabSelector 
+                selected={selectedTab === "settings"} 
+                onClick={() => selectTab("settings")}
+                text="Settings"
+              />
+            </>
+            ) : null
+          }
+        </Flex>
         {vDivider}
         {body}
-        </Flex>
+      </Flex>
     </Container>
   );
 }
@@ -85,7 +85,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const strippedUsername = ctx.req.url.substring(1);
   const redirectTo404 = () => {
     ctx.res.writeHead(302, {
-      Location: '/404'
+      Location: "/404"
     });
     ctx.res.end();
   }
@@ -103,6 +103,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
     getUserData = data;
 
+    if(!data.getUser)
+    {
+      redirectTo404();
+      return { props: { ssr: null } };
+    }
+
     try
     {
       const { data: selfData }: ApolloQueryResult<SelfQuery> = 
@@ -118,14 +124,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       }
     } catch(_) { }
 
-    if(!data.getUser)
-    {
-      redirectTo404();
-      return;
-    }
   } catch(_) {
     redirectTo404();
-    return;
+    return { props: { ssr: null } };
   }
 
   return {
