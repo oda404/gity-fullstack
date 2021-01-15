@@ -9,6 +9,7 @@ import { ApolloQueryResult } from "@apollo/client";
 import React from "react";
 import { Flex, Box, Link, Button } from "@chakra-ui/react";
 import { LockIcon, UnlockIcon } from "@chakra-ui/icons";
+import Divider from "../components/Divider";
 
 interface IndexProps
 {
@@ -82,25 +83,11 @@ export default function Index(props: IndexProps)
               New
             </Link>
           </Flex>
-          <Box
-            mt="10px"
-            w="100%"
-            h="1px"
-            bg="#3b3737"
-          />
+          <Divider mt="10px"/>
           {repos}
-          <Box
-            mt="10px"
-            w="100%"
-            h="1px"
-            bg="#3b3737"
-          />
+          <Divider mt="10px"/>
         </Flex>
-        <Flex
-          h="100%"
-          w="1px"
-          bg="#3b3737"
-        />
+        <Divider position="v" />
       </Flex>
     )
   }

@@ -6,8 +6,9 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import React from "react";
 import Container from "../components/Container";
+import Divider from "../components/Divider";
 import Header from "../components/Header";
-import { SelfQuery, SelfDocument, GetUserReposQuery, GetUserReposDocument } from "../generated/graphql";
+import { SelfQuery, SelfDocument } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
@@ -18,8 +19,6 @@ interface NewProps
 
 export default function New(props: NewProps)
 {
-  const divider = <Box mb="20px" h="1px" w="100%" bg="#3b3737" />;
-
   return (
     <Container>
       <Head>
@@ -41,7 +40,7 @@ export default function New(props: NewProps)
         >
           Already have a git project on another VCS host? <Link color="#12a0d3" variant="link">Import it.</Link>
         </Box>
-        {divider}
+        <Divider mb="20px" />
         <Formik
           initialValues={{
             name: "",
@@ -109,7 +108,7 @@ export default function New(props: NewProps)
                     </FormControl>
                   </Stack>
                 </Stack>
-                {divider}
+                <Divider mb="20px" />
                 <FormControl mb="20px">
                   <RadioGroup defaultValue="public">
                     <Stack spacing="16px" direction="column">
@@ -150,7 +149,7 @@ export default function New(props: NewProps)
                     </Stack>
                   </RadioGroup>
                 </FormControl>
-                {divider}
+                <Divider mb="20px" />
                 <Button
                   w="110px"
                   h="35px"

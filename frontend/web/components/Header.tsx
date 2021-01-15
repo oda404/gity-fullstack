@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import styles from "../styles/Header.module.css";
 import LinkButton from "../components/LinkButton";
 import { useLogoutUserMutation } from "../generated/graphql";
+import Divider from "./Divider";
 
 interface HeaderProps
 {
@@ -16,8 +17,6 @@ export default function Header(props: HeaderProps)
   const [userDropdownShown, showUserDropdown] = useState(false);
   const [ runLogoutUserMutation ] = useLogoutUserMutation();
   let headerBody = null;
-
-  const divider = <Box h="1px" w="100%" bg="#302e2e" />;
 
   if(props.username && props.username !== undefined)
   {
@@ -39,12 +38,7 @@ export default function Header(props: HeaderProps)
         cursor="default"
       />
       <Flex zIndex="999">
-        <Box
-          h="auto"
-          w="1px"
-          bg="#3b3737"
-          mr="4px"
-        />
+        <Divider position="v" />
         <Grid>
           <Button
             color="#d8dbcb"
@@ -100,7 +94,7 @@ export default function Header(props: HeaderProps)
             >
               <b>Your profile</b>
             </Link>
-            {divider}
+            <Divider />
             <Link
               color="#cdc0c0"
               bg="none"
