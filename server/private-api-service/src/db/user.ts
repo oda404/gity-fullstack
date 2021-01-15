@@ -51,7 +51,7 @@ export async function PG_findUser(
 ): Promise<UserDBQueryResponse>
 {
     // fix this fuckery
-    if(!id && !username && !email)
+    if(id === undefined && username === undefined && email === undefined)
     {
         return { user: undefined, err: "No args specified" };
     }
@@ -59,13 +59,13 @@ export async function PG_findUser(
     let usernameC: string;
     let emailC: string;
 
-    if(username) usernameC = sanitizeSingleQuotes(username);
-    if(email) emailC = sanitizeSingleQuotes(email);
+    if(username !== undefined) usernameC = sanitizeSingleQuotes(username);
+    if(email !== undefined) emailC = sanitizeSingleQuotes(email);
 
     return client.query(`SELECT * FROM find_user(
-        "_id"       => ${ !id ? `NULL` : `'${id}'` },
-        "_username" => ${ !username ? `NULL` : `'${usernameC!}'` },
-        "_email"    => ${ !email ? `NULL` : `'${emailC!}'` }
+        "_id"       => ${ id === undefined ? `NULL` : `'${id}'` },
+        "_username" => ${ username === undefined ? `NULL` : `'${usernameC!}'` },
+        "_email"    => ${ email === undefined ? `NULL` : `'${emailC!}'` }
     );`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
@@ -94,9 +94,9 @@ export async function PG_deleteUser(
 ): Promise<boolean>
 {
     return client.query(`EXECUTE deleteUserPlan('${id}');`).then( res => {
-        if(res.rows[0])
+        if(res.rows.length > 0)
         {
-            return !(res.rows[0].count === 0);
+            return !(parseInt(res.rows[0].count) === 0);
         }
 
         return false;

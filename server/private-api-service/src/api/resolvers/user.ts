@@ -5,7 +5,6 @@ import { SESSION_COOKIE_NAME } from "../../consts";
 import { parsePGError, validateUserEmail, validateUsername, validateUserPassword, validateUserRegisterInput } from "../../utils/userValidation";
 import Container from "typedi";
 import { Redis } from "ioredis";
-import Mail from "nodemailer/lib/mailer";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { verify } from "argon2";
@@ -84,13 +83,13 @@ export class UserResolver
         const response = new UserResponse();
 
         response.error = await validateUserRegisterInput(userInput);
-        if(response.error)
+        if(response.error !== undefined)
         {
             return response;
         }
 
         const masterId = await getInvitation(userInput.invitation);
-        if(!masterId)
+        if(masterId === null)
         {
             response.error = {
                 field: "invitation",
@@ -105,16 +104,13 @@ export class UserResolver
             hash: await hashPassword(userInput.password),
             masterId
         }).then( async res => {
-            if(!res.user)
+            if(res.user === undefined)
             {
-                response.error = {
-                    field: "null",
-                    message: "Internal server error"
-                };
+                response.error = parsePGError(res.err);
                 return response;
             }
 
-            if(!!createUserDirOnDisk(res.user.id)) 
+            if(!createUserDirOnDisk(res.user.id)) 
             {
                 PG_deleteUser(this.pgClient, res.user.id);
                 response.error = {
@@ -171,7 +167,7 @@ export class UserResolver
         }
 
         return PG_updateUser(this.pgClient, user).then(result => {
-            if(result.err)
+            if(result.err !== undefined)
             {
                 response.error = {
                     field: "null",
@@ -227,7 +223,7 @@ export class UserResolver
         @Arg("newEmail") newEmail: string
     ): Promise<boolean>
     {
-        if(!validateUserEmail(newEmail))
+        if(!validateUserEmail(newEmail).result)
         {
             return false;
         }
@@ -254,7 +250,7 @@ export class UserResolver
         @Arg("newPassword") newPassword: string
     ): Promise<boolean>
     {
-        if(!validateUserPassword(newPassword))
+        if(!validateUserPassword(newPassword).result)
         {
             return false;
         }
@@ -286,6 +282,6 @@ export class UserResolver
             return null;
         }
 
-        return (await PG_findUser(this.pgClient, { username })).user
+        return (await PG_findUser(this.pgClient, { username })).user;
     }
 };

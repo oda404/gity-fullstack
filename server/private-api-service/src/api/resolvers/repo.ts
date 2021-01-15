@@ -124,7 +124,7 @@ export class RepoResolver
         @Arg("start", () => Int, { defaultValue: 0 }) start: number
     ): Promise<Repo[] | null>
     {
-        if(!validateUsername(owner))
+        if(!validateUsername(owner).result)
         {
             return null;
         }
@@ -135,7 +135,7 @@ export class RepoResolver
         start = Math.max(start, REPOS_START_MIN);
 
         const user = (await PG_findUser(this.pgClient, { username: owner })).user;
-        if(!user)
+        if(user === undefined)
         {
             return null;
         }

@@ -17,13 +17,13 @@ export const customAuthChecker: AuthChecker<ApolloContext> = async (
         return !(context.req.session.userId === undefined)
 
     case AUTH_PASSWD:
-        if(!context.req.session.userId || !args.password)
+        if(context.req.session.userId === undefined || args.password === undefined)
         {
             return false;
         }
 
         context.user = await (await PG_findUser(Container.get<Client>("pgClient"), { id: context.req.session.userId })).user;
-        if(!context.user)
+        if(context.user === undefined)
         {
             return false;
         }

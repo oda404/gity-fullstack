@@ -70,7 +70,7 @@ export async function PG_deleteRepo(
     const nameC = sanitizeSingleQuotes(name);
     
     return client.query(`EXECUTE deleteRepoPlan('${nameC}', '${ownerId}');`).then( res => {
-        if(res.rows[0])
+        if(res.rows.length > 0)
         {
             return !(parseInt(res.rows[0].count) === 0);
         }
