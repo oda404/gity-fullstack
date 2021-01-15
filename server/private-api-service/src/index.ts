@@ -143,7 +143,7 @@ async function main(): Promise<void>
                 /* since this stupid fucking function can t be async
                 I can t verify if the uuid exists in redis 
                 so i m appending 2 v4 uuids together so there
-                is no chance of them colliding */
+                is *no* chance of them colliding */
                 return `${genuuidV4()}-${genuuidV4()}`;
             }
         })

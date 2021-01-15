@@ -16,5 +16,5 @@ export const GIT_ROOT_DIR = getGitReposRootDir()!;
 export const __prod__ = false;
 export const SERVER_PORT = 4200;
 export const SESSION_COOKIE_NAME = "user-session";
-export const AUTH_COOKIE = "COOKIE";
-export const AUTH_PASSWD = "PASSWD";
+export const AUTH_COOKIE = "AUTH_COOKIE_MW";
+export const AUTH_PASSWD = "AUTH_PASSWD_MW";

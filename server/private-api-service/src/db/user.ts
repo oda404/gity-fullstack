@@ -28,13 +28,13 @@ export async function PG_updateUser(
     { id, username, email, hash, isEmailVerified, aliveSessions }: User
 ): Promise<UserDBQueryResponse>
 {
-    username = sanitizeSingleQuotes(username);
-    email = sanitizeSingleQuotes(email);
+    const usernameC = sanitizeSingleQuotes(username);
+    const emailC = sanitizeSingleQuotes(email);
 
     return client.query(`EXECUTE updateUserPlan(\
         '${id}',\
-        '${username}',\
-        '${email}',\
+        '${usernameC}',\
+        '${emailC}',\
         '${isEmailVerified}',\
         '${hash}',\
         '{${aliveSessions}}'\
@@ -50,18 +50,22 @@ export async function PG_findUser(
     { id, username, email }: UserLookupArgs
 ): Promise<UserDBQueryResponse>
 {
-    if(id === undefined && username === undefined && email === undefined)
+    // fix this fuckery
+    if(!id && !username && !email)
     {
         return { user: undefined, err: "No args specified" };
     }
 
-    if(typeof username === "string") username = sanitizeSingleQuotes(username);
-    if(typeof email === "string") email = sanitizeSingleQuotes(email);
+    let usernameC: string;
+    let emailC: string;
 
-    return client.query(`SELECT * FROM find_user(\
-        "_id"       => ${ id       === undefined ? `NULL` : `'${id}'` },\
-        "_username" => ${ username === undefined ? `NULL` : `'${username}'` },\
-        "_email"    => ${ email    === undefined ? `NULL` : `'${email}'` }\
+    if(username) usernameC = sanitizeSingleQuotes(username);
+    if(email) emailC = sanitizeSingleQuotes(email);
+
+    return client.query(`SELECT * FROM find_user(
+        "_id"       => ${ !id ? `NULL` : `'${id}'` },
+        "_username" => ${ !username ? `NULL` : `'${usernameC!}'` },
+        "_email"    => ${ !email ? `NULL` : `'${emailC!}'` }
     );`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
@@ -74,10 +78,10 @@ export async function PG_addUser(
     { username, email, hash, masterId }: UserAddArgs
 ): Promise<UserDBQueryResponse>
 {
-    username = sanitizeSingleQuotes(username);
-    email = sanitizeSingleQuotes(email);
+    const usernameC = sanitizeSingleQuotes(username);
+    const emailC = sanitizeSingleQuotes(email);
 
-    return client.query(`EXECUTE addUserPlan('${username}', '${email}', '${hash}', '${masterId}');`).then( res => {
+    return client.query(`EXECUTE addUserPlan('${usernameC}', '${emailC}', '${hash}', '${masterId}');`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
         return { user: undefined, err };
@@ -90,7 +94,7 @@ export async function PG_deleteUser(
 ): Promise<boolean>
 {
     return client.query(`EXECUTE deleteUserPlan('${id}');`).then( res => {
-        if(res.rows[0] !== undefined)
+        if(res.rows[0])
         {
             return !(res.rows[0].count === 0);
         }
@@ -107,9 +111,10 @@ export async function PG_logoutUser(
     sessId: string
 ): Promise<UserDBQueryResponse>
 {
-    sessId = sanitizeSingleQuotes(sessId);
+    // maybe redundant ? but fuck it
+    const sessIdC = sanitizeSingleQuotes(sessId);
 
-    return client.query(`EXECUTE logoutUserPlan('${id}', '${sessId}');`).then(res => {
+    return client.query(`EXECUTE logoutUserPlan('${id}', '${sessIdC}');`).then(res => {
         return {
             user: res.rows[0]
         }

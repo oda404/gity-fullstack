@@ -17,7 +17,7 @@ export function validateRepoName(repoName: string): ValidateFieldResponse
     {
         return {
             result: false,
-            err: "Repo name contains invalid characters"
+            err: "Repository name contains invalid characters"
         }
     }
 
@@ -25,7 +25,7 @@ export function validateRepoName(repoName: string): ValidateFieldResponse
     {
         return {
             result: false,
-            err: `Repo name can't be longer than ${REPO_NAME_MAX_LENGTH}`
+            err: `Repository name can't be longer than ${REPO_NAME_MAX_LENGTH}`
         }
     }
 
@@ -33,7 +33,7 @@ export function validateRepoName(repoName: string): ValidateFieldResponse
     {
         return {
             result: false,
-            err: `Repo name can't be shorter than ${REPO_NAME_MIN_LENGTH}`
+            err: `Repository name can't be shorter than ${REPO_NAME_MIN_LENGTH}`
         }
     }
 

@@ -33,12 +33,12 @@ export function PG_addRepo(
     { name, ownerId, isPrivate }: RepoAddArgs
 ): Promise<RepoDBQueryResponse>
 {
-    name = sanitizeSingleQuotes(name);
+    const nameC = sanitizeSingleQuotes(name);
 
-    return client.query(`EXECUTE addRepoPlan(\
-        '${name}',\
-        '${ownerId}',\
-        '${isPrivate}'\
+    return client.query(`EXECUTE addRepoPlan(
+        '${nameC}',
+        '${ownerId}',
+        '${isPrivate}'
     );`).then( res => {
         return { repos: res.rows, error: undefined };
     }).catch( error => {
@@ -51,10 +51,10 @@ export async function PG_findRepo(
     { name, owner }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    name = sanitizeSingleQuotes(name);
-    owner = sanitizeSingleQuotes(owner);
+    const nameC = sanitizeSingleQuotes(name);
+    const ownerC = sanitizeSingleQuotes(owner);
 
-    return client.query(`EXECUTE findRepoPlan('${name}', '${owner}');`).then( res => {
+    return client.query(`EXECUTE findRepoPlan('${nameC}', '${ownerC}');`).then( res => {
         return { repos: res.rows, error: undefined };
     }).catch( error => {
         return { repos: [], error };
@@ -67,12 +67,12 @@ export async function PG_deleteRepo(
     ownerId: number
 ): Promise<boolean>
 {
-    name = sanitizeSingleQuotes(name);
+    const nameC = sanitizeSingleQuotes(name);
     
-    return client.query(`EXECUTE deleteRepoPlan('${name}', '${ownerId}');`).then( res => {
-        if(res.rows[0] !== undefined)
+    return client.query(`EXECUTE deleteRepoPlan('${nameC}', '${ownerId}');`).then( res => {
+        if(res.rows[0])
         {
-            return !(res.rows[0].count === 0);
+            return !(parseInt(res.rows[0].count) === 0);
         }
 
         return false;
@@ -86,9 +86,9 @@ export async function PG_findUserRepos(
     { owner, count, start }: UserReposLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    owner = sanitizeSingleQuotes(owner);
+    const ownerC = sanitizeSingleQuotes(owner);
     
-    return client.query(`EXECUTE findUserReposPlan('${owner}', '${count}', '${start}');`).then( res => {
+    return client.query(`EXECUTE findUserReposPlan('${ownerC}', '${count}', '${start}');`).then( res => {
         return {
             repos: res.rows, error: undefined
         };

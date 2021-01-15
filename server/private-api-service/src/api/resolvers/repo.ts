@@ -10,10 +10,10 @@ import { validateRepoName } from "../../utils/repoValidation";
 import { PG_findUser } from "../../db/user";
 import { createRepoOnDisk, deleteRepoFromDisk } from "../../utils/repo";
 
-const START_MIN = 0;
-const START_MAX = Number.MAX_SAFE_INTEGER;
-const COUNT_MIN = 1;
-const COUNT_MAX = 15;
+const REPOS_START_MIN = 0;
+const REPOS_START_MAX = Number.MAX_SAFE_INTEGER;
+const REPOS_COUNT_MIN = 1;
+const REPOS_COUNT_MAX = 15;
 
 @ObjectType()
 class RepoResponse
@@ -32,7 +32,7 @@ export class RepoResolver
 
     @Authorized(AUTH_COOKIE)
     @Mutation(() => RepoResponse, { nullable: true })
-    async createRepo(
+    async createRepository(
         @Ctx() { req }: ApolloContext,
         @Arg("name") name: string,
         @Arg("isPrivate") isPrivate: boolean
@@ -53,7 +53,7 @@ export class RepoResolver
             isPrivate
         }));
 
-        if(repoResponse.repos?.[0] === undefined || repoResponse.error)
+        if(repoResponse.repos?.length === 0)
         {
             response.error = "Repo already exists";
             return response;
@@ -61,6 +61,7 @@ export class RepoResolver
 
         if(!createRepoOnDisk(req.session.userId!, name))
         {
+            await PG_deleteRepo(this.pgClient, name, req.session.userId!);
             response.error = "Internal server error";
             return response;
         }
@@ -71,7 +72,7 @@ export class RepoResolver
 
     @Authorized(AUTH_PASSWD)
     @Mutation(() => Boolean, { nullable: true })
-    async deleteRepo(
+    async deleteRepository(
         @Ctx() { user }: ApolloContext,
         @Arg("password") password: string,
         @Arg("name") name: string,
@@ -82,22 +83,12 @@ export class RepoResolver
         {
             return false;
         }
-        /* delete repo from disk */
-        if(!deleteRepoFromDisk(user!.id, name))
-        {
-            return false;
-        }
-        /* delete repo db entry */
-        if(!(await PG_deleteRepo(this.pgClient, name, user!.id)))
-        {
-            return false;
-        }
-        
-        return true;
+        deleteRepoFromDisk(user!.id, name);
+        return (await PG_deleteRepo(this.pgClient, name, user!.id));
     }
 
     @Query(() => Repo, { nullable: true })
-    async getRepo(
+    async getRepository(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
         @Arg("name") name: string
@@ -109,14 +100,14 @@ export class RepoResolver
         }
 
         const repoResponse = (await PG_findRepo(this.pgClient, { name, owner }));
-        if(repoResponse.repos?.[0] === undefined || repoResponse.error)
+        if(repoResponse.repos?.length === 0)
         {
             return null;
         }
 
         if(repoResponse.repos![0].isPrivate)
         {
-            if(!req.session.userId || req.session.userId !== repoResponse.repos![0].ownerId)
+            if(req.session.userId !== repoResponse.repos![0].ownerId)
             {
                 return null;
             }
@@ -126,7 +117,7 @@ export class RepoResolver
     }
 
     @Query(() => [Repo], { nullable: true })
-    async getUserRepos(
+    async getUserRepositories(
         @Ctx() { req }: ApolloContext,
         @Arg("owner") owner: string,
         @Arg("count", () => Int) count: number,
@@ -138,13 +129,13 @@ export class RepoResolver
             return null;
         }
 
-        count = Math.min(count, COUNT_MAX);
-        count = Math.max(count, COUNT_MIN);
-        start = Math.min(start, START_MAX);
-        start = Math.max(start, START_MIN);
+        count = Math.min(count, REPOS_COUNT_MAX);
+        count = Math.max(count, REPOS_COUNT_MIN);
+        start = Math.min(start, REPOS_START_MAX);
+        start = Math.max(start, REPOS_START_MIN);
 
-        const user = (await PG_findUser(this.pgClient, { username: owner })).user
-        if(user === undefined)
+        const user = (await PG_findUser(this.pgClient, { username: owner })).user;
+        if(!user)
         {
             return null;
         }
@@ -152,8 +143,9 @@ export class RepoResolver
         const repos = (await PG_findUserRepos(this.pgClient, { owner, count, start })).repos;
 
         /* strip out private repos if user is not logged in or unauthorized */
-        if(req.session.userId === undefined || req.session.userId !== user.id)
+        if(req.session.userId !== user.id)
         {
+            // map ?
             for(let i = 0; i < repos.length; ++i)
             {
                 if(repos[i].isPrivate)

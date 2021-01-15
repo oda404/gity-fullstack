@@ -56,7 +56,7 @@ export function validateUsername(username: string): ValidateFieldResponse
     }
 }
 
-export function validateEmail(email: string): ValidateFieldResponse
+export function validateUserEmail(email: string): ValidateFieldResponse
 {
     if(email.length > EMAIL_MAX_LENGTH)
     {
@@ -79,7 +79,7 @@ export function validateEmail(email: string): ValidateFieldResponse
     }
 }
 
-export function validatePassword(password: string): ValidateFieldResponse
+export function validateUserPassword(password: string): ValidateFieldResponse
 {
     /* check password length */
     if(password.length < PASSWORD_MIN_LENGTH)
@@ -122,7 +122,7 @@ export async function validateUserRegisterInput(userInput: UserRegisterInput): P
         }
     }
 
-    const valEmailRes = validateEmail(userInput.email);
+    const valEmailRes = validateUserEmail(userInput.email);
     if(!valEmailRes.result)
     {
         return {
@@ -131,7 +131,7 @@ export async function validateUserRegisterInput(userInput: UserRegisterInput): P
         }
     }
 
-    const valPasswordRes = validatePassword(userInput.password);
+    const valPasswordRes = validateUserPassword(userInput.password);
     if(!valPasswordRes.result)
     {
         return {
