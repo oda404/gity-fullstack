@@ -8,7 +8,7 @@ import React from "react";
 import Container from "../components/Container";
 import Divider from "../components/Divider";
 import Header from "../components/Header";
-import { SelfQuery, SelfDocument } from "../generated/graphql";
+import { SelfQuery, SelfDocument, useCreateRepoMutation } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
@@ -19,6 +19,7 @@ interface NewProps
 
 export default function New(props: NewProps)
 {
+  const [ runCreateRepoMutation ] = useCreateRepoMutation();
   return (
     <Container>
       <Head>
@@ -47,7 +48,11 @@ export default function New(props: NewProps)
             isPrivate: false
           }}
           onSubmit={ async (values) => {
-            console.log(values);
+            const res = await runCreateRepoMutation({ variables: {
+              name: values.name,
+              isPrivate: values.isPrivate
+            } });
+            window.location.replace('/');
           }}
         >
           {({ values, handleChange, isSubmitting }) => (
