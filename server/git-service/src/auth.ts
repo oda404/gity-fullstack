@@ -93,20 +93,19 @@ export async function tryAuthenticate(req: Request, res: Response, owner: string
             ownerId: -1
         }
     }
-        
-    return verify(user.hash, password).then( match => {
-        if(match)
-        {
-            return {
-                status: AuthStatus.GOOD,
-                ownerId: user.id
-            }
-        }
-        
-        respondUnauthorized(res);
+
+    const match = await verify(user.hash, password);
+    if(match)
+    {
         return {
-            status: AuthStatus.BAD,
-            ownerId: -1
+            status: AuthStatus.GOOD,
+            ownerId: user.id
         }
-    });
+    }
+
+    respondUnauthorized(res);
+    return {
+        status: AuthStatus.BAD,
+        ownerId: -1
+    }
 }

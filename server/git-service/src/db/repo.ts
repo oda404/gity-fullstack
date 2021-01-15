@@ -19,10 +19,10 @@ export async function PG_findRepo(
     { name, owner }: RepoLookupArgs
 ): Promise<RepoDBQueryResponse>
 {
-    name = sanitizeSingleQuotes(name)!;
-    owner = sanitizeSingleQuotes(owner)!;
+    const nameC = sanitizeSingleQuotes(name);
+    const ownerC = sanitizeSingleQuotes(owner);
 
-    return client.query(`EXECUTE findRepoPlan('${name}', '${owner}');`).then( res => {
+    return client.query(`EXECUTE findRepoPlan('${nameC}', '${ownerC}');`).then( res => {
         return { repo: res.rows[0], error: undefined };
     }).catch( error => {
         return { repo: undefined, error };

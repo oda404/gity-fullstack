@@ -8,6 +8,7 @@ import { tryAuthenticate, AuthStatus } from "./auth";
 import { parse } from "url";
 import { GIT_ROOT_DIR } from "./consts";
 import { join } from "path";
+import { setHeaderNoCache } from "./utils/headers";
 
 function pack(message: string): string
 {
@@ -62,9 +63,7 @@ export function gitService(pgClient: Client): RequestHandler
 
         if(req.headers["user-agent"]?.includes("git/"))
         {
-            res.setHeader("Expires", "Fri, 01 Jan 1980 00:00:00 GMT")
-            res.setHeader("Pragma", "no-cache");
-            res.setHeader("Cache-Control", "no-cache, max-age=0, must-revalidate");
+            setHeaderNoCache(res);
 
             if(req.method === "GET" || req.method === "HEAD")
             {

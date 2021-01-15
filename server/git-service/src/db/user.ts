@@ -13,9 +13,9 @@ export async function PG_findUser(
     username: string
 ): Promise<UserDBQueryResponse>
 {
-    username = sanitizeSingleQuotes(username)!;
+    const usernameC = sanitizeSingleQuotes(username)!;
 
-    return client.query(`EXECUTE findUserByUsernamePlan('${username}');`).then( res => {
+    return client.query(`EXECUTE findUserByUsernamePlan('${usernameC}');`).then( res => {
         return { user: res.rows[0], err: undefined };
     }).catch( err => {
         return { user: undefined, err };
