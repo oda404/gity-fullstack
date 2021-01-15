@@ -24,12 +24,13 @@ import connectRedis from "connect-redis";
 import session from "express-session";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
-import { createTestAccount, createTransport } from "nodemailer";
+import { createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
 import { runPreparedStatements } from "../../core/src/pg/prepares";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 import { v4 as genuuidV4 } from "uuid";
+import { createServer } from "http";
 
 export function printServerInfo(): void
 {
@@ -149,7 +150,8 @@ async function main(): Promise<void>
     );
     apolloServer.applyMiddleware({ app, cors: false, path: "/" });
 
-    app.listen(SERVER_PORT);
+    const httpServer = createServer(app);
+    httpServer.listen(SERVER_PORT);
 }
 
 main().catch(err => console.error(err));
