@@ -1,0 +1,14 @@
+{
+    "email-b64-regex": "Xig/PS57NiwxMDB9JCkoKFtePD4oKVxbXF1cXC4sOzpcc0AiXSsoXC5bXjw+KClcW1xdXFwuLDs6XHNAIl0rKSopfCgiLisiKSlAKChcW1swLTldezEsM31cLlswLTldezEsM31cLlswLTldezEsM31cLlswLTldezEsM30pfCgoW2EtekEtWlwtMC05XStcLikrW2EtekEtWl17Mix9KSkk",
+    "username-b64-regex": "XlthLXpBLVowLTlcLV9dezMsMzV9JA==",
+    "usernames-forbidden": [
+        "new",
+        "404",
+        "login",
+        "register",
+        "tos"
+    ],
+    "passwd-b64-regex": "Xig/PS4qW2Etel0pKD89LipbQS1aXSkoPz0uKlswLTldKSg/PS4qWyFAIyQlXiYqKClcLV89K1t7XF1cfTs6XCdcIiw8Lj4vP1xcfGB+XSlbYS16QS1aMC05IUAjJCVeJiooKVwtXz0rW3tcXVx9OzpcJ1wiLDwuPi8/XFx8YH5dezgsODB9JA==",
+    "passwd-hash-time-cost": 32,
+    "passwd-hash-salt-len": 64
+}
