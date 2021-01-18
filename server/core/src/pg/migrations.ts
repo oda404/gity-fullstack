@@ -1,7 +1,10 @@
 
 import { Client } from "pg";
-import { PG_DB_MAIN, USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE, REPO_DESCRIPTION_TYPE } from "./consts";
-
+const USERNAME_TYPE = "ass";
+const EMAIL_TYPE = "ass";
+const PG_DB_MAIN = "ass";
+const REPO_DESCRIPTION_TYPE= "ass";
+const REPO_NAME_TYPE = "ass";
 const DATABASES = [
     `CREATE DATABASE ${PG_DB_MAIN};`,
 ];

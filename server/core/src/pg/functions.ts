@@ -1,7 +1,7 @@
 
 import { Client } from "pg";
-import { USERNAME_TYPE, EMAIL_TYPE } from "./consts";
-
+const USERNAME_TYPE = "ass";
+const EMAIL_TYPE = "ass";
 const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\
         find_user(\

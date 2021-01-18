@@ -1,15 +1,28 @@
 import { UserFieldError, UserRegisterInput } from "../api/resolvers/user";
-import { 
-    EMAIL_MAX_LENGTH, 
-    EMAIL_REGEX, 
-    FORBIDDEN_USERNAMES, 
-    PASSWORD_MAX_LENGTH, 
-    PASSWORD_MIN_LENGTH, 
-    PASSWORD_REGEX, 
-    USERNAME_MAX_LENGTH, 
-    USERNAME_MIN_LENGTH, 
-    USERNAME_REGEX
-} from "../../../core/src/entities/user/consts";
+import { getUserConfig } from "gity/config-engine";
+
+const userConfig = getUserConfig();
+
+const USERNAME_MIN_LENGTH = userConfig.usernameMinLen;
+const USERNAME_MAX_LENGTH = userConfig.usernameMaxLen;
+const USERNAME_REGEX = new RegExp(
+    Buffer.from(userConfig.usernameB64Regex, "base64").toString("ascii")
+);
+const FORBIDDEN_USERNAMES =
+    userConfig.usernamesForbidden === undefined ? 
+    [] : 
+    userConfig.usernamesForbidden;
+
+const EMAIL_MAX_LENGTH = userConfig.emailMaxLen;
+const EMAIL_REGEX = new RegExp(
+    Buffer.from(userConfig.emailB64Regex, "base64").toString("ascii")
+);
+
+const PASSWORD_MIN_LENGTH = userConfig.passwdMinLen;
+const PASSWORD_MAX_LENGTH = userConfig.passwdMaxLen;
+const PASSWORD_REGEX = new RegExp(
+    Buffer.from(userConfig.passwdB64Regex, "base64").toString("ascii")
+);
 
 interface ValidateFieldResponse
 {

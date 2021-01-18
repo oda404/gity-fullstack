@@ -1,0 +1,10 @@
+{
+  "name": "gity-conf-engine",
+  "version": "1.0.0",
+  "description": "Configuration engine for gity",
+  "main": "index.js",
+  "types": "config.d.ts",
+  "scripts": {  },
+  "author": "Olaru Alexandru",
+  "license": "MIT"
+}

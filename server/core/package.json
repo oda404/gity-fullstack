@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "argon2": "^0.27.1",
-    "pg": "^8.5.1"
+    "pg": "^8.5.1",
+    "gity": "file:./modules/gity"
   },
   "devDependencies": {
     "@types/pg": "^7.14.7"

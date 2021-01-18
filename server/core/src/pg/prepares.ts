@@ -1,6 +1,13 @@
 
 import { Client } from "pg";
-import { USERNAME_TYPE, EMAIL_TYPE, REPO_NAME_TYPE } from "./consts";
+import { getUserConfig, getRepoConfig } from "gity/config-engine";
+
+const userConfig = getUserConfig();
+const repoConfig = getRepoConfig();
+
+const USERNAME_TYPE = `varchar(${userConfig.usernameMaxLen})`;
+const EMAIL_TYPE = `varchar(${userConfig.emailMaxLen})`;
+const REPO_NAME_TYPE = `varchar(${repoConfig.nameMaxLen})`;
 
 const PREPARES = [
     `PREPARE addUserPlan(${USERNAME_TYPE}, ${EMAIL_TYPE}, TEXT, BIGINT) AS

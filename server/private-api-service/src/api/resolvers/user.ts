@@ -12,7 +12,7 @@ import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } 
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
 import { deleteInvitation, genInvitation, getInvitation } from "../../utils/invitation";
-import { hashPassword } from "../../../../core/src/entities/user/password";
+import { hashPassword } from "../../utils/hashPassword";
 
 @InputType()
 export class UserLoginInput

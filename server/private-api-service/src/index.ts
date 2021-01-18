@@ -31,6 +31,7 @@ import { runPreparedStatements } from "../../core/src/pg/prepares";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
+import { validateConfigurations } from "gity/config-engine";
 
 export function printServerInfo(): void
 {
@@ -48,6 +49,7 @@ export function printServerInfo(): void
 
 async function main(): Promise<void>
 {
+    validateConfigurations();
     initLogging("[PRIVATE_API]");
     printServerInfo();
     let pgClient = new Client({

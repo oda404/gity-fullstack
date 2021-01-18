@@ -1,13 +1,22 @@
+import { getUserConfig } from "gity/config-engine";
 
-import { 
-    USERNAME_MAX_LENGTH,
-    USERNAME_REGEX, 
-    USERNAME_MIN_LENGTH,
-    FORBIDDEN_USERNAMES,
-    PASSWORD_MAX_LENGTH,
-    PASSWORD_MIN_LENGTH,
-    PASSWORD_REGEX
-} from "../../../core/src/entities/user/consts";
+const userConfig = getUserConfig();
+
+const USERNAME_MIN_LENGTH = userConfig.usernameMinLen;
+const USERNAME_MAX_LENGTH = userConfig.usernameMaxLen;
+const USERNAME_REGEX = new RegExp(
+    Buffer.from(userConfig.usernameB64Regex, "base64").toString("ascii")
+);
+const FORBIDDEN_USERNAMES =
+    userConfig.usernamesForbidden === undefined ? 
+    [] : 
+    userConfig.usernamesForbidden;
+
+const PASSWORD_MIN_LENGTH = userConfig.passwdMinLen;
+const PASSWORD_MAX_LENGTH = userConfig.passwdMaxLen;
+const PASSWORD_REGEX = new RegExp(
+    Buffer.from(userConfig.passwdB64Regex, "base64").toString("ascii")
+);
 
 export function isUsernameValid(username: string): boolean
 {

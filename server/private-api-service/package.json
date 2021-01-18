@@ -27,7 +27,8 @@
       "reflect-metadata": "^0.1.13",
       "type-graphql": "^1.1.0",
       "typedi": "^0.8.0",
-      "uuid": "^8.3.1"
+      "uuid": "^8.3.1",
+      "gity": "file:../core/modules/gity"
    },
    "devDependencies": {
       "@types/connect-redis": "^0.0.15",
