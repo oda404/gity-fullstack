@@ -1,5 +1,5 @@
 import { UserFieldError, UserRegisterInput } from "../api/resolvers/user";
-import { getUserConfig } from "gity/config-engine";
+import { getUserConfig } from "gity-core/config-engine";
 
 const userConfig = getUserConfig();
 

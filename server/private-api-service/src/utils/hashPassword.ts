@@ -1,5 +1,5 @@
 import { hash } from "argon2";
-import { getUserConfig } from "gity/config-engine";
+import { getUserConfig } from "gity-core/config-engine";
 
 const userConfig = getUserConfig();
 const TIME_COST = userConfig.passwdHashTimeCost;

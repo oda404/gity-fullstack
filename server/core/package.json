@@ -11,7 +11,7 @@
   "dependencies": {
     "argon2": "^0.27.1",
     "pg": "^8.5.1",
-    "gity": "file:./modules/gity"
+    "gity-core": "file:./modules/gity-core"
   },
   "devDependencies": {
     "@types/pg": "^7.14.7"

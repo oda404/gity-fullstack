@@ -154,7 +154,7 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
-"gity@file:./modules/gity":
+"gity-core@file:./modules/gity-core":
   version "1.1.0"
   dependencies:
     pg "8.3.3"

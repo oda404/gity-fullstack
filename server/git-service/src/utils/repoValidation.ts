@@ -1,4 +1,4 @@
-import { getRepoConfig } from "gity/config-engine";
+import { getRepoConfig } from "gity-core/config-engine";
 
 const repoConfig = getRepoConfig();
 

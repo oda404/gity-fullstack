@@ -2,7 +2,7 @@
 import {
     getGitConfig,
     getPGConfig,
-} from "gity/config-engine";
+} from "gity-core/config-engine";
 
 let pgConfig = getPGConfig();
 let gitConfig = getGitConfig();

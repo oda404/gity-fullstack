@@ -1,3 +1,5 @@
+// Type definitions for config-engine
+/// <reference types="node" />
 
 interface Group
 {

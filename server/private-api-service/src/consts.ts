@@ -2,7 +2,7 @@ import {
     getGitConfig,
     getPGConfig,
     getRedisConfig,
-} from "gity/config-engine";
+} from "gity-core/config-engine";
 
 let pgConfig = getPGConfig();
 let redisConfig = getRedisConfig();

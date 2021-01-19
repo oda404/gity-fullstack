@@ -27,11 +27,11 @@ import { customAuthChecker } from "./utils/authChecker";
 import { createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
-import { runPreparedStatements } from "gity/pg-prepares";
+import { runPreparedStatements } from "gity-core/pg-prepares";
+import { validateConfigurations } from "gity-core/config-engine";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
-import { validateConfigurations } from "gity/config-engine";
 
 export function printServerInfo(): void
 {
