@@ -1,6 +1,7 @@
 
-import { Client } from "pg";
-import { getUserConfig, getRepoConfig } from "gity/config-engine";
+const configEngine = require("./config-engine");
+const getUserConfig = configEngine.getUserConfig;
+const getRepoConfig = configEngine.getRepoConfig;
 
 const userConfig = getUserConfig();
 const repoConfig = getRepoConfig();
@@ -67,10 +68,12 @@ const PREPARES = [
     `
 ];
 
-export async function runPreparedStatements(client: Client): Promise<void>
+const runPreparedStatements = async (client) =>
 {
-    for(let i = 0; i < PREPARES.length; ++i)
+    for(let i in PREPARES)
     {
         await client.query(PREPARES[i]);
     }
 }
+
+exports.runPreparedStatements = runPreparedStatements;

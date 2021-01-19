@@ -27,7 +27,7 @@ import { customAuthChecker } from "./utils/authChecker";
 import { createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
-import { runPreparedStatements } from "../../core/src/pg/prepares";
+import { runPreparedStatements } from "gity/pg-prepares";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
