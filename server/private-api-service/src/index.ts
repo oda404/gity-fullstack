@@ -29,29 +29,13 @@ import { Container } from "typedi";
 import { Client } from "pg";
 import { runPreparedStatements } from "gity-core/pg-prepares";
 import { validateConfigs } from "gity-core/config-engine";
-import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
+import { green, logErr, logInfo, magenta } from "gity-core/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
-
-export function printServerInfo(): void
-{
-    if(__prod__)
-    {
-        logInfo(`Server is running in ${magenta("PRODUCTION")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
-    }
-    else
-    {
-        logInfo(`Server is running in ${magenta("DEVELOPMENT")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
-    }
-
-    console.log();
-}
 
 async function main(): Promise<void>
 {
     validateConfigs();
-    initLogging("[PRIVATE_API]");
-    printServerInfo();
     let pgClient = new Client({
         host: PG_HOST,
         port: PG_PORT,
@@ -61,7 +45,7 @@ async function main(): Promise<void>
     });
     pgClient.connect().then( async () => {
         await runPreparedStatements(pgClient);
-        logInfo("PostgreSQL connection established");
+        logInfo(`${magenta("PostgreSQL")} ${green("connection established")}`);
     }).catch(() => {
         logErr("PostgreSQL connection failed. aborting...");
         exit();
@@ -74,7 +58,7 @@ async function main(): Promise<void>
     });
     
     redisClient.on("ready", () => {
-        logInfo("Redis connection established");
+        logInfo(`${magenta("Redis")} ${green("connection established")}`);
     });
 
     redisClient.on("error", (message) => {
@@ -153,7 +137,11 @@ async function main(): Promise<void>
     apolloServer.applyMiddleware({ app, cors: false, path: "/" });
 
     const httpServer = createServer(app);
-    httpServer.listen(SERVER_PORT);
+    httpServer.listen(SERVER_PORT, () => {
+        logInfo(`Running in ${__prod__ ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
+        logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}`);
+
+    });
 }
 
 main().catch(err => console.error(err));
