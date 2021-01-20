@@ -4,7 +4,7 @@ import { exit } from "process";
 import { PG_USER, PG_PASS, PG_DB_MAIN, PG_PORT, PG_HOST, GIT_ROOT_DIR, SERVER_PORT, __prod__ } from "./consts";
 import { gitService } from "./service";
 import { runPreparedStatements } from "gity-core/pg-prepares";
-import { validateConfigurations } from "gity-core/config-engine";
+import { validateConfigs } from "gity-core/config-engine";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 
 export function printServerInfo(): void
@@ -25,7 +25,7 @@ export function printServerInfo(): void
 
 async function main()
 {
-    validateConfigurations();
+    validateConfigs();
     initLogging("[GIT_SERVICE]");
     printServerInfo();
 

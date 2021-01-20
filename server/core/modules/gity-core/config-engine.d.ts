@@ -58,9 +58,9 @@ export function getGitConfig():   GitConfig;
 export function getPGConfig():    PGConfig;
 export function getRedisConfig(): RedisConfig;
 
-export function validateConfigurations():     void;
-export function validateRepoConfiguration():  void;
-export function validateUserConfiguration():  void;
-export function validatePGConfiguration():    void;
-export function validateRedisConfiguration(): void;
-export function validateGitConfiguration():   void;
+export function validateConfigs():     void;
+export function validateRepoConfig():  void;
+export function validateUserConfig():  void;
+export function validatePGConfig():    void;
+export function validateRedisConfig(): void;
+export function validateGitConfig():   void;

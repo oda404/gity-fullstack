@@ -28,7 +28,7 @@ import { createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
 import { runPreparedStatements } from "gity-core/pg-prepares";
-import { validateConfigurations } from "gity-core/config-engine";
+import { validateConfigs } from "gity-core/config-engine";
 import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
@@ -49,7 +49,7 @@ export function printServerInfo(): void
 
 async function main(): Promise<void>
 {
-    validateConfigurations();
+    validateConfigs();
     initLogging("[PRIVATE_API]");
     printServerInfo();
     let pgClient = new Client({
