@@ -5,30 +5,11 @@ import { PG_USER, PG_PASS, PG_DB_MAIN, PG_PORT, PG_HOST, GIT_ROOT_DIR, SERVER_PO
 import { gitService } from "./service";
 import { runPreparedStatements } from "gity-core/pg-prepares";
 import { validateConfigs } from "gity-core/config-engine";
-import { green, logErr, logInfo, magenta, initLogging } from "../../core/src/logging";
-
-export function printServerInfo(): void
-{
-    if(__prod__)
-    {
-        logInfo(`Server is running in ${magenta("PRODUCTION")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
-    }
-    else
-    {
-        logInfo(`Server is running in ${magenta("DEVELOPMENT")} ${green("mode on")} ${magenta(`PORT ${SERVER_PORT}!`)}`);
-    }
-
-    logInfo(`${magenta("GIT_ROOT_DIR")} ${green("is")} ${magenta(`${GIT_ROOT_DIR}`)}`);
-
-    console.log();
-}
+import { green, logErr, logInfo, magenta } from "gity-core/logging";
 
 async function main()
 {
     validateConfigs();
-    initLogging("[GIT_SERVICE]");
-    printServerInfo();
-
     const pgClient = new Client({
         host: PG_HOST,
         port: PG_PORT,
@@ -38,7 +19,7 @@ async function main()
     });
     pgClient.connect().then( async () => {
         await runPreparedStatements(pgClient);
-        logInfo("PostgreSQL connection established");
+        logInfo(`${magenta("PostgreSQL")} ${green("connection established")}.`);
     }).catch(() => {
         logErr("PostgreSQL connection failed. aborting...");
         exit();
@@ -48,7 +29,10 @@ async function main()
 
     APP.use(gitService(pgClient));
 
-    APP.listen(SERVER_PORT);
+    APP.listen(SERVER_PORT, () => {
+        logInfo(`Running in ${__prod__ ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
+        logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}.`);
+    });
 }
 
 main().catch(err => logErr(err));
