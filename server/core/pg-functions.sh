@@ -1,20 +1,21 @@
-#!/usr/bin/node
+#!/bin/node
 
 const functions = require("./src/pg/functions");
-const consts = require("./src/pg/consts");
 const pg = require('pg');
-const logging = require("./src/logging");
+const getPGConfig = require("gity-core/config-engine").getPGConfig;
+const logging = require("gity-core/logging");
+
+const pgConfig = getPGConfig();
 
 const DB_PASS = process.env.DB_PASS;
 const user = process.env.DB_ROOT_USER;
-
-const db = consts.PG_DB_MAIN;
+const db = pgConfig.databases.find(db => db.alias === "main").name;
 
 async function main()
 {
     const pgClient = new pg.Client({
-        host: consts.PG_HOST,
-        port: consts.PG_PORT,
+        host: pgConfig.host,
+        port: pgConfig.port,
         database: db,
         user,
         password: DB_PASS,
@@ -22,7 +23,7 @@ async function main()
 
     pgClient.connect().then( async () => {
 
-        console.log(`Running functions for ${logging.yellow("DB")} ${logging.magenta(`${db}`)} as ${logging.yellow("user")} ${logging.magenta(`${user}`)}...`);
+        console.log(`Running functions...`);
         try
         {
             await functions.runFunctions(pgClient);

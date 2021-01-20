@@ -1,11 +1,16 @@
-#!/usr/bin/node
+#!/bin/node
 
-const consts = require("./src/pg/consts");
 const pg = require('pg');
-const logging = require("./src/logging");
+const getPGConfig = require("gity-core/config-engine").getPGConfig;
+const logging = require("gity-core/logging");
+
+const pgConfig = getPGConfig();
 
 const DB_PASS = process.env.DB_PASS;
 const user = process.env.DB_ROOT_USER;
+const db = pgConfig.databases.find(db => db.alias === "main").name;
+const privateAPIUser = pgConfig.users.find(user => user.alias === "private-api").name;
+const gitServiceUser = pgConfig.users.find(user => user.alias === "git-service").name;
 
 const readline = require('readline').createInterface({
   input: process.stdin,
@@ -15,21 +20,21 @@ const readline = require('readline').createInterface({
 async function main()
 {
     const pgClient = new pg.Client({
-        host: consts.PG_HOST,
-        port: consts.PG_PORT,
-        database: consts.PG_DB_MAIN,
+        host: pgConfig.host,
+        port: pgConfig.port,
+        database: db,
         user,
         password: DB_PASS
     });
     pgClient.connect().then( async () => {
 
-        console.log(`Creating ${logging.yellow("PG user")} ${logging.magenta(`${consts.PG_USER_PRIVATE_API}`)}...`);
+        console.log(`Creating ${logging.yellow("PG user")} ${logging.magenta(`${privateAPIUser}`)}...`);
         readline.question(`Password: `, async (ans) => {
             try
             {
-                await pgClient.query(`CREATE USER ${consts.PG_USER_PRIVATE_API} WITH PASSWORD '${ans}';`);
-                await pgClient.query(`GRANT SELECT, INSERT, DELETE, UPDATE ON users TO ${consts.PG_USER_PRIVATE_API};`);
-                await pgClient.query(`GRANT SELECT, INSERT, DELETE, UPDATE ON repos TO ${consts.PG_USER_PRIVATE_API};`);
+                await pgClient.query(`CREATE USER ${privateAPIUser} WITH PASSWORD '${ans}';`);
+                await pgClient.query(`GRANT SELECT, INSERT, DELETE, UPDATE ON users TO ${privateAPIUser};`);
+                await pgClient.query(`GRANT SELECT, INSERT, DELETE, UPDATE ON repos TO ${privateAPIUser};`);
             } catch(e) {
                 console.error(e);
                 pgClient.end();
@@ -39,13 +44,13 @@ async function main()
 
             console.log();
 
-            console.log(`Creating ${logging.yellow("PG user")} ${logging.magenta(`${consts.PG_USER_GIT_SERVICE}`)}...`);
+            console.log(`Creating ${logging.yellow("PG user")} ${logging.magenta(`${gitServiceUser}`)}...`);
             readline.question(`Password: `, async (_ans) => {
                 try
                 {
-                    await pgClient.query(`CREATE USER ${consts.PG_USER_GIT_SERVICE} WITH PASSWORD '${_ans}';`);
-                    await pgClient.query(`GRANT SELECT ON repos TO ${consts.PG_USER_GIT_SERVICE};`);
-                    await pgClient.query(`GRANT SELECT ON users TO ${consts.PG_USER_GIT_SERVICE};`);
+                    await pgClient.query(`CREATE USER ${gitServiceUser} WITH PASSWORD '${_ans}';`);
+                    await pgClient.query(`GRANT SELECT ON repos TO ${gitServiceUser};`);
+                    await pgClient.query(`GRANT SELECT ON users TO ${gitServiceUser};`);
                 } catch(e) {
                     console.error(e);
                     pgClient.end();

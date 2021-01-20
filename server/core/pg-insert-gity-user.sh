@@ -1,26 +1,28 @@
-#!/usr/bin/node
+#!/bin/node
 
-const argon2 = require("argon2");
-const pass = require("./src/entities/user/password");
-const consts = require("./src/pg/consts");
-const logging = require("./src/logging");
+const hashPassword = require("argon2").hash;
 const pg = require("pg");
+const getPGConfig = require("gity-core/config-engine").getPGConfig;
+const getUserConfig = require("gity-core/config-engine").getUserConfig;
+const logging = require("gity-core/logging");
+
+const pgConfig = getPGConfig();
+const userConfig = getUserConfig();
 
 const DB_PASS = process.env.DB_PASS;
 const user = process.env.DB_ROOT_USER;
+const db = pgConfig.databases.find(db => db.alias === "main").name;
 
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-const db = consts.PG_DB_MAIN;
-
 async function main()
 {
     const pgClient = new pg.Client({
-        host: consts.PG_HOST,
-        port: consts.PG_PORT,
+        host: pgConfig.host,
+        port: pgConfig.port,
         database: db,
         user,
         password: DB_PASS
@@ -28,11 +30,15 @@ async function main()
     pgClient.connect().then( async () => {
 
         console.log(
-            `Inserting ${logging.magenta("gity")} user for ${logging.yellow("DB")} ${logging.magenta(`${db}`)} into ${logging.yellow("table")} ${logging.magenta("users")} as ${logging.yellow("user")} ${logging.magenta(`${user}`)}...`
+            `Inserting ${logging.magenta("gity")} user...`
         );
 
         readline.question(`Password: `, async (ans) => {
-            const hash = await pass.hashPassword(ans);
+
+            const hash = await hashPassword(ans, {
+                saltLength: userConfig.passwdHashSaltLen,
+                timeCost: userConfig.passwdHashTimeCost
+            });
 
             try
             {
