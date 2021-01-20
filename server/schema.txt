@@ -1,19 +1,21 @@
 The goal here is to create an infrastructure such, if one service fails the others should continue working
 server
 ├─ core
-|  ├─ description: Code that all other services require or is better to have at a top level
-|  └─ depends on: --
+|  ├─ description: First time setup scripts/configs + core module(s)
+|  ├─ depends on: --
+|  └─ modules
+|     └─ gity-core
 |
 ├─ git-service
 |  ├─ description: Service that serves git clients
-|  └─ depends on: core
+|  └─ depends on: gity-core
 |
 ├─ private-api-service
 |  ├─ description: API Service for the web frontend
-|  └─ depends on: core
+|  └─ depends on: gity-core
 |
 └─ public-api-service
    ├─ description: Publically available API Service
-   └─ depends on: core
+   └─ depends on: gity-core
 
 web
