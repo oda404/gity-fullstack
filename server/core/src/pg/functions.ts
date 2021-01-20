@@ -1,7 +1,12 @@
 
 import { Client } from "pg";
-const USERNAME_TYPE = "ass";
-const EMAIL_TYPE = "ass";
+import { getUserConfig } from "gity-core/config-engine";
+
+const userConfig = getUserConfig();
+
+const USERNAME_TYPE = `varchar(${userConfig.usernameMaxLen})`;
+const EMAIL_TYPE = `varchar(${userConfig.emailMaxLen})`;
+
 const FUNCTIONS = [
     `CREATE OR REPLACE FUNCTION\
         find_user(\
@@ -20,7 +25,7 @@ const FUNCTIONS = [
 
 export async function runFunctions(client: Client): Promise<void>
 {
-    for(let i = 0; i < FUNCTIONS.length; ++i)
+    for(let i in FUNCTIONS)
     {
         await client.query(FUNCTIONS[i]);
     }

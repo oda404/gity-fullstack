@@ -1,10 +1,18 @@
 
 import { Client } from "pg";
-const USERNAME_TYPE = "ass";
-const EMAIL_TYPE = "ass";
-const PG_DB_MAIN = "ass";
-const REPO_DESCRIPTION_TYPE= "ass";
-const REPO_NAME_TYPE = "ass";
+import { getUserConfig, getRepoConfig } from "gity-core/config-engine";
+import { getPGConfig } from "../../modules/gity-core/config-engine";
+
+const userConfig = getUserConfig();
+const repoConfig = getRepoConfig();
+const pgConfig = getPGConfig();
+
+const USERNAME_TYPE = `varchar(${userConfig.usernameMaxLen})`;
+const EMAIL_TYPE = `varchar(${userConfig.emailMaxLen})`;
+const REPO_NAME_TYPE = `varchar(${repoConfig.nameMaxLen})`;
+const REPO_DESCRIPTION_TYPE = `varchar(${repoConfig.descriptionMaxLen})`;
+const PG_DB_MAIN = pgConfig.databases.find(db => db.alias === "main")?.name;
+
 const DATABASES = [
     `CREATE DATABASE ${PG_DB_MAIN};`,
 ];
@@ -40,7 +48,7 @@ const CONSTRAINTS = [
 
 export async function runDatabases(client: Client): Promise<void>
 {
-    for(let i = 0; i < DATABASES.length; ++i)
+    for(let i in DATABASES)
     {
         await client.query(DATABASES[i]);
     }
@@ -48,7 +56,7 @@ export async function runDatabases(client: Client): Promise<void>
 
 export async function runMigrations(client: Client): Promise<void>
 {
-    for(let i = 0; i < TABLES.length; ++i)
+    for(let i in TABLES)
     {
         await client.query(TABLES[i]);
     }
@@ -56,7 +64,7 @@ export async function runMigrations(client: Client): Promise<void>
 
 export async function runConstraints(client: Client): Promise<void>
 {
-    for(let i = 0; i < CONSTRAINTS.length; ++i)
+    for(let i in CONSTRAINTS)
     {
         await client.query(CONSTRAINTS[i]);
     }
