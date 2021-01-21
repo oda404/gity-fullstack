@@ -1,8 +1,8 @@
 {
-    "nameB64Regex": "XlthLXpBLVowLTlcLV9dJA==",
+    "nameB64Regex": "XlthLXpBLVowLTlcLV9dKyQ=",
     "nameMinLen": 3,
     "nameMaxLen": 30,
-    "descriptionB64Regex": "XlthLXpBLVowLTlcLV9dJA==",
+    "descriptionB64Regex": "XlthLXpBLVowLTlcLV9dKyQ=",
     "descriptionMinLen": 3,
     "descriptionMaxLen": 35
 }
