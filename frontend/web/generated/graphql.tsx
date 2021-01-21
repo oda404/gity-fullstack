@@ -17,10 +17,10 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  self?: Maybe<User>;
+  getSelfUser?: Maybe<User>;
   getUser?: Maybe<User>;
-  getRepo?: Maybe<Repo>;
-  getUserRepos?: Maybe<Array<Repo>>;
+  getRepository?: Maybe<Repo>;
+  getUserRepositories?: Maybe<Array<Repo>>;
 };
 
 
@@ -29,13 +29,13 @@ export type QueryGetUserArgs = {
 };
 
 
-export type QueryGetRepoArgs = {
+export type QueryGetRepositoryArgs = {
   name: Scalars['String'];
   owner: Scalars['String'];
 };
 
 
-export type QueryGetUserReposArgs = {
+export type QueryGetUserRepositoriesArgs = {
   start?: Maybe<Scalars['Int']>;
   count: Scalars['Int'];
   owner: Scalars['String'];
@@ -66,19 +66,19 @@ export type Repo = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  registerUser: UserResponse;
+  createUser: UserResponse;
   loginUser: UserResponse;
   logoutUser?: Maybe<Scalars['Boolean']>;
   deleteUser?: Maybe<Scalars['Boolean']>;
-  changeUserEmail?: Maybe<Scalars['Boolean']>;
-  changeUserPassword?: Maybe<Scalars['Boolean']>;
+  updateUserEmail?: Maybe<Scalars['Boolean']>;
+  updateUserPassword?: Maybe<Scalars['Boolean']>;
   generateInvitation?: Maybe<Scalars['String']>;
-  createRepo?: Maybe<RepoResponse>;
-  deleteRepo?: Maybe<Scalars['Boolean']>;
+  createRepository?: Maybe<RepoResponse>;
+  deleteRepository?: Maybe<Scalars['Boolean']>;
 };
 
 
-export type MutationRegisterUserArgs = {
+export type MutationCreateUserArgs = {
   userInput: UserRegisterInput;
 };
 
@@ -93,13 +93,13 @@ export type MutationDeleteUserArgs = {
 };
 
 
-export type MutationChangeUserEmailArgs = {
+export type MutationUpdateUserEmailArgs = {
   newEmail: Scalars['String'];
   password: Scalars['String'];
 };
 
 
-export type MutationChangeUserPasswordArgs = {
+export type MutationUpdateUserPasswordArgs = {
   newPassword: Scalars['String'];
   password: Scalars['String'];
 };
@@ -110,13 +110,13 @@ export type MutationGenerateInvitationArgs = {
 };
 
 
-export type MutationCreateRepoArgs = {
+export type MutationCreateRepositoryArgs = {
   isPrivate: Scalars['Boolean'];
   name: Scalars['String'];
 };
 
 
-export type MutationDeleteRepoArgs = {
+export type MutationDeleteRepositoryArgs = {
   name: Scalars['String'];
   password: Scalars['String'];
 };
@@ -161,15 +161,15 @@ export type GenericUserFragment = (
   & Pick<User, 'id' | 'username'>
 );
 
-export type CreateRepoMutationVariables = Exact<{
+export type CreateRepositoryMutationVariables = Exact<{
   name: Scalars['String'];
   isPrivate: Scalars['Boolean'];
 }>;
 
 
-export type CreateRepoMutation = (
+export type CreateRepositoryMutation = (
   { __typename?: 'Mutation' }
-  & { createRepo?: Maybe<(
+  & { createRepository?: Maybe<(
     { __typename?: 'RepoResponse' }
     & Pick<RepoResponse, 'error'>
     & { repos?: Maybe<Array<(
@@ -179,15 +179,34 @@ export type CreateRepoMutation = (
   )> }
 );
 
-export type DeleteRepoMutationVariables = Exact<{
+export type CreateUserMutationVariables = Exact<{
+  userInput: UserRegisterInput;
+}>;
+
+
+export type CreateUserMutation = (
+  { __typename?: 'Mutation' }
+  & { createUser: (
+    { __typename?: 'UserResponse' }
+    & { error?: Maybe<(
+      { __typename?: 'UserFieldError' }
+      & Pick<UserFieldError, 'field' | 'message'>
+    )>, user?: Maybe<(
+      { __typename?: 'User' }
+      & GenericUserFragment
+    )> }
+  ) }
+);
+
+export type DeleteRepositoryMutationVariables = Exact<{
   name: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
-export type DeleteRepoMutation = (
+export type DeleteRepositoryMutation = (
   { __typename?: 'Mutation' }
-  & Pick<Mutation, 'deleteRepo'>
+  & Pick<Mutation, 'deleteRepository'>
 );
 
 export type LoginUserMutationVariables = Exact<{
@@ -217,36 +236,28 @@ export type LogoutUserMutation = (
   & Pick<Mutation, 'logoutUser'>
 );
 
-export type RegisterUserMutationVariables = Exact<{
-  userInput: UserRegisterInput;
-}>;
-
-
-export type RegisterUserMutation = (
-  { __typename?: 'Mutation' }
-  & { registerUser: (
-    { __typename?: 'UserResponse' }
-    & { error?: Maybe<(
-      { __typename?: 'UserFieldError' }
-      & Pick<UserFieldError, 'field' | 'message'>
-    )>, user?: Maybe<(
-      { __typename?: 'User' }
-      & GenericUserFragment
-    )> }
-  ) }
-);
-
-export type GetRepoQueryVariables = Exact<{
+export type GetRepositoryQueryVariables = Exact<{
   name: Scalars['String'];
   owner: Scalars['String'];
 }>;
 
 
-export type GetRepoQuery = (
+export type GetRepositoryQuery = (
   { __typename?: 'Query' }
-  & { getRepo?: Maybe<(
+  & { getRepository?: Maybe<(
     { __typename?: 'Repo' }
     & GenericRepoFragment
+  )> }
+);
+
+export type GetSelfUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSelfUserQuery = (
+  { __typename?: 'Query' }
+  & { getSelfUser?: Maybe<(
+    { __typename?: 'User' }
+    & GenericUserFragment
   )> }
 );
 
@@ -263,30 +274,19 @@ export type GetUserQuery = (
   )> }
 );
 
-export type GetUserReposQueryVariables = Exact<{
+export type GetUserRepositoriesQueryVariables = Exact<{
   owner: Scalars['String'];
   count: Scalars['Int'];
   start?: Maybe<Scalars['Int']>;
 }>;
 
 
-export type GetUserReposQuery = (
+export type GetUserRepositoriesQuery = (
   { __typename?: 'Query' }
-  & { getUserRepos?: Maybe<Array<(
+  & { getUserRepositories?: Maybe<Array<(
     { __typename?: 'Repo' }
     & GenericRepoFragment
   )>> }
-);
-
-export type SelfQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type SelfQuery = (
-  { __typename?: 'Query' }
-  & { self?: Maybe<(
-    { __typename?: 'User' }
-    & GenericUserFragment
-  )> }
 );
 
 export const GenericRepoFragmentDoc = gql`
@@ -303,9 +303,9 @@ export const GenericUserFragmentDoc = gql`
   username
 }
     `;
-export const CreateRepoDocument = gql`
-    mutation CreateRepo($name: String!, $isPrivate: Boolean!) {
-  createRepo(name: $name, isPrivate: $isPrivate) {
+export const CreateRepositoryDocument = gql`
+    mutation CreateRepository($name: String!, $isPrivate: Boolean!) {
+  createRepository(name: $name, isPrivate: $isPrivate) {
     repos {
       ...GenericRepo
     }
@@ -313,63 +313,101 @@ export const CreateRepoDocument = gql`
   }
 }
     ${GenericRepoFragmentDoc}`;
-export type CreateRepoMutationFn = Apollo.MutationFunction<CreateRepoMutation, CreateRepoMutationVariables>;
+export type CreateRepositoryMutationFn = Apollo.MutationFunction<CreateRepositoryMutation, CreateRepositoryMutationVariables>;
 
 /**
- * __useCreateRepoMutation__
+ * __useCreateRepositoryMutation__
  *
- * To run a mutation, you first call `useCreateRepoMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateRepoMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateRepositoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateRepositoryMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createRepoMutation, { data, loading, error }] = useCreateRepoMutation({
+ * const [createRepositoryMutation, { data, loading, error }] = useCreateRepositoryMutation({
  *   variables: {
  *      name: // value for 'name'
  *      isPrivate: // value for 'isPrivate'
  *   },
  * });
  */
-export function useCreateRepoMutation(baseOptions?: Apollo.MutationHookOptions<CreateRepoMutation, CreateRepoMutationVariables>) {
-        return Apollo.useMutation<CreateRepoMutation, CreateRepoMutationVariables>(CreateRepoDocument, baseOptions);
+export function useCreateRepositoryMutation(baseOptions?: Apollo.MutationHookOptions<CreateRepositoryMutation, CreateRepositoryMutationVariables>) {
+        return Apollo.useMutation<CreateRepositoryMutation, CreateRepositoryMutationVariables>(CreateRepositoryDocument, baseOptions);
       }
-export type CreateRepoMutationHookResult = ReturnType<typeof useCreateRepoMutation>;
-export type CreateRepoMutationResult = Apollo.MutationResult<CreateRepoMutation>;
-export type CreateRepoMutationOptions = Apollo.BaseMutationOptions<CreateRepoMutation, CreateRepoMutationVariables>;
-export const DeleteRepoDocument = gql`
-    mutation DeleteRepo($name: String!, $password: String!) {
-  deleteRepo(name: $name, password: $password)
+export type CreateRepositoryMutationHookResult = ReturnType<typeof useCreateRepositoryMutation>;
+export type CreateRepositoryMutationResult = Apollo.MutationResult<CreateRepositoryMutation>;
+export type CreateRepositoryMutationOptions = Apollo.BaseMutationOptions<CreateRepositoryMutation, CreateRepositoryMutationVariables>;
+export const CreateUserDocument = gql`
+    mutation createUser($userInput: UserRegisterInput!) {
+  createUser(userInput: $userInput) {
+    error {
+      field
+      message
+    }
+    user {
+      ...GenericUser
+    }
+  }
 }
-    `;
-export type DeleteRepoMutationFn = Apollo.MutationFunction<DeleteRepoMutation, DeleteRepoMutationVariables>;
+    ${GenericUserFragmentDoc}`;
+export type CreateUserMutationFn = Apollo.MutationFunction<CreateUserMutation, CreateUserMutationVariables>;
 
 /**
- * __useDeleteRepoMutation__
+ * __useCreateUserMutation__
  *
- * To run a mutation, you first call `useDeleteRepoMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteRepoMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateUserMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [deleteRepoMutation, { data, loading, error }] = useDeleteRepoMutation({
+ * const [createUserMutation, { data, loading, error }] = useCreateUserMutation({
+ *   variables: {
+ *      userInput: // value for 'userInput'
+ *   },
+ * });
+ */
+export function useCreateUserMutation(baseOptions?: Apollo.MutationHookOptions<CreateUserMutation, CreateUserMutationVariables>) {
+        return Apollo.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument, baseOptions);
+      }
+export type CreateUserMutationHookResult = ReturnType<typeof useCreateUserMutation>;
+export type CreateUserMutationResult = Apollo.MutationResult<CreateUserMutation>;
+export type CreateUserMutationOptions = Apollo.BaseMutationOptions<CreateUserMutation, CreateUserMutationVariables>;
+export const DeleteRepositoryDocument = gql`
+    mutation DeleteRepository($name: String!, $password: String!) {
+  deleteRepository(name: $name, password: $password)
+}
+    `;
+export type DeleteRepositoryMutationFn = Apollo.MutationFunction<DeleteRepositoryMutation, DeleteRepositoryMutationVariables>;
+
+/**
+ * __useDeleteRepositoryMutation__
+ *
+ * To run a mutation, you first call `useDeleteRepositoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteRepositoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteRepositoryMutation, { data, loading, error }] = useDeleteRepositoryMutation({
  *   variables: {
  *      name: // value for 'name'
  *      password: // value for 'password'
  *   },
  * });
  */
-export function useDeleteRepoMutation(baseOptions?: Apollo.MutationHookOptions<DeleteRepoMutation, DeleteRepoMutationVariables>) {
-        return Apollo.useMutation<DeleteRepoMutation, DeleteRepoMutationVariables>(DeleteRepoDocument, baseOptions);
+export function useDeleteRepositoryMutation(baseOptions?: Apollo.MutationHookOptions<DeleteRepositoryMutation, DeleteRepositoryMutationVariables>) {
+        return Apollo.useMutation<DeleteRepositoryMutation, DeleteRepositoryMutationVariables>(DeleteRepositoryDocument, baseOptions);
       }
-export type DeleteRepoMutationHookResult = ReturnType<typeof useDeleteRepoMutation>;
-export type DeleteRepoMutationResult = Apollo.MutationResult<DeleteRepoMutation>;
-export type DeleteRepoMutationOptions = Apollo.BaseMutationOptions<DeleteRepoMutation, DeleteRepoMutationVariables>;
+export type DeleteRepositoryMutationHookResult = ReturnType<typeof useDeleteRepositoryMutation>;
+export type DeleteRepositoryMutationResult = Apollo.MutationResult<DeleteRepositoryMutation>;
+export type DeleteRepositoryMutationOptions = Apollo.BaseMutationOptions<DeleteRepositoryMutation, DeleteRepositoryMutationVariables>;
 export const LoginUserDocument = gql`
     mutation LoginUser($userInput: UserLoginInput!) {
   loginUser(userInput: $userInput) {
@@ -437,78 +475,72 @@ export function useLogoutUserMutation(baseOptions?: Apollo.MutationHookOptions<L
 export type LogoutUserMutationHookResult = ReturnType<typeof useLogoutUserMutation>;
 export type LogoutUserMutationResult = Apollo.MutationResult<LogoutUserMutation>;
 export type LogoutUserMutationOptions = Apollo.BaseMutationOptions<LogoutUserMutation, LogoutUserMutationVariables>;
-export const RegisterUserDocument = gql`
-    mutation RegisterUser($userInput: UserRegisterInput!) {
-  registerUser(userInput: $userInput) {
-    error {
-      field
-      message
-    }
-    user {
-      ...GenericUser
-    }
-  }
-}
-    ${GenericUserFragmentDoc}`;
-export type RegisterUserMutationFn = Apollo.MutationFunction<RegisterUserMutation, RegisterUserMutationVariables>;
-
-/**
- * __useRegisterUserMutation__
- *
- * To run a mutation, you first call `useRegisterUserMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useRegisterUserMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [registerUserMutation, { data, loading, error }] = useRegisterUserMutation({
- *   variables: {
- *      userInput: // value for 'userInput'
- *   },
- * });
- */
-export function useRegisterUserMutation(baseOptions?: Apollo.MutationHookOptions<RegisterUserMutation, RegisterUserMutationVariables>) {
-        return Apollo.useMutation<RegisterUserMutation, RegisterUserMutationVariables>(RegisterUserDocument, baseOptions);
-      }
-export type RegisterUserMutationHookResult = ReturnType<typeof useRegisterUserMutation>;
-export type RegisterUserMutationResult = Apollo.MutationResult<RegisterUserMutation>;
-export type RegisterUserMutationOptions = Apollo.BaseMutationOptions<RegisterUserMutation, RegisterUserMutationVariables>;
-export const GetRepoDocument = gql`
-    query GetRepo($name: String!, $owner: String!) {
-  getRepo(name: $owner, owner: $owner) {
+export const GetRepositoryDocument = gql`
+    query GetRepository($name: String!, $owner: String!) {
+  getRepository(name: $owner, owner: $owner) {
     ...GenericRepo
   }
 }
     ${GenericRepoFragmentDoc}`;
 
 /**
- * __useGetRepoQuery__
+ * __useGetRepositoryQuery__
  *
- * To run a query within a React component, call `useGetRepoQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetRepoQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetRepositoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRepositoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetRepoQuery({
+ * const { data, loading, error } = useGetRepositoryQuery({
  *   variables: {
  *      name: // value for 'name'
  *      owner: // value for 'owner'
  *   },
  * });
  */
-export function useGetRepoQuery(baseOptions: Apollo.QueryHookOptions<GetRepoQuery, GetRepoQueryVariables>) {
-        return Apollo.useQuery<GetRepoQuery, GetRepoQueryVariables>(GetRepoDocument, baseOptions);
+export function useGetRepositoryQuery(baseOptions: Apollo.QueryHookOptions<GetRepositoryQuery, GetRepositoryQueryVariables>) {
+        return Apollo.useQuery<GetRepositoryQuery, GetRepositoryQueryVariables>(GetRepositoryDocument, baseOptions);
       }
-export function useGetRepoLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRepoQuery, GetRepoQueryVariables>) {
-          return Apollo.useLazyQuery<GetRepoQuery, GetRepoQueryVariables>(GetRepoDocument, baseOptions);
+export function useGetRepositoryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRepositoryQuery, GetRepositoryQueryVariables>) {
+          return Apollo.useLazyQuery<GetRepositoryQuery, GetRepositoryQueryVariables>(GetRepositoryDocument, baseOptions);
         }
-export type GetRepoQueryHookResult = ReturnType<typeof useGetRepoQuery>;
-export type GetRepoLazyQueryHookResult = ReturnType<typeof useGetRepoLazyQuery>;
-export type GetRepoQueryResult = Apollo.QueryResult<GetRepoQuery, GetRepoQueryVariables>;
+export type GetRepositoryQueryHookResult = ReturnType<typeof useGetRepositoryQuery>;
+export type GetRepositoryLazyQueryHookResult = ReturnType<typeof useGetRepositoryLazyQuery>;
+export type GetRepositoryQueryResult = Apollo.QueryResult<GetRepositoryQuery, GetRepositoryQueryVariables>;
+export const GetSelfUserDocument = gql`
+    query GetSelfUser {
+  getSelfUser {
+    ...GenericUser
+  }
+}
+    ${GenericUserFragmentDoc}`;
+
+/**
+ * __useGetSelfUserQuery__
+ *
+ * To run a query within a React component, call `useGetSelfUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSelfUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSelfUserQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetSelfUserQuery(baseOptions?: Apollo.QueryHookOptions<GetSelfUserQuery, GetSelfUserQueryVariables>) {
+        return Apollo.useQuery<GetSelfUserQuery, GetSelfUserQueryVariables>(GetSelfUserDocument, baseOptions);
+      }
+export function useGetSelfUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSelfUserQuery, GetSelfUserQueryVariables>) {
+          return Apollo.useLazyQuery<GetSelfUserQuery, GetSelfUserQueryVariables>(GetSelfUserDocument, baseOptions);
+        }
+export type GetSelfUserQueryHookResult = ReturnType<typeof useGetSelfUserQuery>;
+export type GetSelfUserLazyQueryHookResult = ReturnType<typeof useGetSelfUserLazyQuery>;
+export type GetSelfUserQueryResult = Apollo.QueryResult<GetSelfUserQuery, GetSelfUserQueryVariables>;
 export const GetUserDocument = gql`
     query GetUser($username: String!) {
   getUser(username: $username) {
@@ -542,25 +574,25 @@ export function useGetUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ge
 export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
 export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
 export type GetUserQueryResult = Apollo.QueryResult<GetUserQuery, GetUserQueryVariables>;
-export const GetUserReposDocument = gql`
-    query GetUserRepos($owner: String!, $count: Int!, $start: Int = 0) {
-  getUserRepos(owner: $owner, count: $count, start: $start) {
+export const GetUserRepositoriesDocument = gql`
+    query GetUserRepositories($owner: String!, $count: Int!, $start: Int = 0) {
+  getUserRepositories(owner: $owner, count: $count, start: $start) {
     ...GenericRepo
   }
 }
     ${GenericRepoFragmentDoc}`;
 
 /**
- * __useGetUserReposQuery__
+ * __useGetUserRepositoriesQuery__
  *
- * To run a query within a React component, call `useGetUserReposQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetUserReposQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetUserRepositoriesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserRepositoriesQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetUserReposQuery({
+ * const { data, loading, error } = useGetUserRepositoriesQuery({
  *   variables: {
  *      owner: // value for 'owner'
  *      count: // value for 'count'
@@ -568,44 +600,12 @@ export const GetUserReposDocument = gql`
  *   },
  * });
  */
-export function useGetUserReposQuery(baseOptions: Apollo.QueryHookOptions<GetUserReposQuery, GetUserReposQueryVariables>) {
-        return Apollo.useQuery<GetUserReposQuery, GetUserReposQueryVariables>(GetUserReposDocument, baseOptions);
+export function useGetUserRepositoriesQuery(baseOptions: Apollo.QueryHookOptions<GetUserRepositoriesQuery, GetUserRepositoriesQueryVariables>) {
+        return Apollo.useQuery<GetUserRepositoriesQuery, GetUserRepositoriesQueryVariables>(GetUserRepositoriesDocument, baseOptions);
       }
-export function useGetUserReposLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserReposQuery, GetUserReposQueryVariables>) {
-          return Apollo.useLazyQuery<GetUserReposQuery, GetUserReposQueryVariables>(GetUserReposDocument, baseOptions);
+export function useGetUserRepositoriesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserRepositoriesQuery, GetUserRepositoriesQueryVariables>) {
+          return Apollo.useLazyQuery<GetUserRepositoriesQuery, GetUserRepositoriesQueryVariables>(GetUserRepositoriesDocument, baseOptions);
         }
-export type GetUserReposQueryHookResult = ReturnType<typeof useGetUserReposQuery>;
-export type GetUserReposLazyQueryHookResult = ReturnType<typeof useGetUserReposLazyQuery>;
-export type GetUserReposQueryResult = Apollo.QueryResult<GetUserReposQuery, GetUserReposQueryVariables>;
-export const SelfDocument = gql`
-    query Self {
-  self {
-    ...GenericUser
-  }
-}
-    ${GenericUserFragmentDoc}`;
-
-/**
- * __useSelfQuery__
- *
- * To run a query within a React component, call `useSelfQuery` and pass it any options that fit your needs.
- * When your component renders, `useSelfQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useSelfQuery({
- *   variables: {
- *   },
- * });
- */
-export function useSelfQuery(baseOptions?: Apollo.QueryHookOptions<SelfQuery, SelfQueryVariables>) {
-        return Apollo.useQuery<SelfQuery, SelfQueryVariables>(SelfDocument, baseOptions);
-      }
-export function useSelfLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SelfQuery, SelfQueryVariables>) {
-          return Apollo.useLazyQuery<SelfQuery, SelfQueryVariables>(SelfDocument, baseOptions);
-        }
-export type SelfQueryHookResult = ReturnType<typeof useSelfQuery>;
-export type SelfLazyQueryHookResult = ReturnType<typeof useSelfLazyQuery>;
-export type SelfQueryResult = Apollo.QueryResult<SelfQuery, SelfQueryVariables>;
+export type GetUserRepositoriesQueryHookResult = ReturnType<typeof useGetUserRepositoriesQuery>;
+export type GetUserRepositoriesLazyQueryHookResult = ReturnType<typeof useGetUserRepositoriesLazyQuery>;
+export type GetUserRepositoriesQueryResult = Apollo.QueryResult<GetUserRepositoriesQuery, GetUserRepositoriesQueryVariables>;

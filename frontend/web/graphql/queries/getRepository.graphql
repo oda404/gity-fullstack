@@ -1,9 +1,9 @@
-query GetRepo(
+query GetRepository(
     $name: String!
     $owner: String!
 )
 {
-    getRepo(
+    getRepository(
         name: $owner
         owner: $owner
     )

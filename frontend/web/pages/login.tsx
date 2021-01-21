@@ -8,7 +8,7 @@ import React from "react";
 import Container from "../components/Container";
 import FormSubmitButton from "../components/FormSubmitButton";
 import InputField from "../components/InputField";
-import { SelfDocument, SelfQuery, useLoginUserMutation } from "../generated/graphql";
+import { GetSelfUserDocument, GetSelfUserQuery, useLoginUserMutation } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
@@ -127,10 +127,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   try
   {
-    const { data }: ApolloQueryResult<SelfQuery> = 
-      await client.query({ query: SelfDocument });
+    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
+      await client.query({ query: GetSelfUserDocument });
 
-    if(data.self)
+    if(data.getSelfUser)
     {
       redirectToIndex();
     }

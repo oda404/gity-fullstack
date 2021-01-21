@@ -6,14 +6,14 @@ import React, { useState } from "react";
 import Container from "../../components/Container";
 import Header from "../../components/Header";
 import ProfileTabSelector from "../../components/ProfileTabSelector";
-import { GetUserDocument, GetUserQuery, SelfDocument, SelfQuery } from "../../generated/graphql";
+import { GetUserDocument, GetUserQuery, GetSelfUserDocument, GetSelfUserQuery } from "../../generated/graphql";
 import createApolloSSRClient from "../../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../../utils/parseCookies";
 
 interface UserIndexProps
 {
   ssr: InferGetServerSidePropsType<typeof getServerSideProps> 
-    & GetUserQuery & { sessionUsername: string | null } | null;
+    & GetUserQuery & { sessionUsername: string | null } & { isLoggedIn: boolean } | null;
 }
 
 type Tabs = "profile" | "repos" | "invs" | "settings";
@@ -111,13 +111,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
     try
     {
-      const { data: selfData }: ApolloQueryResult<SelfQuery> = 
-      await client.query({ query: SelfDocument});
+      const { data: selfData }: ApolloQueryResult<GetSelfUserQuery> = 
+      await client.query({ query: GetSelfUserDocument});
 
-      if(selfData.self)
+      if(selfData.getSelfUser)
       {
-        sessionUsername = selfData.self.username;
-        if(selfData.self.username === strippedUsername)
+        sessionUsername = selfData.getSelfUser.username;
+        if(selfData.getSelfUser.username === strippedUsername)
         {
           isLoggedIn = true;
         }

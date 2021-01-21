@@ -1,9 +1,9 @@
-mutation CreateRepo(
+mutation CreateRepository(
     $name: String!
     $isPrivate: Boolean!
 )
 {
-    createRepo(
+    createRepository(
         name: $name
         isPrivate: $isPrivate
     )

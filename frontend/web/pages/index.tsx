@@ -2,7 +2,7 @@ import Container from "../components/Container";
 import Header from "../components/Header";
 import Head from "next/head";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import {  GetUserReposDocument, GetUserReposQuery, SelfDocument, SelfQuery } from "../generated/graphql";
+import {  GetUserRepositoriesDocument, GetUserRepositoriesQuery, GetSelfUserDocument, GetSelfUserQuery } from "../generated/graphql";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import { ApolloQueryResult } from "@apollo/client";
@@ -13,7 +13,7 @@ import Divider from "../components/Divider";
 
 interface IndexProps
 {
-  ssr: InferGetServerSidePropsType<typeof getServerSideProps> & SelfQuery & GetUserReposQuery | null
+  ssr: InferGetServerSidePropsType<typeof getServerSideProps> & GetSelfUserQuery & GetUserRepositoriesQuery | null
 }
 
 export default function Index(props: IndexProps)
@@ -24,7 +24,7 @@ export default function Index(props: IndexProps)
   {
     let repos = null;
 
-    if(props.ssr?.getUserRepos)
+    if(props.ssr?.getUserRepos.length > 0)
     {
       repos = (
         props.ssr.getUserRepos.map(repo =>
@@ -50,6 +50,20 @@ export default function Index(props: IndexProps)
             </Link>
           </Flex>
         )
+      );
+    }
+    else
+    {
+      repos = (
+        <Box
+          mt="50px"
+          mb="auto"
+          fontSize="16px"
+          textAlign="center"
+          color="#cdbcbc"
+        >
+          You don't have any repos yet... Create one by clicking the "New" button.
+        </Box>
       );
     }
     
@@ -114,17 +128,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   try
   {
-    const { data }: ApolloQueryResult<SelfQuery> = 
-      await client.query({ query: SelfDocument });
+    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
+      await client.query({ query: GetSelfUserDocument });
     
-    let getUserReposResult: ApolloQueryResult<GetUserReposQuery>;   
+    let getUserReposResult: ApolloQueryResult<GetUserRepositoriesQuery>;   
 
-    if(data.self)
+    if(data.getSelfUser)
     {
       getUserReposResult = await client.query({ 
-        query: GetUserReposDocument, 
+        query: GetUserRepositoriesDocument, 
         variables: {
-          owner: data.self.username,
+          owner: data.getSelfUser.username,
           count: 15,
           start: 0
         }
@@ -134,8 +148,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       props: {
         ssr: {
-          self: data.self,
-          getUserRepos: getUserReposResult.data.getUserRepos
+          self: data.getSelfUser,
+          getUserRepos: getUserReposResult.data.getUserRepositories
         }
       }
     }

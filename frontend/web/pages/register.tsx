@@ -8,7 +8,7 @@ import Container from "../components/Container";
 import FormSubmitButton from "../components/FormSubmitButton";
 import Header from "../components/Header";
 import InputField from "../components/InputField";
-import { SelfQuery, SelfDocument, useRegisterUserMutation } from "../generated/graphql";
+import { GetSelfUserQuery, GetSelfUserDocument, useCreateUserMutation } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
@@ -19,7 +19,7 @@ interface RegisterProps
 
 export default function Register(props: RegisterProps)
 {
-  const [ runRegisterUserMutation ] = useRegisterUserMutation();
+  const [ runRegisterUserMutation ] = useCreateUserMutation();
   return (
     <Container>
       <Head>
@@ -53,16 +53,16 @@ export default function Register(props: RegisterProps)
             invitation: ""
           }}
           onSubmit={ async (values, { setErrors }) => {
-          const { data: { registerUser } } = await runRegisterUserMutation({
+          const { data: { createUser } } = await runRegisterUserMutation({
             variables: {
                 userInput: values
             }
           });
 
-          if(registerUser.error)
+          if(createUser.error)
           {
             let error: Record<string, string> = {};
-            error[registerUser.error.field] = registerUser.error.message;
+            error[createUser.error.field] = createUser.error.message;
             setErrors(error);
           }
           else
@@ -150,10 +150,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   
     try
     {
-      const { data }: ApolloQueryResult<SelfQuery> = 
-        await client.query({ query: SelfDocument });
+      const { data }: ApolloQueryResult<GetSelfUserQuery> = 
+        await client.query({ query: GetSelfUserDocument });
   
-      if(data.self)
+      if(data.getSelfUser)
       {
         redirectToIndex();
       }

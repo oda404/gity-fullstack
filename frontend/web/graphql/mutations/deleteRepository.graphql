@@ -1,9 +1,9 @@
-mutation DeleteRepo(
+mutation DeleteRepository(
     $name: String!
     $password: String!
 )
 {
-    deleteRepo(
+    deleteRepository(
         name: $name
         password: $password
     )

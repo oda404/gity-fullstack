@@ -8,18 +8,18 @@ import React from "react";
 import Container from "../components/Container";
 import Divider from "../components/Divider";
 import Header from "../components/Header";
-import { SelfQuery, SelfDocument, useCreateRepoMutation } from "../generated/graphql";
+import { GetSelfUserQuery, GetSelfUserDocument, useCreateRepositoryMutation } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
 interface NewProps
 {
-  ssr: InferGetServerSidePropsType<typeof getServerSideProps> & SelfQuery | null;
+  ssr: InferGetServerSidePropsType<typeof getServerSideProps> & GetSelfUserQuery | null;
 }
 
 export default function New(props: NewProps)
 {
-  const [ runCreateRepoMutation ] = useCreateRepoMutation();
+  const [ runCreateRepoMutation ] = useCreateRepositoryMutation();
   return (
     <Container>
       <Head>
@@ -185,10 +185,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   try
   {
-    const { data }: ApolloQueryResult<SelfQuery> = 
-    await client.query({ query: SelfDocument });
+    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
+    await client.query({ query: GetSelfUserDocument });
     
-    if(!data.self)
+    if(!data.getSelfUser)
     {
       ctx.res.writeHead(302, {
         Location: '/login'
@@ -199,7 +199,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       props: {
           ssr: {
-          self: data.self,
+          self: data.getSelfUser,
         }
       }
     }
