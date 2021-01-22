@@ -10,7 +10,8 @@ import {
     PG_PORT,
     PG_DB_MAIN,
     RD_PORT,
-    RD_HOST
+    RD_HOST,
+    FRONTEND_HOST
 } from "./consts";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -105,7 +106,7 @@ async function main(): Promise<void>
 
     app.use(
         cors({
-            origin: "http://localhost:3000",
+            origin: FRONTEND_HOST,
             credentials: true
         })
     );

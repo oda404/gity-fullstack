@@ -5,6 +5,7 @@ CONFIG_FILES=(
     "git" 
     "pg" 
     "redis" 
+    "web"
     "entities/repo" 
     "entities/user"
 )

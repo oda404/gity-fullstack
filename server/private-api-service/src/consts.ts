@@ -2,11 +2,13 @@ import {
     getGitConfig,
     getPGConfig,
     getRedisConfig,
+    getWebConfig
 } from "gity-core/config-engine";
 
-let pgConfig = getPGConfig();
-let redisConfig = getRedisConfig();
-let gitConfig = getGitConfig();
+const pgConfig = getPGConfig();
+const redisConfig = getRedisConfig();
+const gitConfig = getGitConfig();
+const webConfig = getWebConfig();
 
 export const PG_DB_MAIN = pgConfig.databases.find(db => db.alias === "main")?.name;
 export const PG_HOST = pgConfig.host;
@@ -24,3 +26,4 @@ export const SERVER_PORT = 4200;
 export const SESSION_COOKIE_NAME = "user-session";
 export const AUTH_COOKIE = "AUTH_COOKIE_MW";
 export const AUTH_PASSWD = "AUTH_PASSWD_MW";
+export const FRONTEND_HOST = webConfig.host;

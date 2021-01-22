@@ -50,13 +50,19 @@ export interface RepoConfig
     descriptionB64Regex: string;
     descriptionMinLen: number;
     descriptionMaxLen: number;
-}
+};
+
+export interface WebConfig
+{
+    host: string;
+};
 
 export function getRepoConfig():  RepoConfig;
 export function getUserConfig():  UserConfig;
 export function getGitConfig():   GitConfig;
 export function getPGConfig():    PGConfig;
 export function getRedisConfig(): RedisConfig;
+export function getWebConfig():   WebConfig;
 
 export function validateConfigs():     void;
 export function validateRepoConfig():  void;
@@ -64,3 +70,4 @@ export function validateUserConfig():  void;
 export function validatePGConfig():    void;
 export function validateRedisConfig(): void;
 export function validateGitConfig():   void;
+export function validateWebConfig():   void;

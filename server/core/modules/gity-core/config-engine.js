@@ -5,6 +5,7 @@ const pg = require("./lib/config/pg");
 const redis = require("./lib/config/redis");
 const user = require("./lib/config/user");
 const repo = require("./lib/config/repo");
+const web = require("./lib/config/web");
 
 const validateConfigs = () => {
     pg.validatePGConfig();
@@ -12,6 +13,7 @@ const validateConfigs = () => {
     git.validateGitConfig();
     repo.validateRepoConfig();
     user.validateUserConfig();
+    web.validateWebConfig();
 }
 
 exports.validateConfigs = validateConfigs;
@@ -25,3 +27,5 @@ exports.getUserConfig = user.getUserConfig;
 exports.getGitConfig = git.getGitConfig;
 exports.getPGConfig = pg.getPGConfig;
 exports.getRedisConfig = redis.getRedisConfig;
+exports.getWebConfig = web.getWebConfig;
+exports.validateWebConfig = web.validateWebConfig;
