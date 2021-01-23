@@ -209,6 +209,16 @@ export type DeleteRepositoryMutation = (
   & Pick<Mutation, 'deleteRepository'>
 );
 
+export type GenerateInvitationMutationVariables = Exact<{
+  password: Scalars['String'];
+}>;
+
+
+export type GenerateInvitationMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'generateInvitation'>
+);
+
 export type LoginUserMutationVariables = Exact<{
   userInput: UserLoginInput;
 }>;
@@ -408,6 +418,36 @@ export function useDeleteRepositoryMutation(baseOptions?: Apollo.MutationHookOpt
 export type DeleteRepositoryMutationHookResult = ReturnType<typeof useDeleteRepositoryMutation>;
 export type DeleteRepositoryMutationResult = Apollo.MutationResult<DeleteRepositoryMutation>;
 export type DeleteRepositoryMutationOptions = Apollo.BaseMutationOptions<DeleteRepositoryMutation, DeleteRepositoryMutationVariables>;
+export const GenerateInvitationDocument = gql`
+    mutation GenerateInvitation($password: String!) {
+  generateInvitation(password: $password)
+}
+    `;
+export type GenerateInvitationMutationFn = Apollo.MutationFunction<GenerateInvitationMutation, GenerateInvitationMutationVariables>;
+
+/**
+ * __useGenerateInvitationMutation__
+ *
+ * To run a mutation, you first call `useGenerateInvitationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useGenerateInvitationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [generateInvitationMutation, { data, loading, error }] = useGenerateInvitationMutation({
+ *   variables: {
+ *      password: // value for 'password'
+ *   },
+ * });
+ */
+export function useGenerateInvitationMutation(baseOptions?: Apollo.MutationHookOptions<GenerateInvitationMutation, GenerateInvitationMutationVariables>) {
+        return Apollo.useMutation<GenerateInvitationMutation, GenerateInvitationMutationVariables>(GenerateInvitationDocument, baseOptions);
+      }
+export type GenerateInvitationMutationHookResult = ReturnType<typeof useGenerateInvitationMutation>;
+export type GenerateInvitationMutationResult = Apollo.MutationResult<GenerateInvitationMutation>;
+export type GenerateInvitationMutationOptions = Apollo.BaseMutationOptions<GenerateInvitationMutation, GenerateInvitationMutationVariables>;
 export const LoginUserDocument = gql`
     mutation LoginUser($userInput: UserLoginInput!) {
   loginUser(userInput: $userInput) {

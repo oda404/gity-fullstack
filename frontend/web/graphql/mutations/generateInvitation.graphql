@@ -1,0 +1,6 @@
+mutation GenerateInvitation(
+    $password: String!
+)
+{
+    generateInvitation(password: $password)
+}

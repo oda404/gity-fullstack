@@ -1,14 +1,17 @@
 import { ApolloQueryResult } from "@apollo/client";
 import { Box, Flex } from "@chakra-ui/react";
+import { Formik, Form } from "formik";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import React, { useState } from "react";
 import Container from "../../components/Container";
+import FormSubmitButton from "../../components/FormSubmitButton";
 import Header from "../../components/Header";
-import ProfileTabSelector from "../../components/ProfileTabSelector";
+import InputField from "../../components/InputField";
 import { GetUserDocument, GetUserQuery, GetSelfUserDocument, GetSelfUserQuery } from "../../generated/graphql";
 import createApolloSSRClient from "../../utils/apollo-gsspClient.ts";
 import parseCookiesFromIncomingMessage from "../../utils/parseCookies";
+import { useGenerateInvitationMutation } from "../../generated/graphql";
 
 interface UserIndexProps
 {
@@ -16,24 +19,65 @@ interface UserIndexProps
     & GetUserQuery & { sessionUsername: string | null } & { isLoggedIn: boolean } | null;
 }
 
-type Tabs = "profile" | "repos" | "invs" | "settings";
-
 export default function UserIndex(props: UserIndexProps)
 {
-  const [selectedTab, selectTab] = useState<Tabs>("profile");
-  const vDivider = <Box w="1px" h="100%" bg="#3b3737"/>;
-
+  const [ invitation, setInvitation ] = useState<string | null>(null);
+  const [ runGenerateInvitationMutation ] = useGenerateInvitationMutation();
   let body = null;
 
-  switch(selectedTab)
+  if(props.ssr.isLoggedIn)
   {
-  case "invs":
     body = (
-      <Flex>
-        
+      <Flex
+        paddingX="20px"
+        bgColor="#1a1a1a"
+        paddingY="17px"
+        mt="200px"
+        border="2px solid inherit"
+        borderRadius="10px"
+        boxShadow="rgba(0, 0, 0, 0.35) 0px 5px 15px"
+        mx="auto"
+        w="400px"
+      >
+        <Formik
+          initialValues={{
+            password: ""
+          }}
+          onSubmit={ async ({ password }, { setErrors }) => {
+            const { data: { generateInvitation: inv } } = await runGenerateInvitationMutation({
+              variables: {
+                password
+              }
+            });
+
+            if(inv === null)
+            {
+              setErrors({ password: "Invalid password" });
+            }
+            else
+            {
+              setInvitation(inv);
+            }
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form style={{width: "100%"}}>
+              <Box>
+                <InputField
+                  fieldProps={{
+                    name: "password", 
+                    label: "Password", 
+                    type: "password"
+                  }}
+                />
+              </Box>
+              <FormSubmitButton isSubmitting={isSubmitting} label="Generate invitation"/>
+              <Box>{invitation}</Box>
+            </Form>
+          )}
+        </Formik>
       </Flex>
-    ); 
-    break;
+    );
   }
 
   return (
@@ -42,38 +86,7 @@ export default function UserIndex(props: UserIndexProps)
         <title>{`${props.ssr.getUser.username} | Gity`}</title>
       </Head>
       <Header squish type="full" username={props.ssr.sessionUsername} />
-      <Flex h="100vh" flexDir="row" paddingX="420px" paddingY="50px">
-        <Flex flexDir="column">
-          <ProfileTabSelector
-            selected={selectedTab === "profile"} 
-            text="Profile"
-            onClick={() => selectTab("profile")}
-          />
-          <ProfileTabSelector 
-            selected={selectedTab === "repos"} 
-            text="Repositories"
-            onClick={() => selectTab("repos")}
-          />
-          {props.ssr.isLoggedIn ? 
-            (
-            <>
-              <ProfileTabSelector 
-                selected={selectedTab === "invs"} 
-                onClick={() => selectTab("invs")}
-                text="Invitations"
-              /> 
-              <ProfileTabSelector 
-                selected={selectedTab === "settings"} 
-                onClick={() => selectTab("settings")}
-                text="Settings"
-              />
-            </>
-            ) : null
-          }
-        </Flex>
-        {vDivider}
-        {body}
-      </Flex>
+      {body}
     </Container>
   );
 }
