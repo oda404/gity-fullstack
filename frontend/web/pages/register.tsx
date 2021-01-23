@@ -14,7 +14,7 @@ import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 
 interface RegisterProps
 {
-
+  
 }
 
 export default function Register(props: RegisterProps)
@@ -53,22 +53,22 @@ export default function Register(props: RegisterProps)
             invitation: ""
           }}
           onSubmit={ async (values, { setErrors }) => {
-          const { data: { createUser } } = await runRegisterUserMutation({
-            variables: {
+            const { data: { createUser } } = await runRegisterUserMutation({
+              variables: {
                 userInput: values
-            }
-          });
+              }
+            });
 
-          if(createUser.error)
-          {
-            let error: Record<string, string> = {};
-            error[createUser.error.field] = createUser.error.message;
-            setErrors(error);
-          }
-          else
-          {
-            window.location.replace('/');
-          }
+            if(createUser.error)
+            {
+              let error: Record<string, string> = {};
+              error[createUser.error.field] = createUser.error.message;
+              setErrors(error);
+            }
+            else
+            {
+              window.location.replace('/');
+            }
           }}
         >
           {({ isSubmitting }) => (
