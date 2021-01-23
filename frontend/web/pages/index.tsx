@@ -99,7 +99,6 @@ export default function Index(props: IndexProps)
           </Flex>
           <Divider mt="10px"/>
           {repos}
-          <Divider mt="10px"/>
         </Flex>
         <Divider position="v" />
       </Flex>
