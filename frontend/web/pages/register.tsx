@@ -8,9 +8,10 @@ import Container from "../components/Container";
 import FormSubmitButton from "../components/FormSubmitButton";
 import Header from "../components/Header";
 import InputField from "../components/InputField";
-import { GetSelfUserQuery, GetSelfUserDocument, useCreateUserMutation } from "../generated/graphql";
+import { GetSelfUserQuery, GetSelfUserDocument } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
-import parseCookiesFromIncomingMessage from "../utils/parseCookies";
+import { redirectTo } from "../utils/responses";
+import { webHost } from "../utils/webHost";
 
 interface RegisterProps
 {
@@ -19,7 +20,6 @@ interface RegisterProps
 
 export default function Register(props: RegisterProps)
 {
-  const [ runRegisterUserMutation ] = useCreateUserMutation();
   return (
     <Container>
       <Head>
@@ -53,16 +53,15 @@ export default function Register(props: RegisterProps)
             invitation: ""
           }}
           onSubmit={ async (values, { setErrors }) => {
-            const { data: { createUser } } = await runRegisterUserMutation({
-              variables: {
-                userInput: values
-              }
-            });
+            const res = await (await fetch(`${webHost}/api/register`, {
+              method: "POST",
+              body: JSON.stringify(values)
+            })).json();
 
-            if(createUser.error)
+            if(res.error)
             {
               let error: Record<string, string> = {};
-              error[createUser.error.field] = createUser.error.message;
+              error[res.error.field] = res.error.message;
               setErrors(error);
             }
             else
@@ -128,37 +127,24 @@ export default function Register(props: RegisterProps)
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-    const cookies = parseCookiesFromIncomingMessage(ctx.req);
-    if(cookies.size === 0)
-    {
-      return {
-        props: {
-  
-        }
-      }
-    }
-  
-    const client = createApolloSSRClient(cookies);
-  
-    const redirectToIndex = () => {
-      ctx.res.writeHead(302, {
-        Location: '/'
-      });
-      ctx.res.end();
-    }
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+      
+    const client = createApolloSSRClient();
   
     try
     {
-      const { data }: ApolloQueryResult<GetSelfUserQuery> = 
-        await client.query({ query: GetSelfUserDocument });
+      const { data: { getSelfUser } }: ApolloQueryResult<GetSelfUserQuery> = 
+        await client.query({ 
+          query: GetSelfUserDocument,
+          context: { cookie: req.headers.cookie }
+        });
   
-      if(data.getSelfUser)
+      if(getSelfUser)
       {
-        redirectToIndex();
+        redirectTo('/', res);
       }
     } catch(_) {
-      redirectToIndex();
+      redirectTo('/', res);
     }
   
     return {

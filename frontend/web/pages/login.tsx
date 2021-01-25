@@ -2,15 +2,16 @@
 import { ApolloQueryResult } from "@apollo/client";
 import { Box, Flex, Link, Image } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import React from "react";
 import Container from "../components/Container";
 import FormSubmitButton from "../components/FormSubmitButton";
 import InputField from "../components/InputField";
-import { GetSelfUserDocument, GetSelfUserQuery, useLoginUserMutation } from "../generated/graphql";
+import { GetSelfUserDocument, GetSelfUserQuery } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
-import parseCookiesFromIncomingMessage from "../utils/parseCookies";
+import { redirectTo } from "../utils/responses";
+import { webHost } from "../utils/webHost";
 
 interface LoginProps
 {
@@ -19,8 +20,6 @@ interface LoginProps
 
 export default function Login(props: LoginProps)
 {
-  const [ runLoginUserMutation ] = useLoginUserMutation();
-
   return (
     <Container>
       <Head>
@@ -51,21 +50,20 @@ export default function Login(props: LoginProps)
             password: ""
           }}
           onSubmit={ async (values, { setErrors }) => {
-            const { data: { loginUser } } = await runLoginUserMutation({
-              variables: {
-                userInput: values
-              }
-            });
+            const res = await (await fetch(`${webHost}/api/session`, {
+              method: "POST",
+              body: JSON.stringify(values)
+            })).json();
 
-            if(loginUser.error)
+            if(res.error === null)
             {
-              let error: Record<string, string> = {};
-              error[loginUser.error.field] = loginUser.error.message;
-              setErrors(error);
+              window.location.replace('/');
             }
             else
             {
-              window.location.replace('/');
+              let error: Record<string, string> = {};
+              error[res.error.field] = res.error.message;
+              setErrors(error);
             }
           }}
           >
@@ -105,37 +103,24 @@ export default function Login(props: LoginProps)
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const cookies = parseCookiesFromIncomingMessage(ctx.req);
-  if(cookies.size === 0)
-  {
-    return {
-      props: {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
-      }
-    }
-  }
-
-  const client = createApolloSSRClient(cookies);
-
-  const redirectToIndex = () => {
-    ctx.res.writeHead(302, {
-      Location: '/'
-    });
-    ctx.res.end();
-  }
+  const client = createApolloSSRClient();
 
   try
   {
-    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
-      await client.query({ query: GetSelfUserDocument });
+    const { data: { getSelfUser } }: ApolloQueryResult<GetSelfUserQuery> = 
+      await client.query({ 
+        query: GetSelfUserDocument,
+        context: { cookie: req.headers.cookie }
+      });
 
-    if(data.getSelfUser)
+    if(getSelfUser)
     {
-      redirectToIndex();
+      redirectTo('/', res);
     }
   } catch(_) {
-    redirectToIndex();
+    redirectTo('/', res);
   }
 
   return {

@@ -10,8 +10,8 @@ import Header from "../../components/Header";
 import InputField from "../../components/InputField";
 import { GetUserDocument, GetUserQuery, GetSelfUserDocument, GetSelfUserQuery } from "../../generated/graphql";
 import createApolloSSRClient from "../../utils/apollo-gsspClient.ts";
-import parseCookiesFromIncomingMessage from "../../utils/parseCookies";
-import { useGenerateInvitationMutation } from "../../generated/graphql";
+import { redirectTo } from "../../utils/responses";
+import { webHost } from "../../utils/webHost";
 
 interface UserIndexProps
 {
@@ -22,7 +22,6 @@ interface UserIndexProps
 export default function UserIndex(props: UserIndexProps)
 {
   const [ invitation, setInvitation ] = useState<string | null>(null);
-  const [ runGenerateInvitationMutation ] = useGenerateInvitationMutation();
   let body = null;
 
   if(props.ssr.isLoggedIn)
@@ -43,20 +42,19 @@ export default function UserIndex(props: UserIndexProps)
           initialValues={{
             password: ""
           }}
-          onSubmit={ async ({ password }, { setErrors }) => {
-            const { data: { generateInvitation: inv } } = await runGenerateInvitationMutation({
-              variables: {
-                password
-              }
-            });
+          onSubmit={ async (values, { setErrors }) => {
+            const res = await (await fetch(`${webHost}/api/inv`, {
+              method: "POST",
+              body: JSON.stringify(values)
+            })).json();
 
-            if(inv === null)
+            if(res === null)
             {
               setErrors({ password: "Invalid password" });
             }
             else
             {
-              setInvitation(inv);
+              setInvitation(res);
             }
           }}
         >
@@ -91,17 +89,10 @@ export default function UserIndex(props: UserIndexProps)
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   
-  const cookies = parseCookiesFromIncomingMessage(ctx.req);
-  const client = createApolloSSRClient(cookies);
-  const strippedUsername = ctx.req.url.substring(1);
-  const redirectTo404 = () => {
-    ctx.res.writeHead(302, {
-      Location: "/404"
-    });
-    ctx.res.end();
-  }
+  const client = createApolloSSRClient();
+  const strippedUsername = req.url.substring(1);
 
   let isLoggedIn = false;
   let sessionUsername = null;
@@ -112,20 +103,23 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const { data }: ApolloQueryResult<GetUserQuery> = 
     await client.query({ query: GetUserDocument, variables: {
       username: strippedUsername
-    } });
+    }, context: { cookie: req.headers.cookie } });
 
     getUserData = data;
 
     if(!data.getUser)
     {
-      redirectTo404();
+      redirectTo("/404", res);
       return { props: { ssr: null } };
     }
 
     try
     {
       const { data: selfData }: ApolloQueryResult<GetSelfUserQuery> = 
-      await client.query({ query: GetSelfUserDocument});
+      await client.query({ 
+        query: GetSelfUserDocument,
+        context: { cookie: req.headers.cookie }
+      });
 
       if(selfData.getSelfUser)
       {
@@ -138,7 +132,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     } catch(_) { }
 
   } catch(_) {
-    redirectTo404();
+    redirectTo("/404", res);
     return { props: { ssr: null } };
   }
 

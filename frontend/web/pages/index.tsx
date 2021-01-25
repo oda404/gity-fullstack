@@ -3,7 +3,6 @@ import Header from "../components/Header";
 import Head from "next/head";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import {  GetUserRepositoriesDocument, GetUserRepositoriesQuery, GetSelfUserDocument, GetSelfUserQuery } from "../generated/graphql";
-import parseCookiesFromIncomingMessage from "../utils/parseCookies";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
 import { ApolloQueryResult } from "@apollo/client";
 import React from "react";
@@ -120,34 +119,37 @@ export default function Index(props: IndexProps)
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
-  const cookies = parseCookiesFromIncomingMessage(ctx.req);
-  const client = createApolloSSRClient(cookies);
+  const client = createApolloSSRClient();
 
   try
   {
-    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
-      await client.query({ query: GetSelfUserDocument });
+    const { data: { getSelfUser } }: ApolloQueryResult<GetSelfUserQuery> = 
+      await client.query({ 
+        query: GetSelfUserDocument,
+        context: { cookie: req.headers.cookie }
+      });
     
     let getUserReposResult: ApolloQueryResult<GetUserRepositoriesQuery>;   
 
-    if(data.getSelfUser)
+    if(getSelfUser)
     {
       getUserReposResult = await client.query({ 
         query: GetUserRepositoriesDocument, 
         variables: {
-          owner: data.getSelfUser.username,
+          owner: getSelfUser.username,
           count: 15,
           start: 0
-        }
+        },
+        context: { cookie: req.headers.cookie }
       });
     }
 
     return {
       props: {
         ssr: {
-          self: data.getSelfUser,
+          self: getSelfUser,
           getUserRepos: getUserReposResult.data.getUserRepositories
         }
       }

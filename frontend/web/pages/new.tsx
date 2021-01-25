@@ -8,9 +8,10 @@ import React from "react";
 import Container from "../components/Container";
 import Divider from "../components/Divider";
 import Header from "../components/Header";
-import { GetSelfUserQuery, GetSelfUserDocument, useCreateRepositoryMutation } from "../generated/graphql";
+import { GetSelfUserQuery, GetSelfUserDocument } from "../generated/graphql";
 import createApolloSSRClient from "../utils/apollo-gsspClient.ts";
-import parseCookiesFromIncomingMessage from "../utils/parseCookies";
+import { redirectTo } from "../utils/responses";
+import { webHost } from "../utils/webHost";
 
 interface NewProps
 {
@@ -19,7 +20,6 @@ interface NewProps
 
 export default function New(props: NewProps)
 {
-  const [ runCreateRepoMutation ] = useCreateRepositoryMutation();
   return (
     <Container>
       <Head>
@@ -48,10 +48,11 @@ export default function New(props: NewProps)
             isPrivate: false
           }}
           onSubmit={ async (values) => {
-            const res = await runCreateRepoMutation({ variables: {
-              name: values.name,
-              isPrivate: values.isPrivate
-            } });
+            const res = await (await fetch(`${webHost}/api/new`, {
+              method: "POST",
+              body: JSON.stringify({ name: values.name, isPrivate: values.isPrivate })
+            })).json();
+
             window.location.replace('/');
           }}
         >
@@ -178,28 +179,27 @@ export default function New(props: NewProps)
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
-  const cookies = parseCookiesFromIncomingMessage(ctx.req);
-  const client = createApolloSSRClient(cookies);
+  const client = createApolloSSRClient();
 
   try
   {
-    const { data }: ApolloQueryResult<GetSelfUserQuery> = 
-    await client.query({ query: GetSelfUserDocument });
+    const { data: { getSelfUser } }: ApolloQueryResult<GetSelfUserQuery> = 
+    await client.query({ 
+      query: GetSelfUserDocument,
+      context: { cookie: req.headers.cookie }
+    });
     
-    if(!data.getSelfUser)
+    if(!getSelfUser)
     {
-      ctx.res.writeHead(302, {
-        Location: '/login'
-      });
-      ctx.res.end();
+      redirectTo("/login", res);
     }
 
     return {
       props: {
           ssr: {
-          self: data.getSelfUser,
+          self: getSelfUser,
         }
       }
     }

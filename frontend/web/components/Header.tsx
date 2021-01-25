@@ -4,6 +4,7 @@ import styles from "../styles/Header.module.css";
 import LinkButton from "../components/LinkButton";
 import { useLogoutUserMutation } from "../generated/graphql";
 import Divider from "./Divider";
+import { webHost } from "../utils/webHost";
 
 interface HeaderProps
 {
@@ -107,7 +108,9 @@ export default function Header(props: HeaderProps)
               _active={{ color: "#e1d9d9"  }}
               _focus={{ border: "none"}}
               onClick={ async () => {
-                await runLogoutUserMutation();
+                await fetch(`${webHost}/api/logout`, {
+                  method: "POST"
+                });
                 window.location.replace('/');
               }}
             >
