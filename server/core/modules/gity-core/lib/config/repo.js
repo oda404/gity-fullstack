@@ -5,8 +5,9 @@ const join = require("path").join;
 const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 
-const validateRepoConfig = () => {
-    const filePath = join(rootConfigDir, "entities/repo.json");
+const filePath = join(rootConfigDir, "entities/repo.json");
+
+const exitIfInvalidRepoConfig = () => {
     let fileContent;
     try
     {
@@ -33,7 +34,6 @@ const validateRepoConfig = () => {
 }
 
 const getRepoConfig = () => {
-    const filePath = join(rootConfigDir, "entities/repo.json");
     let fileContent;
     try
     {
@@ -45,5 +45,5 @@ const getRepoConfig = () => {
     return JSON.parse(fileContent);
 }
 
-exports.validateRepoConfig = validateRepoConfig;
+exports.exitIfInvalidRepoConfig = exitIfInvalidRepoConfig;
 exports.getRepoConfig = getRepoConfig;

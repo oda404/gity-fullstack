@@ -5,8 +5,9 @@ const join = require("path").join;
 const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 
-const validateUserConfig = () => {
-    const filePath = join(rootConfigDir, "entities/user.json");
+const filePath = join(rootConfigDir, "entities/user.json");
+
+const exitIfInvalidUserConfig = () => {
     let fileContent;
     try
     {
@@ -35,7 +36,6 @@ const validateUserConfig = () => {
 }
 
 const getUserConfig = () => {
-    const filePath = join(rootConfigDir, "entities/user.json");
     let fileContent;
     try
     {
@@ -47,5 +47,5 @@ const getUserConfig = () => {
     return JSON.parse(fileContent);
 }
 
-exports.validateUserConfig = validateUserConfig;
+exports.exitIfInvalidUserConfig = exitIfInvalidUserConfig;
 exports.getUserConfig = getUserConfig;

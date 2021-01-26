@@ -5,8 +5,9 @@ const join = require("path").join;
 const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 
-const validateGitConfig = () => {
-    const filePath = join(rootConfigDir, "git.json");
+const filePath = join(rootConfigDir, "git.json");
+
+const exitIfInvalidGitConfig = () => {
     let fileContent;
     try
     {
@@ -28,7 +29,6 @@ const validateGitConfig = () => {
 }
 
 const getGitConfig = () => {
-    const filePath = join(rootConfigDir, "git.json");
     let fileContent;
     try
     {
@@ -40,5 +40,5 @@ const getGitConfig = () => {
     return JSON.parse(fileContent);
 }
 
-exports.validateGitConfig = validateGitConfig;
+exports.exitIfInvalidGitConfig = exitIfInvalidGitConfig;
 exports.getGitConfig = getGitConfig;

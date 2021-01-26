@@ -1,3 +1,3 @@
-import { validateConfigs } from "gity-core/config-engine";
+import { exitIfInvalidConfigs } from "gity-core/config-engine";
 
-validateConfigs();
+exitIfInvalidConfigs();

@@ -5,8 +5,9 @@ const join = require("path").join;
 const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 
-const validateWebConfig = () => {
-    const filePath = join(rootConfigDir, "web.json");
+const filePath = join(rootConfigDir, "web.json");
+
+const exitIfInvalidWebConfig = () => {
     let fileContent;
     try
     {
@@ -28,7 +29,6 @@ const validateWebConfig = () => {
 }
 
 const getWebConfig = () => {
-    const filePath = join(rootConfigDir, "web.json");
     let fileContent;
     try
     {
@@ -41,6 +41,6 @@ const getWebConfig = () => {
 }
 
 module.exports = {
-    validateWebConfig: validateWebConfig,
+    exitIfInvalidWebConfig: exitIfInvalidWebConfig,
     getWebConfig: getWebConfig
 };

@@ -6,8 +6,9 @@ const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 const isFieldValid = require("../isFieldValid").isFieldValid;
 
-const validatePGConfig = () => {
-    const filePath = join(rootConfigDir, "pg.json");
+const filePath = join(rootConfigDir, "pg.json");
+
+const exitIfInvalidPGConfig = () => {
     let fileContent;
     try
     {
@@ -80,7 +81,6 @@ const validatePGConfig = () => {
 }
 
 const getPGConfig = () => {
-    const filePath = join(rootConfigDir, "pg.json");
     let fileContent;
     try
     {
@@ -92,5 +92,5 @@ const getPGConfig = () => {
     return JSON.parse(fileContent);
 }
 
-exports.validatePGConfig = validatePGConfig;
+exports.exitIfInvalidPGConfig = exitIfInvalidPGConfig;
 exports.getPGConfig = getPGConfig;

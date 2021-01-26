@@ -9,31 +9,33 @@ const web = require("./lib/config/web");
 const gitService = require("./lib/config/git-service");
 const privateAPI = require("./lib/config/private-api");
 
-const validateConfigs = () => {
-    pg.validatePGConfig();
-    redis.validateRedisConfig();
-    git.validateGitConfig();
-    repo.validateRepoConfig();
-    user.validateUserConfig();
-    web.validateWebConfig();
+const exitIfInvalidConfigs = () => {
+    pg.exitIfInvalidPGConfig();
+    redis.exitIfInvalidRedisConfig();
+    git.exitIfInvalidGitConfig();
+    repo.exitIfInvalidRepoConfig();
+    user.exitIfInvalidUserConfig();
+    web.exitIfInvalidWebConfig();
     gitService.exitIfInvalidGitServiceConfig();
     privateAPI.exitIfInvalidPrivateAPIConfig();
 }
 
-exports.validateConfigs = validateConfigs;
-exports.validateRepoConfig = repo.validateRepoConfig;
-exports.validateUserConfig = user.validateUserConfig;
-exports.validatePGConfig = pg.validatePGConfig;
-exports.validateRedisConfig = redis.validateRedisConfig;
-exports.validateGitConfig = git.validateGitConfig;
-exports.getRepoConfig = repo.getRepoConfig;
-exports.getUserConfig = user.getUserConfig;
-exports.getGitConfig = git.getGitConfig;
-exports.getPGConfig = pg.getPGConfig;
-exports.getRedisConfig = redis.getRedisConfig;
-exports.getWebConfig = web.getWebConfig;
-exports.validateWebConfig = web.validateWebConfig;
-exports.exitIfInvalidGitServiceConfig = gitService.exitIfInvalidGitServiceConfig;
-exports.exitIfInvalidPrivateAPIConfig = privateAPI.exitIfInvalidPrivateAPIConfig;
-exports.getGitServiceConfig = gitService.getGitServiceConfig;
-exports.getPrivateAPIConfig = privateAPI.getPrivateAPIConfig;
+module.exports = {
+    exitIfInvalidConfigs: exitIfInvalidConfigs,
+    exitIfInvalidRepoConfig: repo.exitIfInvalidRepoConfig,
+    exitIfInvalidUserConfig: user.exitIfInvalidUserConfig,
+    exitIfInvalidPGConfig: pg.exitIfInvalidPGConfig,
+    exitIfInvalidRedisConfig: redis.exitIfInvalidRedisConfig,
+    exitIfInvalidGitConfig: git.exitIfInvalidGitConfig,
+    exitIfInvalidWebConfig: web.exitIfInvalidWebConfig,
+    exitIfInvalidGitServiceConfig: gitService.exitIfInvalidGitServiceConfig,
+    exitIfInvalidPrivateAPIConfig: privateAPI.exitIfInvalidPrivateAPIConfig,
+    getRepoConfig: repo.getRepoConfig,
+    getUserConfig: user.getUserConfig,
+    getGitConfig: git.getGitConfig,
+    getPGConfig: pg.getPGConfig,
+    getRedisConfig: redis.getRedisConfig,
+    getWebConfig: web.getWebConfig,
+    getGitServiceConfig: gitService.getGitServiceConfig,
+    getPrivateAPIConfig: privateAPI.getPrivateAPIConfig
+}

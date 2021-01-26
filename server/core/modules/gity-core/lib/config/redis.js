@@ -5,8 +5,9 @@ const join = require("path").join;
 const rootConfigDir = require("../rootConfigDir").rootConfigDir;
 const checkForInvalidFields = require("../checkForInvalidFields").checkForInvalidFields;
 
-const validateRedisConfig = () => {
-    const filePath = join(rootConfigDir, "redis.json");
+const filePath = join(rootConfigDir, "redis.json");
+
+const exitIfInvalidRedisConfig = () => {
     let fileContent;
     try
     {
@@ -29,7 +30,6 @@ const validateRedisConfig = () => {
 }
 
 const getRedisConfig = () => {
-    const filePath = join(rootConfigDir, "redis.json");
     let fileContent;
     try
     {
@@ -41,5 +41,5 @@ const getRedisConfig = () => {
     return JSON.parse(fileContent);
 }
 
-exports.validateRedisConfig = validateRedisConfig;
+exports.exitIfInvalidRedisConfig = exitIfInvalidRedisConfig;
 exports.getRedisConfig = getRedisConfig;
