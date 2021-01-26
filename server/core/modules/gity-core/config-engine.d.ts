@@ -57,12 +57,24 @@ export interface WebConfig
     hostname: string;
 };
 
+export interface GitServiceConfig
+{
+    port: number;
+};
+
+export interface PrivateAPIConfig
+{
+    port: number;
+}
+
 export function getRepoConfig():  RepoConfig;
 export function getUserConfig():  UserConfig;
 export function getGitConfig():   GitConfig;
 export function getPGConfig():    PGConfig;
 export function getRedisConfig(): RedisConfig;
 export function getWebConfig():   WebConfig;
+export function getGitServiceConfig(): GitServiceConfig;
+export function getPrivateAPIConfig(): PrivateAPIConfig;
 
 export function validateConfigs():     void;
 export function validateRepoConfig():  void;
@@ -71,3 +83,5 @@ export function validatePGConfig():    void;
 export function validateRedisConfig(): void;
 export function validateGitConfig():   void;
 export function validateWebConfig():   void;
+export function exitIfInvalidGitServiceConfig(): void;
+export function exitIfInvalidPrivateAPIConfig(): void;

@@ -6,6 +6,8 @@ CONFIG_FILES=(
     "pg" 
     "redis" 
     "web"
+    "private-api"
+    "git-service"
     "entities/repo" 
     "entities/user"
 )

@@ -6,6 +6,8 @@ const redis = require("./lib/config/redis");
 const user = require("./lib/config/user");
 const repo = require("./lib/config/repo");
 const web = require("./lib/config/web");
+const gitService = require("./lib/config/git-service");
+const privateAPI = require("./lib/config/private-api");
 
 const validateConfigs = () => {
     pg.validatePGConfig();
@@ -14,6 +16,8 @@ const validateConfigs = () => {
     repo.validateRepoConfig();
     user.validateUserConfig();
     web.validateWebConfig();
+    gitService.exitIfInvalidGitServiceConfig();
+    privateAPI.exitIfInvalidPrivateAPIConfig();
 }
 
 exports.validateConfigs = validateConfigs;
@@ -29,3 +33,7 @@ exports.getPGConfig = pg.getPGConfig;
 exports.getRedisConfig = redis.getRedisConfig;
 exports.getWebConfig = web.getWebConfig;
 exports.validateWebConfig = web.validateWebConfig;
+exports.exitIfInvalidGitServiceConfig = gitService.exitIfInvalidGitServiceConfig;
+exports.exitIfInvalidPrivateAPIConfig = privateAPI.exitIfInvalidPrivateAPIConfig;
+exports.getGitServiceConfig = gitService.getGitServiceConfig;
+exports.getPrivateAPIConfig = privateAPI.getPrivateAPIConfig;
