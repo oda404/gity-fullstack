@@ -1,6 +1,6 @@
 {
-    "host": "192.168.0.200",
-    "port": 5432,
+    "hostname": "",
+    "port": 0,
     "databases": [
         {
             "alias": "main",

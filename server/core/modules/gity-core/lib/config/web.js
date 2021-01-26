@@ -18,7 +18,7 @@ const validateWebConfig = () => {
     const json = JSON.parse(fileContent);
 
     const required_fields = [
-        "host"
+        "hostname"
     ];
 
     if(!checkForInvalidFields(required_fields, json, filePath))

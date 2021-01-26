@@ -1,7 +1,15 @@
 import express from "express"
 import { Client } from "pg";
 import { exit } from "process";
-import { PG_USER, PG_PASS, PG_DB_MAIN, PG_PORT, PG_HOST, GIT_ROOT_DIR, SERVER_PORT, __prod__ } from "./consts";
+import { 
+    PG_USER, 
+    PG_PASS, 
+    PG_DB_MAIN, 
+    PG_PORT, 
+    PG_HOSTNAME, 
+    SERVER_PORT, 
+    __prod__ 
+} from "./consts";
 import { gitService } from "./service";
 import { runPreparedStatements } from "gity-core/pg-prepares";
 import { validateConfigs } from "gity-core/config-engine";
@@ -11,7 +19,7 @@ async function main()
 {
     validateConfigs();
     const pgClient = new Client({
-        host: PG_HOST,
+        host: PG_HOSTNAME,
         port: PG_PORT,
         database: PG_DB_MAIN,
         user: PG_USER,

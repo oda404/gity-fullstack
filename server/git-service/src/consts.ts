@@ -7,7 +7,7 @@ import {
 let pgConfig = getPGConfig();
 let gitConfig = getGitConfig();
 
-export const PG_HOST = pgConfig.host;
+export const PG_HOSTNAME = pgConfig.hostname;
 export const PG_PORT = pgConfig.port;
 export const PG_DB_MAIN = pgConfig.databases.find(db => db.alias === "main")?.name;
 export const PG_USER = pgConfig.users.find(user => user.alias === "git-service")?.name;

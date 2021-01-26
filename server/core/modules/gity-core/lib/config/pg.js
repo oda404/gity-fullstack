@@ -19,7 +19,7 @@ const validatePGConfig = () => {
     const json = JSON.parse(fileContent);
 
     const required_fields = [
-        "host",
+        "hostname",
         "port",
         "databases",
         "users"

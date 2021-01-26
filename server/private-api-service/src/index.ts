@@ -6,12 +6,12 @@ import {
     SERVER_PORT,
     SESSION_COOKIE_NAME,
     SESSION_SECRET,
-    PG_HOST,
+    PG_HOSTNAME,
     PG_PORT,
     PG_DB_MAIN,
     RD_PORT,
-    RD_HOST,
-    FRONTEND_HOST
+    RD_HOSTNAME,
+    FRONTEND_HOSTNAME
 } from "./consts";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -25,20 +25,17 @@ import connectRedis from "connect-redis";
 import session from "express-session";
 import cors from "cors";
 import { customAuthChecker } from "./utils/authChecker";
-import { createTransport } from "nodemailer";
 import { Container } from "typedi";
 import { Client } from "pg";
 import { runPreparedStatements } from "gity-core/pg-prepares";
-import { validateConfigs } from "gity-core/config-engine";
 import { green, logErr, logInfo, magenta } from "gity-core/logging";
 import { v4 as genuuidV4 } from "uuid";
 import { createServer } from "http";
 
 async function main(): Promise<void>
 {
-    validateConfigs();
     let pgClient = new Client({
-        host: PG_HOST,
+        host: PG_HOSTNAME,
         port: PG_PORT,
         database: PG_DB_MAIN,
         user: PG_USER,
@@ -49,12 +46,12 @@ async function main(): Promise<void>
         logInfo(`${magenta("PostgreSQL")} ${green("connection established")}`);
     }).catch(() => {
         logErr("PostgreSQL connection failed. aborting...");
-        exit();
+        exit(1);
     });
 
     const RedisStore = connectRedis(session);
     const redisClient = new Redis({
-        host: RD_HOST,
+        host: RD_HOSTNAME,
         port: RD_PORT
     });
     
@@ -67,25 +64,14 @@ async function main(): Promise<void>
         {
             logErr("Redis connection failed. aborting...");
             pgClient.end();
-            exit();
+            exit(2);
         }
 
         logErr(message);
     });
 
-    let mailTransporter = createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-            user: "htucl6fvuvgxdfgo@ethereal.email",
-            pass: "ZwesZCREerPdkGv9UH"
-        }
-    });
-
     Container.set("pgClient", pgClient);
     Container.set("redisClient", redisClient);
-    Container.set("mailTransporter", mailTransporter);
 
     const app = express();
 
@@ -106,7 +92,7 @@ async function main(): Promise<void>
 
     app.use(
         cors({
-            origin: FRONTEND_HOST,
+            origin: FRONTEND_HOSTNAME,
             credentials: true
         })
     );
@@ -141,7 +127,6 @@ async function main(): Promise<void>
     httpServer.listen(SERVER_PORT, () => {
         logInfo(`Running in ${__prod__ ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
         logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}`);
-
     });
 }
 

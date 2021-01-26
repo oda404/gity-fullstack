@@ -9,7 +9,8 @@
         "404",
         "login",
         "register",
-        "tos"
+        "tos",
+        "api"
     ],
     "passwdB64Regex": "Xig/PS4qW2Etel0pKD89LipbQS1aXSkoPz0uKlswLTldKSg/PS4qWyFAIyQlXiYqKClcLV89K1t7XF1cfTs6XCdcIiw8Lj4vP1xcfGB+XSlbYS16QS1aMC05IUAjJCVeJiooKVwtXz0rW3tcXVx9OzpcJ1wiLDwuPi8/XFx8YH5dKyQ=",
     "passwdMinLen": 8,

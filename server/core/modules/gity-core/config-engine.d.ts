@@ -9,7 +9,7 @@ interface Group
 
 export interface PGConfig
 {
-    host: string;
+    hostname: string;
     port: number;
     databases: Group[],
     users: Group[]
@@ -17,7 +17,7 @@ export interface PGConfig
 
 export interface RedisConfig
 {
-    host: string;
+    hostname: string;
     port: number;
 };
 
@@ -54,7 +54,7 @@ export interface RepoConfig
 
 export interface WebConfig
 {
-    host: string;
+    hostname: string;
 };
 
 export function getRepoConfig():  RepoConfig;

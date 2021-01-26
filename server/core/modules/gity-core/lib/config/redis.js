@@ -18,7 +18,7 @@ const validateRedisConfig = () => {
     const json = JSON.parse(fileContent);
 
     const required_fields = [
-        "host",
+        "hostname",
         "port"
     ];
 
