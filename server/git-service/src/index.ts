@@ -12,12 +12,10 @@ import {
 } from "./consts";
 import { gitService } from "./service";
 import { runPreparedStatements } from "gity-core/pg-prepares";
-import { validateConfigs } from "gity-core/config-engine";
 import { green, logErr, logInfo, magenta } from "gity-core/logging";
 
 async function main()
 {
-    validateConfigs();
     const pgClient = new Client({
         host: PG_HOSTNAME,
         port: PG_PORT,
