@@ -18,8 +18,10 @@
       "argon2": "^0.27.1",
       "connect-redis": "^5.0.0",
       "cors": "^2.8.5",
+      "dotenv-safe": "^8.2.0",
       "express": "^4.17.1",
       "express-session": "^1.17.1",
+      "gity-core": "file:../core/modules/gity-core",
       "graphql": "^15.4.0",
       "ioredis": "^4.19.2",
       "nodemailer": "^6.4.16",
@@ -27,8 +29,7 @@
       "reflect-metadata": "^0.1.13",
       "type-graphql": "^1.1.0",
       "typedi": "^0.8.0",
-      "uuid": "^8.3.1",
-      "gity-core": "file:../core/modules/gity-core"
+      "uuid": "^8.3.1"
    },
    "devDependencies": {
       "@types/connect-redis": "^0.0.15",

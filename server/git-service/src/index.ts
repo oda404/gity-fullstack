@@ -1,4 +1,5 @@
-import express from "express"
+import "dotenv-safe/config";
+import express from "express";
 import { Client } from "pg";
 import { exit } from "process";
 import { 
