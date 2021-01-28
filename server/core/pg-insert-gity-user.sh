@@ -21,7 +21,7 @@ const readline = require('readline').createInterface({
 async function main()
 {
     const pgClient = new pg.Client({
-        host: pgConfig.host,
+        host: pgConfig.hostname,
         port: pgConfig.port,
         database: db,
         user,

@@ -13,7 +13,7 @@ const user = process.env.DB_ROOT_USER;
 async function main()
 {
     const pgClient = new pg.Client({
-        host: pgConfig.host,
+        host: pgConfig.hostname,
         port: pgConfig.port,
         user,
         password: DB_PASS
@@ -33,7 +33,8 @@ async function main()
 
         pgClient.end();
         process.exit();
-    }).catch(() => {
+    }).catch((e) => {
+        console.log(e);
         console.error("PostgreSQL connection failed. aborting...");
         process.exit(1);
     });
