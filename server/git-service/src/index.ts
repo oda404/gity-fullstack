@@ -9,7 +9,7 @@ import {
     PG_PORT, 
     PG_HOSTNAME, 
     SERVER_PORT, 
-    __prod__ 
+    PROD 
 } from "./consts";
 import { gitService } from "./service";
 import { runPreparedStatements } from "gity-core/pg-prepares";
@@ -37,7 +37,7 @@ async function main()
     APP.use(gitService(pgClient));
 
     APP.listen(SERVER_PORT, () => {
-        logInfo(`Running in ${__prod__ ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
+        logInfo(`Running in ${PROD ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
         logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}.`);
     });
 }

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import "dotenv-safe/config";
 import {
-    __prod__,
+    PROD,
     PG_PASS,
     PG_USER,
     SERVER_PORT,
@@ -87,7 +87,7 @@ async function main(): Promise<void>
             authMode: "null",
             container: Container
         }),
-        playground: !__prod__,
+        playground: !PROD,
         context: ({ req, res }): ApolloContext => ({ req, res })
     });
 
@@ -108,7 +108,7 @@ async function main(): Promise<void>
                 maxAge: 1000 * 60 * 60 * 24 * 7, // one week
                 httpOnly: true,
                 sameSite: "strict", // only send cookies if on the same site
-                secure: __prod__
+                secure: PROD
             },
             secret: SESSION_SECRET,
             resave: false,
@@ -126,7 +126,7 @@ async function main(): Promise<void>
 
     const httpServer = createServer(app);
     httpServer.listen(SERVER_PORT, () => {
-        logInfo(`Running in ${__prod__ ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
+        logInfo(`Running in ${PROD ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
         logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}`);
     });
 }
