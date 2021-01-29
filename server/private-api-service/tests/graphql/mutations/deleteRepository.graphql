@@ -1,0 +1,10 @@
+mutation DeleteRepository(
+    $name: String!
+    $password: String!
+)
+{
+    deleteRepository(
+        name: $name
+        password: $password
+    )
+}

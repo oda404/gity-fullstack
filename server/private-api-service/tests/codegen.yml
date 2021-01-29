@@ -1,0 +1,9 @@
+overwrite: true
+schema: "http://192.168.0.199:4200"
+documents: "tests/graphql/**/*.graphql"
+generates:
+  tests/generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typed-document-node"

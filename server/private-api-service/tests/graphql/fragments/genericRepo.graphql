@@ -1,0 +1,6 @@
+fragment GenericRepo on Repo{
+    id
+    name
+    likes
+    isPrivate
+}

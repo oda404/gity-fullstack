@@ -1,0 +1,15 @@
+mutation LoginUser(
+  $userInput: UserLoginInput!
+)
+{
+  loginUser(userInput: $userInput){
+    error {
+      field
+      message
+    }
+    
+    user{
+      ...GenericUser
+    }
+  }
+}

@@ -1,0 +1,15 @@
+mutation createUser(
+  $userInput: UserRegisterInput!
+)
+{
+  createUser(userInput: $userInput){
+    error {
+      field
+      message
+    }
+    
+    user{
+      ...GenericUser
+    }
+  }
+}

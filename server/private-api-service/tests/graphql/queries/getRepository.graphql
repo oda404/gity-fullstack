@@ -1,0 +1,13 @@
+query GetRepository(
+    $name: String!
+    $owner: String!
+)
+{
+    getRepository(
+        name: $owner
+        owner: $owner
+    )
+    {
+         ...GenericRepo
+    }
+}

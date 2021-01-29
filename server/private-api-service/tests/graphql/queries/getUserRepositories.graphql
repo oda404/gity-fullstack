@@ -1,0 +1,15 @@
+query GetUserRepositories(
+    $owner: String!
+    $count: Int!
+    $start: Int = 0
+)
+{
+    getUserRepositories(
+        owner: $owner
+        count: $count
+        start: $start
+    )
+    {
+        ...GenericRepo
+    }
+}
