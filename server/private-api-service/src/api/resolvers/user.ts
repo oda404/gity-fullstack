@@ -8,7 +8,7 @@ import { Redis } from "ioredis";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../../consts";
 import { Client } from "pg";
 import { verify } from "argon2";
-import { PG_addUser, PG_findUser, PG_updateUser, PG_deleteUser, PG_logoutUser } from "../../db/user";
+import { PG_addUser, PG_findUserByEmail, PG_findUserByUsername, PG_updateUser, PG_deleteUser, PG_logoutUser, PG_findUserById } from "../../db/user";
 import { clearUnusedCookies } from "../../utils/clearUnusedCookies";
 import { createUserDirOnDisk, deleteUserDirFromDisk } from "../../utils/repo";
 import { deleteInvitation, genInvitation, getInvitation } from "../../utils/invitation";
@@ -72,7 +72,7 @@ export class UserResolver
         @Ctx() { req }: ApolloContext
     ): Promise<User | undefined>
     {
-        return (await PG_findUser(this.pgClient, { id: req.session.userId })).user;
+        return (await PG_findUserById(this.pgClient, req.session.userId!)).user;
     }
 
     @Mutation(() => UserResponse)
@@ -135,17 +135,38 @@ export class UserResolver
     ): Promise<UserResponse>
     {
         let response = new UserResponse();
+        const isUsername = !usernameOrEmail.includes('@');
+        let user: User | undefined;
 
-        const user = (await PG_findUser(this.pgClient, usernameOrEmail.includes('@') ? 
-            { email: usernameOrEmail } : 
-            { username: usernameOrEmail }
-        )).user;
-        if(user === undefined)
-        {
+        const responseErrorUsername = () => {
             response.error = {
                 field: "usernameOrEmail",
                 message: "Username or email not found"
-            };
+            }
+        }
+
+        if(isUsername)
+        {
+            if(!validateUsername(usernameOrEmail))
+            {
+                responseErrorUsername();
+                return response;
+            }
+            user = (await (PG_findUserByUsername(this.pgClient, usernameOrEmail))).user;
+        }
+        else
+        {
+            if(!validateUserEmail(usernameOrEmail))
+            {
+                responseErrorUsername();
+                return response;
+            }
+            user = (await (PG_findUserByEmail(this.pgClient, usernameOrEmail))).user;
+        }
+
+        if(user === undefined)
+        {
+            responseErrorUsername();
             return response;
         }
 
@@ -177,7 +198,7 @@ export class UserResolver
             }
 
             /* only set cookie if we can update */
-            req.session.userId = user.id;
+            req.session.userId = user!.id;
 
             response.user = result.user;
             return response;
@@ -282,6 +303,6 @@ export class UserResolver
             return null;
         }
 
-        return (await PG_findUser(this.pgClient, { username })).user;
+        return (await PG_findUserByUsername(this.pgClient, username)).user;
     }
 };

@@ -45,31 +45,41 @@ export async function PG_updateUser(
     });
 }
 
-export async function PG_findUser(
+export async function PG_findUserById(
     client: Client,
-    { id, username, email }: UserLookupArgs
+    id: number
 ): Promise<UserDBQueryResponse>
 {
-    // fix this fuckery
-    if(id === undefined && username === undefined && email === undefined)
-    {
-        return { user: undefined, err: "No args specified" };
-    }
-
-    let usernameC: string;
-    let emailC: string;
-
-    if(username !== undefined) usernameC = sanitizeSingleQuotes(username);
-    if(email !== undefined) emailC = sanitizeSingleQuotes(email);
-
-    return client.query(`SELECT * FROM find_user(
-        "_id"       => ${ id === undefined ? `NULL` : `'${id}'` },
-        "_username" => ${ username === undefined ? `NULL` : `'${usernameC!}'` },
-        "_email"    => ${ email === undefined ? `NULL` : `'${emailC!}'` }
-    );`).then( res => {
-        return { user: res.rows[0], err: undefined };
+    return client.query(`EXECUTE findUserByIdPlan('${id}');`).then(res => {
+        return { user: res.rows[0], err: undefined }
     }).catch( err => {
-        return { user: undefined, err };
+        return { user: undefined, err }
+    });
+}
+
+export async function PG_findUserByUsername(
+    client: Client,
+    username: string
+): Promise<UserDBQueryResponse>
+{
+    const usernameC = sanitizeSingleQuotes(username);
+    return client.query(`EXECUTE findUserByUsernamePlan('${usernameC}');`).then(res => {
+        return { user: res.rows[0], err: undefined }
+    }).catch( err => {
+        return { user: undefined, err }
+    });
+}
+
+export async function PG_findUserByEmail(
+    client: Client,
+    email: string
+): Promise<UserDBQueryResponse>
+{
+    const emailC = sanitizeSingleQuotes(email);
+    return client.query(`EXECUTE findUserByEmailPlan('${emailC}');`).then(res => {
+        return { user: res.rows[0], err: undefined }
+    }).catch( err => {
+        return { user: undefined, err }
     });
 }
 

@@ -3,7 +3,7 @@ import { AuthChecker } from "type-graphql";
 import { ApolloContext } from "../types";
 import { Container } from "typedi";
 import { AUTH_COOKIE, AUTH_PASSWD } from "../consts";
-import { PG_findUser } from "../db/user";
+import { PG_findUserById } from "../db/user";
 import { Client } from "pg";
 
 export const customAuthChecker: AuthChecker<ApolloContext> = async (
@@ -22,7 +22,7 @@ export const customAuthChecker: AuthChecker<ApolloContext> = async (
             return false;
         }
 
-        context.user = await (await PG_findUser(Container.get<Client>("pgClient"), { id: context.req.session.userId })).user;
+        context.user = await (await PG_findUserById(Container.get<Client>("pgClient"), context.req.session.userId)).user;
         if(context.user === undefined)
         {
             return false;

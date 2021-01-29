@@ -41,6 +41,12 @@ const PREPARES = [
     `PREPARE findUserByUsernamePlan(${USERNAME_TYPE}) AS
         SELECT * FROM users WHERE "username" = $1;
     `,
+    `PREPARE findUserByEmailPlan(${EMAIL_TYPE}) AS
+        SELECT * FROM users WHERE "email" = $1;
+    `,
+    `PREPARE findUserByIdPlan(BIGINT) AS
+       SELECT * FROM users WHERE "id" = $1;
+    `,
     `PREPARE addRepoPlan(${REPO_NAME_TYPE}, BIGINT, BOOLEAN) AS
         INSERT INTO repos("name", "ownerId", "isPrivate")
         VALUES($1, $2, $3) RETURNING *;

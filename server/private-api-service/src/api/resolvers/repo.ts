@@ -7,7 +7,7 @@ import { Client } from "pg";
 import { PG_addRepo, PG_deleteRepo, PG_findRepo, PG_findUserRepos } from "../../db/repo";
 import { validateUsername } from "../../utils/userValidation";
 import { validateRepoName } from "../../utils/repoValidation";
-import { PG_findUser } from "../../db/user";
+import { PG_findUserByUsername } from "../../db/user";
 import { createRepoOnDisk, deleteRepoFromDisk } from "../../utils/repo";
 
 const REPOS_START_MIN = 0;
@@ -134,7 +134,7 @@ export class RepoResolver
         start = Math.min(start, REPOS_START_MAX);
         start = Math.max(start, REPOS_START_MIN);
 
-        const user = (await PG_findUser(this.pgClient, { username: owner })).user;
+        const user = (await PG_findUserByUsername(this.pgClient, owner)).user;
         if(user === undefined)
         {
             return null;
