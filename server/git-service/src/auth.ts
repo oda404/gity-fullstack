@@ -2,110 +2,102 @@
 // Licensed under the MIT license found in the LICENSE file in the root of this repository.
 
 import { verify } from "argon2";
-import { Request, Response } from "express";
 import { Client } from "pg";
 import { PG_findUser } from "./db/user";
 import { PG_findRepo } from "./db/repo";
 import { isPasswordValid, isUsernameValid } from "./utils/userValidation";
 import { isRepoNameValid } from "./utils/repoValidation";
-
-export enum AuthStatus
-{
-    GOOD = 0,
-    BAD = 1
-};
+import { RepoInfo } from "./utils/repoInfo";
 
 interface AuthResponse
 {
-    status: AuthStatus;
-    ownerId: number;
+    status: boolean;
+    /* only set if status is true */
+    ownerId?: number;
 }
 
-function respondUnauthorized(res: Response)
+export async function tryAuthenticate(
+    { owner, name }: RepoInfo,
+    authHeader: string | undefined, 
+    isReceivePack: boolean,
+    pgClient: Client
+): Promise<AuthResponse>
 {
-    res.statusCode = 401;
-    res.setHeader("Content-Type", "text/plain");
-    res.setHeader("WWW-Authenticate", "Basic realm=\"authorization needed\"");
-    res.end("unauthorized");
-}
+    const getBadAuthResponse = (): AuthResponse => {
+        return {
+            status: false,
+        };
+    }
 
-export async function tryAuthenticate(req: Request, res: Response, owner: string, name: string, pgClient: Client): Promise<AuthResponse>
-{
+    /* check input validity */
     if(!isUsernameValid(owner) || !isRepoNameValid(name))
     {
-        respondUnauthorized(res);
-        return {
-            status: AuthStatus.BAD,
-            ownerId: -1
-        }
+        return getBadAuthResponse();
     }
 
+    // can be optimized using only 1 query
+    /* try to find repo */
     const repo = (await PG_findRepo(pgClient, { name, owner })).repo;
-
     if(repo === undefined)
     {
-        respondUnauthorized(res);
-        return {
-            status: AuthStatus.BAD,
-            ownerId: -1
-        }
+        return getBadAuthResponse();
     }
 
-    const user = await (await PG_findUser(pgClient, owner)).user;
+    /* try to find user */
+    const user = (await PG_findUser(pgClient, owner)).user;
     if(user === undefined)
     {
-        respondUnauthorized(res);
-        return {
-            status: AuthStatus.BAD,
-            ownerId: -1
-        }
+        return getBadAuthResponse();
     }
 
-    if(!repo.isPrivate)
+    /* 
+    allow if request is not a receive-pack (clone) and
+    if the repo is public
+    */
+    if(!repo.isPrivate && !isReceivePack)
     {
         return {
-            status: AuthStatus.GOOD,
+            status: true,
             ownerId: user.id
         }
     }
 
-    if(req.headers.authorization === undefined)
+    /* check for the auth header */
+    if(authHeader === undefined)
     {
-        respondUnauthorized(res);
-        return {
-            status: AuthStatus.BAD,
-            ownerId: -1
-        }
+        return getBadAuthResponse();
     }
 
-    let authHeader = String(req.headers.authorization.substring(6));
-    let buff = Buffer.from(authHeader, "base64");
-    let decodedAuthHeader = buff.toString("utf-8");
-
-    let username = decodedAuthHeader.substring(0, decodedAuthHeader.indexOf(':'));
-    let password = decodedAuthHeader.substring(decodedAuthHeader.indexOf(':') + 1);
-
+    const decodedAuthHeader = Buffer.from(
+        authHeader.substring(6), 
+        "base64"
+    ).toString("utf-8");
+    const username = decodedAuthHeader.substring(
+        0, 
+        decodedAuthHeader.indexOf(':')
+    );
+    const password = decodedAuthHeader.substring(
+        decodedAuthHeader.indexOf(':') + 1
+    );
+    
+    /* 
+    check if the name in the url is 
+    the same as the one in the auth header
+    and if the password is valid
+    */
     if(username !== owner || !isPasswordValid(password))
     {
-        respondUnauthorized(res);
-        return {
-            status: AuthStatus.BAD,
-            ownerId: -1
-        }
+        return getBadAuthResponse();
     }
 
-    const match = await verify(user.hash, password);
-    if(match)
+    /* verify the password */
+    if(!(await verify(user.hash, password)))
     {
-        return {
-            status: AuthStatus.GOOD,
-            ownerId: user.id
-        }
+        return getBadAuthResponse();
     }
 
-    respondUnauthorized(res);
     return {
-        status: AuthStatus.BAD,
-        ownerId: -1
+        status: true,
+        ownerId: user.id
     }
 }

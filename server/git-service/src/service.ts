@@ -1,53 +1,17 @@
 // Copyright (c) Olaru Alexandru <xdxalexandru404@gmail.com>
 // Licensed under the MIT license found in the LICENSE file in the root of this repository.
 
-import { Request, RequestHandler, Response } from "express";
-import { spawn } from "child_process";
+import { RequestHandler, Response } from "express";
 import { Client } from "pg";
-import { tryAuthenticate, AuthStatus } from "./auth";
+import { tryAuthenticate } from "./auth";
 import { parse } from "url";
 import { GIT_ROOT_DIR } from "./consts";
 import { join } from "path";
 import { setHeaderNoCache } from "./utils/headers";
-
-function pack(message: string): string
-{
-    let n = (4 + message.length).toString(16);
-    return Array(4 - n.length + 1).join('0') + n + message;
-}
-
-const validServices = [ "git-upload-pack", "git-receive-pack" ];
-
-function handleGETService(service: string, targetRes: Response, repoPath: string): void
-{
-    targetRes.statusCode = 200;
-    targetRes.setHeader("Content-Type", `application/x-${service}-advertisement`);
-
-    targetRes.write(pack(`# service=${service}\n`) + "0000");
-
-    spawn(service, [ "--stateless-rpc", "--advertise-refs", repoPath ]).stdout.pipe(targetRes);
-}
-
-function handlePOSTService(service: string, req: Request, targetRes: Response, repoPath: string): void
-{
-    targetRes.statusCode = 200;
-    targetRes.setHeader("Content-Type", `application/x-${service}-result`);
-
-    const proc = spawn(service, [ "--stateless-rpc", repoPath ]);
-    req.pipe(proc.stdin);
-    proc.stdout.pipe(targetRes);
-}
-
-function isServiceValid(service: string): boolean
-{
-    return !(validServices.indexOf(service) === -1)
-}
-
-interface RepoInfo
-{
-    owner: string;
-    name: string;
-}
+import { isServiceValid } from "./git/validServices";
+import { handleGETService } from "./git/handleGET";
+import { handlePOSTService } from "./git/handlePOST";
+import { RepoInfo } from "./utils/repoInfo";
 
 function getRepoInfoFromUrl(url: string): RepoInfo
 {
@@ -57,9 +21,17 @@ function getRepoInfoFromUrl(url: string): RepoInfo
     return { owner, name };
 }
 
+function respondUnauthorized(res: Response)
+{
+    res.statusCode = 401;
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("WWW-Authenticate", "Basic realm=\"authorization needed\"");
+    res.end("repository doesn't exist");
+}
+
 export function gitService(pgClient: Client): RequestHandler
 {
-    return (req, res, next) => {
+    return async (req, res, next) => {
 
         if(req.headers["user-agent"]?.includes("git/"))
         {
@@ -68,44 +40,59 @@ export function gitService(pgClient: Client): RequestHandler
             if(req.method === "GET" || req.method === "HEAD")
             {
                 const queries = parse(String(req.url), true);
-                const parsedService = String(queries.query["service"]);
-                
-                if(!isServiceValid(parsedService))
+                const service = String(queries.query["service"]);
+                if(!isServiceValid(service))
                 {
                     next();
                     return;
                 }
                 
                 const repoInfo = getRepoInfoFromUrl(String(req.url));
-                tryAuthenticate(req, res, repoInfo.owner, repoInfo.name, pgClient).then( authRes => {
-                    if(authRes.status === AuthStatus.GOOD)
-                    {
-                        const repoPath = join(GIT_ROOT_DIR, authRes.ownerId.toString(), repoInfo.name);
-                        handleGETService(parsedService, res, repoPath);
-                    }
-                });
+                const authRes = await tryAuthenticate(
+                    repoInfo,
+                    req.headers["authorization"], 
+                    service === "git-receive-pack",
+                    pgClient
+                );
+
+                if(authRes.status)
+                {
+                    const repoPath = join(GIT_ROOT_DIR, authRes.ownerId!.toString(), repoInfo.name);
+                    handleGETService(service, res, repoPath);
+                }
+                else
+                {
+                    respondUnauthorized(res);
+                }
 
                 return;
             }
             else if(req.method === "POST")
             {
-                const parsedService = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
-
-                if(!isServiceValid(parsedService))
+                const service = String(req.url?.substring(req.url.lastIndexOf('/') + 1));
+                if(!isServiceValid(service))
                 {
                     next();
                     return;
                 }
 
                 const repoInfo = getRepoInfoFromUrl(String(req.url));
+                const authRes = await tryAuthenticate(
+                    repoInfo,
+                    req.headers["authorization"], 
+                    service === "git-receive-pack",
+                    pgClient
+                );
 
-                tryAuthenticate(req, res, repoInfo.owner, repoInfo.name, pgClient).then( authRes => {
-                    if(authRes.status === AuthStatus.GOOD)
-                    {
-                        const repoPath = join(GIT_ROOT_DIR, authRes.ownerId.toString(), repoInfo.name);
-                        handlePOSTService(parsedService, req, res, repoPath);
-                    }
-                });
+                if(authRes.status)
+                {
+                    const repoPath = join(GIT_ROOT_DIR, authRes.ownerId!.toString(), repoInfo.name);
+                    handlePOSTService(service, req, res, repoPath);
+                }
+                else
+                {
+                    respondUnauthorized(res);
+                }
 
                 return;
             }
@@ -113,7 +100,7 @@ export function gitService(pgClient: Client): RequestHandler
             {
                 res.status(405);
                 res.setHeader("Content-Type", "text/plain");
-                res.end(`unsupported method ${req.method}`);
+                res.end(`unknown method ${req.method}`);
                 return;
             }
         }
