@@ -1,5 +1,5 @@
 
-import e, { Request, Response } from "express";
+import { Request, Response } from "express";
 import { spawn } from "child_process";
 import { getEncoding } from "../utils/getEncoding";
 import { createEncoder } from "../utils/encoder";
