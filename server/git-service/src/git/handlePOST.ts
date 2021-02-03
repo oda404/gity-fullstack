@@ -1,9 +1,8 @@
 
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import { spawn } from "child_process";
 import { getEncoding } from "../utils/getEncoding";
 import { createEncoder } from "../utils/encoder";
-import { EncodingFunction } from "../utils/encodings";
 import { createDecoder } from "../utils/decoder";
 import { UPLOAD_PACK_TIMEOUT_S } from "../consts";
 
@@ -21,13 +20,7 @@ export function handlePOSTService(
     );
     const contentEncoding = getEncoding(
         req.headers["content-encoding"] as string | undefined
-    );
-
-    let decoder: EncodingFunction | undefined = undefined;
-    if(contentEncoding !== undefined)
-    {
-        decoder = createDecoder(contentEncoding);
-    }
+    )
 
     const argv = [
         "--stateless-rpc", 
@@ -41,16 +34,23 @@ export function handlePOSTService(
 
     const proc = spawn(service, argv);
 
-    decoder === undefined ?
-    req.pipe(proc.stdin)  :
-    req.pipe(decoder).pipe(proc.stdin); 
+    if(contentEncoding !== undefined)
+    {
+        req.pipe(createDecoder(contentEncoding))
+           .pipe(proc.stdin);
+    }
+    else
+    {
+        req.pipe(proc.stdin);
+    }
 
     if(acceptedEncoding !== undefined)
     {
-        const encoder = createEncoder(acceptedEncoding);
         targetRes.setHeader("Content-Encoding", acceptedEncoding);
 
-        proc.stdout.pipe(encoder).pipe(targetRes);
+        proc.stdout
+            .pipe(createEncoder(acceptedEncoding))
+            .pipe(targetRes);
     }
     else
     {
