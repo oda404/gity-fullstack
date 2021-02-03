@@ -1,4 +1,3 @@
-- add content encoding
 - add support for "dumb" clients
 - add support for loose objects and other shit like that
 - maybe dependency injection

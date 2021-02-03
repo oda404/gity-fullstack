@@ -2,6 +2,7 @@ import "dotenv-safe/config";
 import express from "express";
 import { Client } from "pg";
 import { exit } from "process";
+import { createServer } from "http";
 import { 
     PG_USER, 
     PG_PASS, 
@@ -36,7 +37,9 @@ async function main()
 
     APP.use(gitService(pgClient));
 
-    APP.listen(SERVER_PORT, () => {
+    const server = createServer(APP);
+
+    server.listen(SERVER_PORT, () => {
         logInfo(`Running in ${PROD ? magenta("PRODUCTION") : magenta("DEVELOPMENT")} ${green("mode.")}`);
         logInfo(`Listening on port ${magenta(`${SERVER_PORT}`)}.`);
     });

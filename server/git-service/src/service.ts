@@ -58,7 +58,7 @@ export function gitService(pgClient: Client): RequestHandler
                 if(authRes.status)
                 {
                     const repoPath = join(GIT_ROOT_DIR, authRes.ownerId!.toString(), repoInfo.name);
-                    handleGETService(service, res, repoPath);
+                    handleGETService(service, req, res, repoPath);
                 }
                 else
                 {
