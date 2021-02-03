@@ -5,6 +5,7 @@ import { getEncoding } from "../utils/getEncoding";
 import { createEncoder } from "../utils/encoder";
 import { EncodingFunction } from "../utils/encodings";
 import { createDecoder } from "../utils/decoder";
+import { UPLOAD_PACK_TIMEOUT_S } from "../consts";
 
 export function handlePOSTService(
     service: string, 
@@ -28,10 +29,17 @@ export function handlePOSTService(
         decoder = createDecoder(contentEncoding);
     }
 
-    const proc = spawn(service, [ 
+    const argv = [
         "--stateless-rpc", 
         repoPath 
-    ]);
+    ];
+    if(service === "git-upload-pack")
+    {
+        argv.push("--timeout");
+        argv.push(UPLOAD_PACK_TIMEOUT_S.toString());
+    }
+
+    const proc = spawn(service, argv);
 
     decoder === undefined ?
     req.pipe(proc.stdin)  :

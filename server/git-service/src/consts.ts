@@ -9,6 +9,7 @@ const pgConfig = getPGConfig();
 const gitConfig = getGitConfig();
 const gitServiceConfig = getGitServiceConfig();
 
+export const UPLOAD_PACK_TIMEOUT_S = 3;
 export const PG_HOSTNAME  = pgConfig.hostname;
 export const PG_PORT      = pgConfig.port;
 export const PG_DB_MAIN   = pgConfig.databases.find(db => db.alias === "main")?.name;
