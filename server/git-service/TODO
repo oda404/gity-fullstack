@@ -4,3 +4,4 @@
 - kind of easy to tell if 
     the backend is hashing the password for auth from the client side
     which means a private repo exists, so maybe fix that
+- add repo size limit
